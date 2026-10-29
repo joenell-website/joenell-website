@@ -545,3 +545,5 @@ body:has(.lang-offer.show) .wa-fab{bottom:96px}
 @media (max-width:520px){.wa-fab{right:14px;bottom:14px;height:52px;padding:0 12px}body:has(.lang-offer.show) .wa-fab{bottom:132px}}
 @media print{.wa-fab{display:none}}
 @media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
+/* header CTA never wraps */
+.nav .btn{white-space:nowrap}
