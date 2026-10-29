@@ -262,7 +262,7 @@
         if (btn) { btn.disabled = false; btn.innerHTML = label; }
         var body = ['Name: ' + v('name'), 'Email: ' + v('email'), 'Phone: ' + v('phone'), 'Session: ' + v('type'),
           'Date: ' + v('date'), 'Location / venue: ' + v('venue'), 'How you heard about me: ' + v('heard'), '', v('message')].join('\n');
-        location.href = 'mailto:JoenellPhotography@gmail.com?subject=' + encodeURIComponent(v('type') + ' inquiry from ' + v('name')) +
+        location.href = 'mailto:wedding@joenellphotography.ca?subject=' + encodeURIComponent(v('type') + ' inquiry from ' + v('name')) +
           '&body=' + encodeURIComponent(body);
       });
     });
