@@ -259,7 +259,9 @@ p{margin:0}
 
 /* footer */
 .site-footer{background:var(--dark);color:var(--on-dark);padding:72px 0 36px}
-.site-footer .cols{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:40px}
+.site-footer .cols{display:grid;grid-template-columns:1.1fr 1fr 1.5fr 1.1fr .8fr;gap:36px}
+.site-footer .areas ul{columns:2;column-gap:24px}
+.site-footer .areas li{break-inside:avoid}
 .site-footer img.logo{width:160px;height:auto}
 .site-footer h2{font:600 12px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--camel);margin-bottom:14px}
 .site-footer ul{list-style:none;margin:0;padding:0}
