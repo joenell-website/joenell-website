@@ -647,11 +647,21 @@
     document.body.appendChild(bar); setTimeout(function () { bar.classList.add('show'); }, 900);
   })();
 })();
-/* ---------- WhatsApp button: count clicks in Google Analytics ---------- */
+/* ---------- "Message me" button: open/close menu, count which channel couples use ---------- */
 (function () {
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('.wa-fab');
-    if (!a) return;
-    try { if (typeof window.gtag === 'function') window.gtag('event', 'whatsapp_click', { link_url: 'wa.me', page_path: location.pathname }); } catch (err) {}
+  var fab = document.querySelector('.msg-fab'); if (!fab) return;
+  var btn = fab.querySelector('.msg-toggle'), menu = fab.querySelector('.msg-menu'), label = fab.querySelector('.msg-label');
+  function set(open) {
+    fab.setAttribute('data-open', open ? 'true' : 'false'); btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menu.hidden = !open; if (label) label.textContent = open ? btn.getAttribute('data-close') : btn.getAttribute('data-open-label');
+    if (open) { var f = menu.querySelector('a'); if (f) f.focus({ preventScroll: true }); }
+  }
+  btn.addEventListener('click', function () { set(menu.hidden); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { set(false); btn.focus(); } });
+  document.addEventListener('click', function (e) { if (!menu.hidden && !fab.contains(e.target)) set(false); });
+  menu.addEventListener('click', function (e) {
+    var a = e.target.closest('a[data-channel]'); if (!a) return;
+    var ch = a.getAttribute('data-channel');
+    try { if (typeof window.gtag === 'function') { window.gtag('event', 'contact_click', { channel: ch, page_path: location.pathname }); if (ch === 'whatsapp') window.gtag('event', 'whatsapp_click', { page_path: location.pathname }); } } catch (err) {}
   });
 })();

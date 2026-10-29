@@ -535,18 +535,30 @@ html[lang="zh-Hans"] .eyebrow,html[lang="pa"] .eyebrow{letter-spacing:.12em}
 .lens{container-type:inline-size;gap:0}.lens .pic{margin-right:12px}.lens .cat{font-size:clamp(12.5px,min(max(14px,1.15vw),10.5cqi),17px)}@container (max-width:215px){.lens .pic{zoom:.72;margin-right:10px}}@container (max-width:165px){.lens .pic{zoom:.6;margin-right:8px}}
 /* v47: enquiry form hides itself after sending */
 .form[hidden]{display:none!important}
-/* v48 (VER 20261028v): floating WhatsApp chat button */
-.wa-fab{position:fixed;right:18px;bottom:18px;z-index:70;display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 14px;border-radius:999px;background:#25D366;color:#fff;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:.01em;box-shadow:0 14px 30px -14px rgba(20,60,30,.65),0 2px 6px rgba(0,0,0,.12);transition:transform .35s var(--ease),box-shadow .35s,bottom .5s var(--ease)}
-.wa-fab:hover{transform:translateY(-3px);box-shadow:0 20px 36px -16px rgba(20,60,30,.7),0 2px 6px rgba(0,0,0,.14)}
-.wa-fab:focus-visible{outline:3px solid var(--cedar);outline-offset:3px}
-.wa-fab .wa-label{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .45s var(--ease)}
-.wa-fab:hover .wa-label,.wa-fab:focus-visible .wa-label{max-width:220px}
-body:has(.lang-offer.show) .wa-fab{bottom:96px}
-@media (max-width:520px){.wa-fab{right:14px;bottom:14px;height:52px;padding:0 12px}body:has(.lang-offer.show) .wa-fab{bottom:132px}}
-@media print{.wa-fab{display:none}}
-@media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
 /* header CTA never wraps */
 .nav .btn{white-space:nowrap}
 /* laptop widths: keep the whole header (incl. EN language menu) on screen */
 @media (min-width:981px) and (max-width:1240px){.nav{gap:16px;font-size:12px;letter-spacing:.08em}.nav .btn{padding:0 16px}.lang summary{padding:8px 10px}}
 @media (min-width:981px) and (max-width:1080px){.nav{gap:12px;font-size:11.5px;letter-spacing:.05em}.nav .btn{padding:0 14px}.site-header .wrap{gap:12px}}
+/* v49: floating "Message me" button with WhatsApp / Instagram / Text / Messenger / Email */
+.msg-fab{position:fixed;right:18px;bottom:18px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px;transition:bottom .5s var(--ease)}
+.msg-toggle{display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 20px 0 16px;border:0;border-radius:999px;background:var(--cedar);color:#fff;font:600 14px var(--sans);letter-spacing:.06em;cursor:pointer;box-shadow:0 14px 30px -14px rgba(28,27,25,.65),0 2px 6px rgba(0,0,0,.12);transition:transform .3s var(--ease),background .3s}
+.msg-toggle:hover{transform:translateY(-2px);background:#33402f}
+.msg-toggle:focus-visible,.msg-menu a:focus-visible{outline:3px solid var(--camel,#C9A27E);outline-offset:3px}
+.msg-toggle .ico-close{display:none}
+.msg-fab[data-open="true"] .msg-toggle .ico-open{display:none}
+.msg-fab[data-open="true"] .msg-toggle .ico-close{display:inline}
+.msg-toggle svg{display:block}
+.msg-menu{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;min-width:230px;box-shadow:0 24px 50px -24px rgba(43,41,38,.55);transform-origin:bottom right;animation:msgIn .28s var(--ease)}
+.msg-menu[hidden]{display:none}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+.msg-title{font-family:var(--serif);font-size:19px;margin:2px 6px 10px}
+.msg-menu ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.msg-menu a{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 10px;border-radius:10px;color:var(--ink);text-decoration:none;font-size:15px}
+.msg-menu a:hover{background:var(--panel)}
+.msg-menu a svg{flex:none;width:32px;height:32px;padding:6px;border-radius:50%;color:#fff;box-sizing:border-box}
+.msg-whatsapp svg{background:#25D366}.msg-instagram svg{background:#C13584}.msg-sms svg{background:#3E4A3D}.msg-messenger svg{background:#0866FF}.msg-email svg{background:#6B645B}
+body:has(.lang-offer.show) .msg-fab{bottom:96px}
+@media (max-width:520px){.msg-fab{right:14px;bottom:14px}.msg-toggle{height:52px;padding:0 16px 0 14px}.msg-toggle .msg-label{display:none}.msg-toggle{width:52px;justify-content:center;padding:0}body:has(.lang-offer.show) .msg-fab{bottom:132px}}
+@media print{.msg-fab{display:none}}
+@media (prefers-reduced-motion:reduce){.msg-menu{animation:none}.msg-toggle,.msg-fab{transition:none}}
