@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
     paths: ['site/**']
+  workflow_dispatch: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
@@ -31,7 +32,7 @@ jobs:
               p = re.sub(r'/index$', '/', p)
               u = f'https://{host}/{p}'
               if u in sitemap or u.rstrip('/') in sitemap or u + '/' in sitemap: urls.add(u)
-          if any(f.endswith('sitemap.xml') for f in changed) or len(urls) > 40:
+          if os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' or any(f.endswith('sitemap.xml') for f in changed) or len(urls) > 40:
               urls = set(sitemap)
           if not urls:
               print('No page URLs changed; nothing to submit.'); raise SystemExit
