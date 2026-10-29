@@ -657,6 +657,7 @@
     if (open) { var f = menu.querySelector('a'); if (f) f.focus({ preventScroll: true }); }
   }
   btn.addEventListener('click', function () { set(menu.hidden); });
+  document.querySelectorAll('[data-open-msg]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); set(true); }); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { set(false); btn.focus(); } });
   document.addEventListener('click', function (e) { if (!menu.hidden && !fab.contains(e.target)) set(false); });
   menu.addEventListener('click', function (e) {

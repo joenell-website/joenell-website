@@ -562,3 +562,5 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 @media (max-width:520px){.msg-fab{right:14px;bottom:14px}.msg-toggle{height:52px;padding:0 16px 0 14px}.msg-toggle .msg-label{display:none}.msg-toggle{width:52px;justify-content:center;padding:0}body:has(.lang-offer.show) .msg-fab{bottom:132px}}
 @media print{.msg-fab{display:none}}
 @media (prefers-reduced-motion:reduce){.msg-menu{animation:none}.msg-toggle,.msg-fab{transition:none}}
+.link-btn{background:none;border:0;padding:0;font:inherit;color:var(--cedar);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.link-btn:hover{color:var(--ink)}
