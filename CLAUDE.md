@@ -7,8 +7,8 @@ Read this before changing anything. The fuller project history lives in the owne
 - Live: https://www.joenellphotography.ca — Cloudflare Pages project `joenell-website`, auto-deploys `main`. Output dir `site/`, no build step.
 - Preview: every branch gets https://<branch>.joenell-website.pages.dev
 - Workflow: branch → push → check preview (all sitemap URLs 200, no horizontal overflow 390–1920px, form + WhatsApp work) → merge to `main` → verify live.
-- Cache-busting: bump the `?v=` version on styles.css / site.js / images across all HTML when they change (current: images 20261028z, styles.css 20261029c; site.js 20261029b; whistler-pinky-shika-laugh images 20261029a). /assets/* is cached 1 year.
-- Area pages: tools/make_area.py <area> tools/<area>_i18n.json "<Area>, BC" (base = Burnaby page), then tools/area_photos.py (vary the Book-your-date + gallery C&L photo), then tools/add_area_links.py <area> <previous-area>; footer area list lives in the "areas" column (ORDER in the footer script). Outside Metro Vancouver: travel "open for discussion".
+- Cache-busting: bump the `?v=` version on styles.css / site.js / images across all HTML when they change (current: images 20261028z, styles.css 20261029d; site.js 20261029b; whistler-pinky-shika-laugh images 20261029a). /assets/* is cached 1 year.
+- Area pages: tools/make_area.py <area> tools/<area>_i18n.json "<Area>, BC" (base = Burnaby page), then tools/area_photos.py (vary the Book-your-date + gallery C&L photo), then tools/footer_areas.py (rebuilds the grouped footer regions on every page + adds sitemap entries; add new areas to REG there). Outside Metro Vancouver: travel "open for discussion".
 - `site/_redirects`: NEVER add a `/blog//*` rule (Cloudflare normalises `//`, it caused an infinite redirect loop on Oct 27).
 - Languages: EN + /fr /es /zh /pa copies of the 9 main pages — edit every language when changing shared copy.
 - Public contact email everywhere: wedding@joenellphotography.ca (Cloudflare Email Routing → JoenellPhotography@gmail.com). Never publish the Gmail address.
