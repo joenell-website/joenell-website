@@ -547,3 +547,5 @@ body:has(.lang-offer.show) .wa-fab{bottom:96px}
 @media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
 /* header CTA never wraps */
 .nav .btn{white-space:nowrap}
+/* laptop widths: keep the whole header (incl. EN language menu) on screen */
+@media (min-width:981px) and (max-width:1240px){.nav{gap:16px;font-size:12px;letter-spacing:.08em}.nav .btn{padding:0 16px}.lang summary{padding:8px 10px}}
