@@ -647,3 +647,11 @@
     document.body.appendChild(bar); setTimeout(function () { bar.classList.add('show'); }, 900);
   })();
 })();
+/* ---------- WhatsApp button: count clicks in Google Analytics ---------- */
+(function () {
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('.wa-fab');
+    if (!a) return;
+    try { if (typeof window.gtag === 'function') window.gtag('event', 'whatsapp_click', { link_url: 'wa.me', page_path: location.pathname }); } catch (err) {}
+  });
+})();

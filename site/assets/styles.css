@@ -535,3 +535,13 @@ html[lang="zh-Hans"] .eyebrow,html[lang="pa"] .eyebrow{letter-spacing:.12em}
 .lens{container-type:inline-size;gap:0}.lens .pic{margin-right:12px}.lens .cat{font-size:clamp(12.5px,min(max(14px,1.15vw),10.5cqi),17px)}@container (max-width:215px){.lens .pic{zoom:.72;margin-right:10px}}@container (max-width:165px){.lens .pic{zoom:.6;margin-right:8px}}
 /* v47: enquiry form hides itself after sending */
 .form[hidden]{display:none!important}
+/* v48 (VER 20261028v): floating WhatsApp chat button */
+.wa-fab{position:fixed;right:18px;bottom:18px;z-index:70;display:inline-flex;align-items:center;gap:10px;height:56px;padding:0 14px;border-radius:999px;background:#25D366;color:#fff;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:.01em;box-shadow:0 14px 30px -14px rgba(20,60,30,.65),0 2px 6px rgba(0,0,0,.12);transition:transform .35s var(--ease),box-shadow .35s,bottom .5s var(--ease)}
+.wa-fab:hover{transform:translateY(-3px);box-shadow:0 20px 36px -16px rgba(20,60,30,.7),0 2px 6px rgba(0,0,0,.14)}
+.wa-fab:focus-visible{outline:3px solid var(--cedar);outline-offset:3px}
+.wa-fab .wa-label{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .45s var(--ease)}
+.wa-fab:hover .wa-label,.wa-fab:focus-visible .wa-label{max-width:220px}
+body:has(.lang-offer.show) .wa-fab{bottom:96px}
+@media (max-width:520px){.wa-fab{right:14px;bottom:14px;height:52px;padding:0 12px}body:has(.lang-offer.show) .wa-fab{bottom:132px}}
+@media print{.wa-fab{display:none}}
+@media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
