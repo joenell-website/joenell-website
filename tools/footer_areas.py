@@ -42,8 +42,7 @@ for f in glob.glob('site/**/*.html',recursive=True):
     if '<div class="areas">' not in s: continue
     m=re.match(r'site/(fr|es|zh|pa)/',f); L=m.group(1) if m else ''
     c=re.search(r'/([a-z-]+)-wedding-photographer\.html$',f); cur=c.group(1) if c else None
-    s2=re.sub(r'<div class="areas">.*?</ul></div>(?:</details></div>)?(?=\n?<div><h2>)',lambda _:block(L,cur),s,count=1,flags=re.S)
-    if s2==s: s2=re.sub(r'<div class="areas">.*?</div>(?=\n?<div><h2>)',lambda _:block(L,cur),s,count=1,flags=re.S)
+    s2=re.sub(r'<div class="areas"><h2>[^<]*</h2>(?:<ul>(?:(?!</ul>).)*</ul>|(?:<details(?:(?!</details>).)*</details>)+)</div>',lambda _:block(L,cur),s,count=1,flags=re.S)
     assert s2!=s or block(L,cur) in s, f
     if s2!=s: open(f,'w').write(s2); n+=1
 print('footer pages updated',n)
