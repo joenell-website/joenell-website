@@ -32,6 +32,8 @@ export async function onRequestGet({ request, env }) {
     'payment_intent_data[description]': String(p.desc || '').slice(0, 250),
     success_url: `${origin}/payment-success?ref=${encodeURIComponent(p.ref || '')}`,
     cancel_url: `${origin}/payment-cancelled`,
+    // No payment_method_types: Stripe shows the best methods automatically (dynamic payment methods + Link).
+    expires_at: String(Math.floor(Date.now() / 1000) + 60 * 60 * 2),
   });
   if (p.email) f.set('customer_email', String(p.email));
   const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {

@@ -14,9 +14,12 @@ export async function onRequestPost({ request, env }) {
   const expected = await hmacHex(env.STRIPE_WEBHOOK_SECRET, `${t}.${body}`);
   if (!v1s.some(v => safeEqual(v, expected))) return new Response('bad signature', { status: 400 });
   const evt = JSON.parse(body);
-  if (evt.type === 'checkout.session.completed' && evt.data?.object?.payment_status === 'paid') {
+  // 'completed' + paid = card payments; 'async_payment_succeeded' = delayed methods (e.g. bank debits) that settle later.
+  const paid = (evt.type === 'checkout.session.completed' && evt.data?.object?.payment_status === 'paid') || evt.type === 'checkout.session.async_payment_succeeded';
+  if (paid) {
     const o = evt.data.object;
-    const rec = { source: 'stripe', livemode: !!evt.livemode, ref: o.metadata?.ref || o.client_reference_id || '', kind: o.metadata?.kind || '',
+    const rec = { source: 'stripe', event: evt.id, // the sheet de-duplicates on session id (Stripe can resend events)
+       livemode: !!evt.livemode, ref: o.metadata?.ref || o.client_reference_id || '', kind: o.metadata?.kind || '',
       amount: (o.amount_total || 0) / 100, currency: (o.currency || '').toUpperCase(), email: o.customer_details?.email || o.customer_email || '',
       name: o.customer_details?.name || '', session: o.id, payment_intent: o.payment_intent || '', paid_at: new Date((evt.created || t) * 1000).toISOString() };
     if (env.SHEET_WEBHOOK_URL) {
