@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Choose Your Camera · Joe Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#1e1c1d}
+body{font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;color:#ece8e2;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+.wrap{overflow-x:clip}
+.story{position:relative}
+.stage{position:sticky;top:0;height:min(920px,100svh);min-height:560px;z-index:0;overflow:hidden}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.stage svg path{fill:none;stroke:#57514c;stroke-width:1;stroke-dasharray:1 1;opacity:0}
+.ticker{position:absolute;right:max(24px,calc((100% - 1320px)/2));bottom:28px;width:min(420px,calc(100% - 48px));height:46px;background:#141313;border-radius:12px;z-index:3}
+.ticks,.track{position:absolute;inset:11px 20px}
+.ticks{display:flex;justify-content:space-between;align-items:center}
+.ticks b{display:block;width:1px;background:#6d6763;flex:none}
+.cursor{position:absolute;top:0;bottom:0;left:0;width:3px;margin-left:-1.5px;border-radius:2px;background:#e5483b}
+.overlay{position:relative;z-index:1;margin-top:calc(-1 * min(920px,100svh))}
+@supports not (height:100svh){.stage{height:min(920px,100vh)}.overlay{margin-top:calc(-1 * min(920px,100vh))}}
+section.ch{position:relative}
+.pin{position:sticky;top:0;height:min(920px,100svh);min-height:560px;padding:56px max(24px,calc((100% - 1320px)/2)) 96px;display:flex;flex-direction:column;justify-content:center;pointer-events:none}
+@supports not (height:100svh){.pin{height:min(920px,100vh)}}
+.col{width:min(440px,100%);display:flex;flex-direction:column;gap:20px;pointer-events:auto}
+.dark{color:#ece8e2}.light{color:#2b2926}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}
+h1,h2{margin:0;font-weight:700;letter-spacing:-.028em;line-height:1.0;text-wrap:balance}
+h1{font-size:68px}
+h2{font-size:56px}
+.lede{margin:0;font-size:19px;line-height:1.5}
+.dark .lede{color:#cfc9c2}.light .lede{color:#3d3936}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pick{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:92px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.03);border:1.5px solid #3b3637;transition:border-color .2s,background .2s}
+.pick:hover{border-color:#6b6365}
+.pick[aria-pressed="true"]{border-color:#ece8e2;background:rgba(255,255,255,.07)}
+.pick:focus-visible,.btn:focus-visible,.lab:focus-visible{outline:2px solid #e5483b;outline-offset:3px}
+.pick .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a49b95}
+.pick[aria-pressed="true"] .tag{color:#ff6a5c}
+.pick .nm{font-size:17px;font-weight:600;line-height:1.2;color:#ece8e2}
+.pick .sb{font-size:13px;line-height:1.35;color:#a49b95}
+.hint{font-size:13px;color:#a49b95;display:flex;gap:8px;align-items:center}
+.hint svg{width:14px;height:14px;flex:none}
+.specs{display:grid;border-top:1px solid #3b3637}
+.specs div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid #3b3637;font-size:15px}
+.specs dt{color:#a49b95;font-size:12px;letter-spacing:.1em;text-transform:uppercase;align-self:center}
+.specs dd{margin:0}
+.labels{position:absolute;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px;pointer-events:auto}
+.labels.r{top:52px;right:max(24px,calc((100% - 1320px)/2));align-items:flex-end}
+.labels.l{bottom:96px;left:max(24px,calc((100% - 1320px)/2));align-items:flex-start}
+.lab{all:unset;cursor:pointer;color:#2b2926;padding:1px 0;transition:color .2s}
+.lab:hover{color:#c23a2c}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:12px;padding:6px 10px;border-radius:99px;border:1px solid #a8a09a;color:#3d3936}
+.arrows{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.arrows li{display:flex;gap:10px;align-items:baseline;color:#cfc9c2}
+.arrows svg{flex:none;width:14px;height:14px;transform:translateY(2px)}
+.lcd{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:#121111;border:1px solid #2d2a2b;border-radius:12px;padding:12px 14px}
+.lcd span{font-size:14px;font-weight:500}
+.lcd small{display:block;font-size:10px;letter-spacing:.1em;color:#7d7571;text-transform:uppercase;margin-bottom:2px}
+.legend{background:#1c1b1b;color:#ece8e2;border-radius:16px;padding:18px 20px;display:grid;gap:12px}
+.legend h3{margin:0;font-size:18px;font-weight:600;display:flex;justify-content:space-between}
+.legend ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;font-size:14px}
+.legend li{display:flex;gap:8px;align-items:center;min-width:0}
+.legend i{width:9px;height:9px;border-radius:50%;flex:none}
+.bar{display:flex;height:6px;border-radius:9px;overflow:hidden;background:#2d2a2b}
+.bar b{display:block;height:100%}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{all:unset;cursor:pointer;font-weight:600;font-size:15px;padding:13px 18px;border-radius:10px;background:#ece8e2;color:#1e1c1d}
+.btn.ghost{background:transparent;color:#ece8e2;box-shadow:inset 0 0 0 1.5px #4a4446}
+@media (max-width:899px){
+  .pin{justify-content:flex-end;padding:0 16px 84px}
+  .col{width:100%;gap:14px;padding:18px;border-radius:18px}
+  .dark .col{background:rgba(30,28,29,.92)}
+  .light .col{background:rgba(213,208,202,.94)}
+  h1{font-size:40px}h2{font-size:36px}.lede{font-size:16px}
+  .labels{display:none}
+  .pick{min-height:0;padding:10px 12px}.pick .sb{display:none}
+  .ticker{left:16px;right:16px;width:auto;bottom:18px;height:40px}
+  .stage svg{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="story" id="story">
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-hidden="true"></canvas>
+    <svg aria-hidden="true" id="lines"></svg>
+    <div class="ticker" aria-hidden="true"><div class="ticks" id="ticks"></div><div class="track"><i class="cursor" id="cursor"></i></div></div>
+  </div>
+  <div class="overlay" id="overlay"></div>
+</div>
+</div>
+<script>
+/* Shared copy for the Joe Studio camera story. */
+window.JS_CONTENT = (function () {
+  var MODELS = [
+    { id: 'canon-r', brand: 'canon', tag: 'Canon', name: 'Full-frame mirrorless', sub: 'Deep grip, centre viewfinder, RF mount',
+      title: 'Canon full-frame mirrorless', desc: 'A big sensor in a compact body. The viewfinder shows the finished exposure before you press the shutter.',
+      specs: [['Sensor', 'Full frame, 36 × 24 mm'], ['Viewfinder', 'Electronic, centre'], ['Lens mount', 'Canon RF']] },
+    { id: 'sony-a', brand: 'sony', tag: 'Sony', name: 'APS-C mirrorless', sub: 'Slim body, corner viewfinder, E mount',
+      title: 'Sony APS-C mirrorless', desc: 'Small, light and quick. The corner viewfinder keeps your nose off the screen and the whole kit fits a jacket pocket.',
+      specs: [['Sensor', 'APS-C, 23.5 × 15.6 mm'], ['Viewfinder', 'Electronic, corner'], ['Lens mount', 'Sony E']] },
+    { id: 'canon-dslr', brand: 'canon', tag: 'Canon', name: 'DSLR', sub: 'Optical viewfinder, mirror box, EF / EF-S mount',
+      title: 'Canon DSLR', desc: 'A mirror bounces light up through a glass prism, so you see the scene itself rather than a screen. Big grip, long battery life.',
+      specs: [['Sensor', 'Full frame or APS-C'], ['Viewfinder', 'Optical, pentaprism'], ['Lens mount', 'Canon EF / EF-S']] },
+    { id: 'sony-rx', brand: 'sony', tag: 'Sony', name: '1-inch compact', sub: 'Built-in zoom, pop-up viewfinder',
+      title: 'Sony 1-inch compact', desc: 'A zoom lens that folds into a body smaller than a phone is thick. Full manual control in a coat pocket.',
+      specs: [['Sensor', '1-inch, 13.2 × 8.8 mm'], ['Viewfinder', 'Pop-up electronic'], ['Lens', 'Built-in zoom']] }
+  ];
+
+  var SLOTS = ['shoe', 'modeDial', 'shutter', 'frontDial', 'evf', 'diopter', 'screen', 'wheel', 'grip', 'release', 'zoom', 'focus'];
+  function labelNames(id) {
+    var canon = id.indexOf('canon') === 0, compact = id === 'sony-rx';
+    return [
+      compact ? 'pop-up flash' : 'hot shoe',
+      'mode dial',
+      'shutter button',
+      compact ? 'zoom lever' : (canon ? 'main dial' : 'front dial'),
+      compact ? 'pop-up viewfinder' : (id === 'canon-dslr' ? 'optical viewfinder' : 'electronic viewfinder'),
+      'diopter',
+      'rear screen',
+      canon ? 'quick control dial' : 'control wheel',
+      'grip',
+      compact ? 'lens barrel' : 'lens release',
+      compact ? 'zoom barrel' : 'zoom ring',
+      compact ? 'control ring' : 'focus ring'
+    ];
+  }
+
+  function internals(id) {
+    var base = ['Image sensor', 'Shutter unit', 'Battery', 'Memory card', 'Lens elements', 'Aperture iris'];
+    if (id === 'canon-dslr') base.splice(1, 0, 'Reflex mirror');
+    if (id !== 'sony-rx') base.splice(2, 0, 'Sensor stabiliser');
+    return base;
+  }
+
+  function settings(brand) {
+    var c = brand === 'canon';
+    return [
+      { id: 'aperture', num: '01', group: 'Exposure', color: '#e5483b', title: 'Aperture',
+        body: 'How wide the lens opens. A wide opening melts the background into soft blur. A narrow one keeps everything sharp, front to back.',
+        items: ['f/1.8 for portraits and low light', 'f/5.6 for everyday shots and groups', 'f/11 for landscapes and starbursts'],
+        lcd: [c ? 'Av' : 'A', 'f/1.8', '1/1000', 'ISO 100'] },
+      { id: 'shutter', num: '02', group: 'Exposure', color: '#f08a24', title: 'Shutter speed',
+        body: 'How long the light gets in. Fast speeds freeze a moment. Slow speeds stretch motion into streaks of light.',
+        items: ['1/1000 for sport, kids and birds', '1/60 for everyday handheld shots', '2 seconds and longer, on a tripod, for light trails'],
+        lcd: [c ? 'Tv' : 'S', 'f/4', '1/1000', 'ISO 400'] },
+      { id: 'iso', num: '03', group: 'Exposure', color: '#23b8a4', title: 'ISO',
+        body: 'How much the sensor amplifies the light. Every doubling is twice as bright, and a little grainier.',
+        items: ['100 for clean daylight', '800 for indoors and shade', '3200 and up for night and concerts'],
+        lcd: ['M', 'f/2.8', '1/250', 'ISO 3200'] },
+      { id: 'focus', num: '04', group: 'Focus', color: '#3c82e6', title: 'Focus',
+        body: c ? 'Where the picture is sharp. One-Shot AF locks onto still subjects. Servo AF follows anything that moves.' : 'Where the picture is sharp. AF-S locks onto still subjects. AF-C follows anything that moves.',
+        items: [c ? 'One-Shot AF for portraits and products' : 'AF-S for portraits and products', c ? 'Servo AF for sport, pets and kids' : 'AF-C for sport, pets and kids', 'Eye detection for people and animals'],
+        lcd: [c ? 'Servo AF' : 'AF-C', 'Eye detect', c ? 'Zone AF' : 'Zone', 'On'] },
+      { id: 'wb', num: '05', group: 'Colour', color: '#43b25e', title: 'White balance',
+        body: 'Makes white look white under any light, or warmer and cooler on purpose.',
+        items: ['Daylight, about 5200K, for sun', 'Shade or Cloudy to warm up a scene', 'Tungsten, about 3200K, for a cool night look'],
+        lcd: ['AWB', '5600K', c ? 'Standard' : 'ST', 'RAW'] }
+    ];
+  }
+
+  var KIT = [
+    ['Lens hood', '#f08a24', 'Blocks stray light and guards the glass'],
+    ['Lens cap', '#c7bf3c', 'Keep it on between shots'],
+    ['Spare battery', '#43b25e', 'Mirrorless bodies drain fast'],
+    ['Memory card', '#23b8a4', 'Two, so a full card never ends a shoot'],
+    ['ND filter', '#3c82e6', 'Slow shutter in bright light'],
+    ['50mm prime', '#8a63d2', 'The cheapest way to blurry backgrounds'],
+    ['Strap', '#e5483b', 'Two hands free between shots'],
+    ['Tripod plate', '#e06aa6', 'Night, astro and silky water']
+  ];
+
+  return { MODELS: MODELS, SLOTS: SLOTS, labelNames: labelNames, internals: internals, settings: settings, KIT: KIT };
+})();
+
+</script>
+<script>
+/* Joe Studio camera stage: one pinned three.js scene driven by page scroll.
+   No text is ever drawn inside the scene. */
+(function () {
+  'use strict';
+
+  function JSCameraStage(o) {
+    var THREE = window.THREE;
+    if (!THREE) return null;
+    var canvas = o.canvas, stage = o.stage, root = o.root;
+    var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var gl;
+    try { gl = new THREE.WebGLRenderer({ canvas: canvas, antialias: true }); } catch (e) { return null; }
+    gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    gl.autoClear = false;
+
+    var V = function (x, y, z) { return new THREE.Vector3(x || 0, y || 0, z || 0); };
+    var C = function (h) { return new THREE.Color(h); };
+    var clamp = function (v, a, b) { a = a === undefined ? 0 : a; b = b === undefined ? 1 : b; return v < a ? a : v > b ? b : v; };
+    var ease = function (x) { return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+    var seed = 11;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+
+    var COL = {
+      darkBg: C('#1e1c1d'), lightBg: C('#d5d0ca'), solid: C('#3b3637'), black: C('#000000'),
+      ink: C('#3a3633'), edge: C('#8a7d76'), hi: C(o.accent || '#e5483b')
+    };
+    var PAL = ['#e5483b', '#f08a24', '#c7bf3c', '#43b25e', '#23b8a4', '#3c82e6'];
+    var PALC = PAL.map(C);
+    var DEMO_ACCENT = { aperture: 0, shutter: 1, iso: 4, focus: 5, wb: 3 };
+    var KIT_COLORS = ['#f08a24', '#c7bf3c', '#43b25e', '#23b8a4', '#3c82e6', '#8a63d2', '#e5483b', '#e06aa6'];
+
+    /* ---------------- scene + lights ---------------- */
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(24, 1, .1, 600);
+    var D = 40; cam.position.set(0, 0, D);
+    scene.add(new THREE.AmbientLight(0xffffff, .22));
+    scene.add(new THREE.HemisphereLight(0xc9c2bd, 0x1a1718, .35));
+    var key = new THREE.DirectionalLight(0xffb38a, 2.1); key.position.set(7, 6, -7); scene.add(key);
+    var key2 = new THREE.DirectionalLight(0xff9d74, 1.1); key2.position.set(-6, 3, -5); scene.add(key2);
+    var fillL = new THREE.DirectionalLight(0xa9b8ff, .32); fillL.position.set(-5, 2, 8); scene.add(fillL);
+
+    var world = new THREE.Group(); scene.add(world);
+    var spinG = new THREE.Group(); world.add(spinG);
+
+    var solidMat = new THREE.MeshStandardMaterial({ color: COL.solid, roughness: .52, metalness: .3, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+    var solidDS = solidMat.clone(); solidDS.side = THREE.DoubleSide;
+    var glassMat = new THREE.MeshStandardMaterial({ color: C('#0f141c'), roughness: .08, metalness: .9, transparent: true, opacity: .92, depthWrite: false });
+    var lineMats = {};
+    function lm(k) {
+      if (!lineMats[k]) lineMats[k] = new THREE.LineBasicMaterial({ color: COL.ink.clone(), transparent: true, opacity: 1 });
+      return lineMats[k];
+    }
+
+    /* ---------------- geometry helpers ---------------- */
+    function rrect(w, h, r) {
+      var s = new THREE.Shape(), x = -w / 2, y = -h / 2; r = Math.min(r, w / 2, h / 2);
+      s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r);
+      s.quadraticCurveTo(x + w, y + h, x + w - r, y + h); s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+      s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+    }
+    function rrectPath(w, h, r) {
+      var s = new THREE.Path(), x = -w / 2, y = -h / 2; r = Math.min(r, w / 2, h / 2);
+      s.moveTo(x + r, y); s.quadraticCurveTo(x, y, x, y + r); s.lineTo(x, y + h - r); s.quadraticCurveTo(x, y + h, x + r, y + h);
+      s.lineTo(x + w - r, y + h); s.quadraticCurveTo(x + w, y + h, x + w, y + h - r); s.lineTo(x + w, y + r);
+      s.quadraticCurveTo(x + w, y, x + w - r, y); s.lineTo(x + r, y); return s;
+    }
+    function frameGeo(w, h, iw, ih, r, d) {
+      var s = rrect(w, h, r); s.holes.push(rrectPath(iw, ih, r * .6));
+      return new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 8 });
+    }
+    function ring(ro, ri, d, seg) {
+      var s = new THREE.Shape(); s.absarc(0, 0, ro, 0, Math.PI * 2, false);
+      if (ri) { var h = new THREE.Path(); h.absarc(0, 0, ri, 0, Math.PI * 2, true); s.holes.push(h); }
+      return new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: seg || 64 });
+    }
+    function gear(ro, rr, teeth, d, ri) {
+      var s = new THREE.Shape();
+      for (var i = 0; i < teeth; i++) {
+        var a0 = i / teeth * Math.PI * 2, a1 = (i + .5) / teeth * Math.PI * 2, a2 = (i + 1) / teeth * Math.PI * 2;
+        var pts = [[ro, a0], [ro, a1], [rr, a1], [rr, a2]];
+        for (var j = 0; j < 4; j++) {
+          var x = Math.cos(pts[j][1]) * pts[j][0], y = Math.sin(pts[j][1]) * pts[j][0];
+          if (i === 0 && j === 0) s.moveTo(x, y); else s.lineTo(x, y);
+        }
+      }
+      s.closePath();
+      if (ri) { var h = new THREE.Path(); h.absarc(0, 0, ri, 0, Math.PI * 2, true); s.holes.push(h); }
+      return new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 40 });
+    }
+    function cyl(rb, rt, len, seg) { var g = new THREE.CylinderGeometry(rt, rb, len, seg || 64, 1, true); g.rotateX(Math.PI / 2); g.translate(0, 0, len / 2); return g; }
+    function solidCylZ(r, len, seg) { var g = new THREE.CylinderGeometry(r, r, len, seg || 32); g.rotateX(Math.PI / 2); g.translate(0, 0, len / 2); return g; }
+    function solidCylX(r, len) { var g = new THREE.CylinderGeometry(r, r, len, 24); g.rotateZ(Math.PI / 2); return g; }
+    function up(g) { g.rotateX(-Math.PI / 2); return g; }
+    function B(w, h, d) { return new THREE.BoxGeometry(w, h, d); }
+    function trap(b, t, h) { var s = new THREE.Shape(); s.moveTo(-b / 2, 0); s.lineTo(b / 2, 0); s.lineTo(t / 2, h); s.lineTo(-t / 2, h); s.closePath(); return s; }
+    function circPts(r, z, n, axis) {
+      n = n || 64; var p = [];
+      for (var i = 0; i < n; i++) {
+        var a = i / n * Math.PI * 2, b = (i + 1) / n * Math.PI * 2;
+        if (axis === 'y') p.push(V(Math.cos(a) * r, z, Math.sin(a) * r), V(Math.cos(b) * r, z, Math.sin(b) * r));
+        else p.push(V(Math.cos(a) * r, Math.sin(a) * r, z), V(Math.cos(b) * r, Math.sin(b) * r, z));
+      }
+      return p;
+    }
+    function rectPts(w, h, z) { var x = w / 2, y = h / 2; return [V(-x, -y, z), V(x, -y, z), V(x, -y, z), V(x, y, z), V(x, y, z), V(-x, y, z), V(-x, y, z), V(-x, -y, z)]; }
+
+    /* blades: n quads from an inner polygon to an outer circle; used in 3D and in the HUD */
+    function makeBlades(n, Ro, fill, line) {
+      var geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 18);
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      var lgeo = new THREE.BufferGeometry(), lp = new Float32Array(n * 12);
+      lgeo.setAttribute('position', new THREE.BufferAttribute(lp, 3));
+      var g = new THREE.Group();
+      var mesh = new THREE.Mesh(geo, fill), lines = new THREE.LineSegments(lgeo, line);
+      g.add(mesh); g.add(lines);
+      var outer = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(circPts(Ro, 0, 72)), line); g.add(outer);
+      function set(open, spin) {
+        var r = clamp(open, .04, .98) * Ro * .93, tw = 1.15;
+        for (var k = 0; k < n; k++) {
+          var a0 = spin + k * Math.PI * 2 / n, a1 = a0 + Math.PI * 2 / n;
+          var p0x = Math.cos(a0) * r, p0y = Math.sin(a0) * r, p1x = Math.cos(a1) * r, p1y = Math.sin(a1) * r;
+          var o0x = Math.cos(a0 + tw) * Ro, o0y = Math.sin(a0 + tw) * Ro, o1x = Math.cos(a1 + tw) * Ro, o1y = Math.sin(a1 + tw) * Ro;
+          pos.set([p0x, p0y, 0, p1x, p1y, 0, o1x, o1y, 0, p0x, p0y, 0, o1x, o1y, 0, o0x, o0y, 0], k * 18);
+          lp.set([p0x, p0y, 0, p1x, p1y, 0, p1x, p1y, 0, o1x, o1y, 0], k * 12);
+        }
+        geo.attributes.position.needsUpdate = true; lgeo.attributes.position.needsUpdate = true;
+        geo.computeBoundingSphere(); lgeo.computeBoundingSphere();
+      }
+      set(.9, 0);
+      return { group: g, set: set, mesh: mesh, lines: lines, outer: outer };
+    }
+
+    /* ---------------- camera bodies ---------------- */
+    var SPECS = {
+      'canon-r': { bw: 4.1, bh: 2.6, bd: 1.2, r: .34, grip: [1.0, 2.45, .44, .55], evf: 'center', ew: 1.62, eh: .66, lx: -.32, ly: -.12, ls: 1, ll: 1, dial: -1.4, shutter: 1.5, fdial: 1.0, rdial: .95, topLcd: false },
+      'sony-a': { bw: 4.0, bh: 2.3, bd: 1.0, r: .22, grip: [.9, 2.2, .3, .48], evf: 'left', lx: -.18, ly: -.1, ls: .86, ll: .85, dial: 1.0, shutter: 1.55, fdial: 1.1, rdial: null, topLcd: false },
+      'canon-dslr': { bw: 4.6, bh: 3.1, bd: 1.6, r: .42, grip: [1.1, 2.95, .5, .58], evf: 'prism', ew: 1.82, eh: 1.05, lx: -.3, ly: -.22, ls: 1.1, ll: 1.15, dial: -1.68, shutter: 1.68, fdial: 1.12, rdial: 1.05, topLcd: true },
+      'sony-rx': { bw: 3.5, bh: 2.0, bd: .78, r: .22, grip: [.42, 1.5, .15, .12], evf: 'popup', lx: .32, ly: -.08, ls: .72, ll: .5, dial: 1.2, shutter: .82, fdial: null, rdial: null, topLcd: false, compact: true }
+    };
+
+    function buildRig(id) {
+      var S = SPECS[id] || SPECS['canon-r'];
+      var model = new THREE.Group(), parts = [], anchors = {};
+      function part(geo, k, pos, ex, op) {
+        op = op || {};
+        var g = new THREE.Group();
+        if (!op.noFill) g.add(new THREE.Mesh(geo, op.glass ? glassMat : (op.ds ? solidDS : solidMat)));
+        g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, op.th || 20), lm(k)));
+        g.position.copy(pos); model.add(g);
+        parts.push({ g: g, base: pos.clone(), ex: ex || V(), rot: op.rot || null, round: !!op.round, phase: rnd() * 6.283, kind: op.kind || 'body' });
+        if (op.anchor) { var a = new THREE.Object3D(); if (op.aoff) a.position.copy(op.aoff); g.add(a); anchors[op.anchor] = a; }
+        return g;
+      }
+      function seg(pts, k, parent) { var l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), lm(k)); parent.add(l); return l; }
+
+      var bw = S.bw, bh = S.bh, bd = S.bd, top = bh / 2, T0 = top + .06, F0 = bd / 2 + .06, K0 = -bd / 2 - .06;
+      var s = S.ls, Ls = S.ll, lx = S.lx, ly = S.ly;
+
+      /* shell */
+      var shell = new THREE.ExtrudeGeometry(rrect(bw, bh, S.r), { depth: bd, bevelEnabled: true, bevelThickness: .06, bevelSize: .06, bevelSegments: 2, curveSegments: 10 });
+      shell.translate(0, 0, -bd / 2);
+      var body = part(shell, 'body', V());
+      seg([V(-bw / 2 + .06, -bh * .26, F0), V(lx - .95 * s, -bh * .26, F0)], 'body', body);
+      seg([V(-bw / 2 + .06, -bh * .26, K0), V(bw / 2 - .06, -bh * .26, K0)], 'body', body);
+      part(B(bw * .9, .07, bd * .8), 'body', V(0, T0 + .035, 0), V(0, .42, 0));
+
+      /* grip */
+      var G = S.grip;
+      var gg = new THREE.ExtrudeGeometry(rrect(G[0], G[1], G[2]), { depth: G[3], bevelEnabled: true, bevelThickness: .06, bevelSize: .06, bevelSegments: 2, curveSegments: 10 });
+      var grip = part(gg, 'grip', V(bw / 2 - G[0] / 2 - .02, -.03, F0 - .06), V(.85, -.1, .55), { anchor: 'grip', aoff: V(0, -G[1] * .1, G[3] + .06) });
+      for (var gi = 0; gi < 5; gi++) seg([V(-G[0] * .28, -G[1] * .3 + gi * G[1] * .15, G[3] + .07), V(G[0] * .28, -G[1] * .3 + gi * G[1] * .15, G[3] + .07)], 'grip', grip);
+
+      /* battery, doors, card, lugs, tripod socket */
+      part(B(.72, bh * .6, bd * .5), 'battery', V(bw / 2 - .64, -bh * .12, 0), V(0, -2.5, 0));
+      part(B(.84, .05, bd * .62), 'body', V(bw / 2 - .64, -T0 - .03, 0), V(0, -1.35, 0));
+      part(solidCylX(.11, .06).rotateZ(Math.PI / 2), 'body', V(lx, -T0 - .04, 0), V(0, -1.0, 0));
+      part(B(.05, bh * .5, bd * .62), 'body', V(bw / 2 + .09, -.12, -.04), V(1.05, 0, 0));
+      part(B(.035, bh * .34, bd * .46), 'card', V(bw / 2 - .2, -.12, -.04), V(2.0, 0, 0));
+      part(B(.05, bh * .55, bd * .6), 'body', V(-bw / 2 - .09, -.05, 0), V(-1.05, 0, 0));
+      part(B(.16, .28, .16), 'body', V(-bw / 2 - .11, top * .55, 0), V(-.7, 0, 0));
+      part(B(.16, .28, .16), 'body', V(bw / 2 + .11, top * .55, 0), V(.7, 0, 0));
+
+      /* top controls */
+      var md = part(up(gear(.42, .39, 44, .22)), 'modeDial', V(S.dial, T0, .05), V(0, 1.1, 0), { anchor: 'modeDial', aoff: V(0, .22, 0), round: true });
+      seg(circPts(.28, .23, 48, 'y'), 'modeDial', md); seg([V(0, .23, .08), V(0, .23, .28)], 'modeDial', md);
+      var sz = S.compact ? .12 : F0 - .14;
+      if (S.compact) {
+        part(up(gear(.34, .31, 30, .08, .19)), 'frontDial', V(S.shutter, T0, sz), V(0, 1.15, 0), { anchor: 'frontDial', aoff: V(.3, .08, 0), round: true });
+      } else {
+        part(up(gear(.27, .24, 26, .07)), 'onoff', V(S.shutter, T0, sz), V(0, 1.2, 0), { round: true });
+        part(up(gear(.3, .27, 32, .13)), 'frontDial', V(S.fdial, T0, F0 - .5), V(0, .85, 0), { anchor: 'frontDial', aoff: V(0, .13, 0), round: true });
+      }
+      part(up(ring(.15, 0, .12, 32)), 'shutter', V(S.shutter, T0 + .07, sz), V(0, 1.65, 0), { anchor: 'shutter', aoff: V(0, .12, 0), round: true });
+      if (S.rdial !== null) part(up(gear(.3, .27, 32, .13)), 'rearDial', V(S.rdial, T0, K0 + .38), V(0, .75, 0), { round: true });
+      part(up(ring(.08, 0, .06, 24)), 'rec', V(S.shutter - .58, T0, -.05), V(0, .95, 0), { round: true });
+      if (S.topLcd) { var tl = part(B(.95, .06, .62), 'body', V(1.0, T0 + .03, .0), V(0, .62, 0)); seg(rectPts(.76, .44, 0).map(function (p) { return V(p.x, .035, p.y); }), 'body', tl); }
+
+      /* viewfinder, eyecup, diopter, hot shoe / flash */
+      if (S.evf === 'center' || S.evf === 'prism') {
+        var eg = new THREE.ExtrudeGeometry(trap(S.ew, S.ew * .6, S.eh), { depth: bd * .86, bevelEnabled: true, bevelThickness: .03, bevelSize: .03, bevelSegments: 1 });
+        eg.translate(0, 0, -bd * .43);
+        var evf = part(eg, 'evf', V(lx, T0 - .03, -.04), V(0, .85, 0), { anchor: 'evf', aoff: V(S.ew * .3, S.eh * .5, bd * .2) });
+        if (S.evf === 'prism') seg([V(-S.ew * .32, S.eh * .5, bd * .45), V(S.ew * .32, S.eh * .5, bd * .45)], 'evf', evf);
+        var sh = part(B(S.ew * .44, .07, bd * .46), 'shoe', V(lx, T0 + S.eh + .02, -.04), V(0, 1.5, 0), { anchor: 'shoe', aoff: V(0, .04, 0) });
+        seg([V(-S.ew * .2, .04, -bd * .2), V(-S.ew * .2, .04, bd * .2), V(S.ew * .2, .04, -bd * .2), V(S.ew * .2, .04, bd * .2)], 'shoe', sh);
+        part(B(S.ew * .58, .55, .28), 'eyecup', V(lx, T0 + .25, K0 - .14), V(0, .85, -.5));
+        part(solidCylX(.09, .12), 'diopter', V(lx + S.ew * .29 + .06, T0 + .32, K0 - .1), V(.45, .85, -.5), { anchor: 'diopter', aoff: V(.06, 0, 0) });
+      } else if (S.evf === 'left') {
+        part(B(1.15, .5, bd * .92), 'evf', V(-bw / 2 + .7, T0 + .25, -.02), V(0, .9, 0), { anchor: 'evf', aoff: V(0, .25, .2) });
+        part(B(.8, .46, .22), 'eyecup', V(-bw / 2 + .7, T0 + .22, K0 - .12), V(0, .9, -.5));
+        part(solidCylX(.08, .1), 'diopter', V(-bw / 2 + 1.18, T0 + .3, K0 - .06), V(.45, .9, -.5), { anchor: 'diopter', aoff: V(.05, 0, 0) });
+        var sh2 = part(B(.6, .07, .5), 'shoe', V(-.02, T0 + .035, -.02), V(0, 1.35, 0), { anchor: 'shoe', aoff: V(0, .04, 0) });
+        seg([V(-.24, .04, -.2), V(-.24, .04, .2), V(.24, .04, -.2), V(.24, .04, .2)], 'shoe', sh2);
+      } else {
+        var pv = part(B(.95, .34, .5), 'evf', V(-bw / 2 + .62, T0 - .12, -.06), V(0, .9, 0), { anchor: 'evf', aoff: V(0, .17, 0) });
+        seg(circPts(.11, -.26, 32), 'evf', pv);
+        part(solidCylX(.06, .08), 'diopter', V(-bw / 2 + 1.14, T0 - .04, -.24), V(.4, .9, -.3), { anchor: 'diopter' });
+        part(B(.8, .22, .36), 'shoe', V(-.05, T0 + .04, .06), V(0, 1.3, 0), { anchor: 'shoe', aoff: V(0, .11, 0) });
+      }
+
+      /* rear screen on a hinge, rear controls */
+      var sw = bw * .6, shh = bh * .64, scx = S.compact ? -.28 : -bw * .1;
+      var hy = -.12 + shh / 2;
+      var sgeo = B(sw, shh, .08); sgeo.translate(0, -shh / 2, -.04);
+      var scr = part(sgeo, 'screen', V(scx, hy, K0 - .01), V(0, 0, -.75), { rot: { axis: 'x', amt: 1.05 }, anchor: 'screen', aoff: V(-sw * .25, -shh * .55, -.09) });
+      var gx = sw / 2 - .1, gy = shh / 2 - .1, gz = -.085, oy = -shh / 2;
+      seg([V(-gx, oy - gy, gz), V(gx, oy - gy, gz), V(gx, oy - gy, gz), V(gx, oy + gy, gz), V(gx, oy + gy, gz), V(-gx, oy + gy, gz), V(-gx, oy + gy, gz), V(-gx, oy - gy, gz),
+        V(-gx / 3, oy - gy, gz), V(-gx / 3, oy + gy, gz), V(gx / 3, oy - gy, gz), V(gx / 3, oy + gy, gz), V(-gx, oy - gy / 3, gz), V(gx, oy - gy / 3, gz), V(-gx, oy + gy / 3, gz), V(gx, oy + gy / 3, gz)], 'screen', scr);
+      var wx = bw / 2 - (S.compact ? .52 : .64), wr = S.compact ? .28 : .34;
+      var wgeo = ring(wr, wr * .55, .06, 40); wgeo.translate(0, 0, -.06);
+      part(wgeo, 'wheel', V(wx, -.35, K0), V(0, 0, -1.05), { anchor: 'wheel', aoff: V(0, wr, -.06), round: true });
+      var cgeo = ring(wr * .45, 0, .05, 32); cgeo.translate(0, 0, -.05);
+      part(cgeo, 'wheel', V(wx, -.35, K0), V(0, 0, -1.25), { round: true });
+      part(solidCylZ(.07, .1).translate(0, 0, -.1), 'joy', V(wx, .42, K0), V(0, 0, -.85));
+      if (!S.compact) part(solidCylZ(.1, .06).translate(0, 0, -.06), 'afon', V(bw / 2 - .3, .82, K0), V(0, 0, -.95));
+      [.12, -.85].forEach(function (yy) { part(solidCylZ(.07, .05).translate(0, 0, -.05), 'btns', V(bw / 2 - .2, yy, K0), V(0, 0, -.8)); });
+      part(solidCylZ(.07, .05).translate(0, 0, -.05), 'btns', V(scx - sw / 2 + .2, hy + .18, K0), V(0, .2, -.8));
+
+      /* body mount + internals */
+      if (!S.compact) {
+        var mt = part(ring(.9 * s, .66 * s, .1), 'bmount', V(lx, ly, F0), V(0, 0, .45), { round: true });
+        for (var ci = 0; ci < 8; ci++) { var ca = -Math.PI / 2 - .55 + ci * .157, cx = Math.cos(ca) * .7 * s, cy = Math.sin(ca) * .7 * s; seg(rectPts(.05, .03, .11).map(function (p) { return V(p.x + cx, p.y + cy, p.z); }), 'bmount', mt); }
+        part(solidCylZ(.11, .08), 'release', V(lx - 1.0 * s - .12, ly - .25, F0), V(-.25, 0, .65), { anchor: 'release', aoff: V(0, 0, .08) });
+        part(frameGeo(1.25 * s, .95 * s, 1.0 * s, .72 * s, .08, .06), 'ibis', V(lx, ly, F0 - .62), V(0, 0, .85));
+      }
+      var sen = part(B(1.0 * s, .68 * s, .06), 'sensor', V(lx, ly, F0 - .5), V(0, 0, 1.2));
+      var gp = [];
+      for (var i1 = 1; i1 < 6; i1++) { var xx = (-.5 + i1 / 6) * s; gp.push(V(xx, -.34 * s, .035), V(xx, .34 * s, .035)); }
+      for (var j1 = 1; j1 < 4; j1++) { var yy1 = (-.34 + j1 * .17) * s; gp.push(V(-.5 * s, yy1, .035), V(.5 * s, yy1, .035)); }
+      seg(gp, 'sensor', sen);
+      var shu = part(frameGeo(1.22 * s, .94 * s, 1.02 * s, .72 * s, .06, .05), 'shutterUnit', V(lx, ly, F0 - .32), V(0, 0, 1.6));
+      var slp = []; for (var k1 = 0; k1 < 6; k1++) { var yv = (-.3 + k1 * .12) * s; slp.push(V(-.5 * s, yv, .03), V(.5 * s, yv, .03)); }
+      seg(slp, 'shutterUnit', shu);
+      if (S.evf === 'prism') {
+        var mg = B(1.1 * s, .04, .9 * s); mg.rotateX(.78);
+        part(mg, 'mirror', V(lx, ly + .05, F0 - .2), V(0, .9, .75));
+      }
+
+      /* lens */
+      var z0 = F0 + (S.compact ? .04 : .1), z = z0, li = 0, L = [];
+      if (S.compact) {
+        L = [[ring(.8 * s, .6 * s, .1), 'release', .1, { anchor: 'release', aoff: V(-.8 * s, 0, .05) }],
+          [cyl(.78 * s, .78 * s, .3 * Ls), 'zoom', .3 * Ls, { anchor: 'zoom', aoff: V(0, .78 * s, .15 * Ls) }],
+          [cyl(.7 * s, .7 * s, .25 * Ls), 'barrel', .25 * Ls, {}],
+          [gear(.82 * s, .78 * s, 60, .18, .6 * s), 'focus', .18, { anchor: 'focus', aoff: V(0, .82 * s, .09) }],
+          ['iris', .02],
+          [ring(.8 * s, .62 * s, .06), 'filter', .06, {}]];
+      } else {
+        L = [[ring(.86 * s, .62 * s, .14), 'lensMount', .14, {}],
+          [solidCylZ(.6 * s, .04, 48), 'elements', .06, { glass: true, th: 30 }],
+          [cyl(.8 * s, .8 * s, .42 * Ls), 'barrel', .42 * Ls, {}],
+          [gear(.9 * s, .84 * s, 64, .6 * Ls, .62 * s), 'zoom', .6 * Ls, { anchor: 'zoom', aoff: V(0, .9 * s, .3 * Ls) }],
+          [ring(.8 * s, .62 * s, .22 * Ls), 'barrel', .22 * Ls, {}],
+          [solidCylZ(.62 * s, .04, 48), 'elements', .06, { glass: true, th: 30 }],
+          [gear(.87 * s, .82 * s, 84, .42 * Ls, .62 * s), 'focus', .42 * Ls, { anchor: 'focus', aoff: V(0, .87 * s, .21 * Ls) }],
+          [cyl(.83 * s, .96 * s, .38 * Ls), 'barrel', .38 * Ls, {}],
+          ['iris', .02],
+          [ring(.98 * s, .72 * s, .09), 'filter', .09, {}]];
+      }
+      var iris = null, zSw = 0;
+      L.forEach(function (e) {
+        var exz = 2.0 + li * .5;
+        if (e[0] === 'iris') {
+          var b = makeBlades(9, .72 * s, solidDS, lm('iris'));
+          b.group.position.set(lx, ly, z - .12);
+          model.add(b.group);
+          parts.push({ g: b.group, base: b.group.position.clone(), ex: V(0, 0, exz), rot: null, round: true, phase: rnd() * 6.283, kind: 'lens' });
+          iris = b; z += e[1]; li++; return;
+        }
+        var op = e[3] || {}; op.kind = 'lens'; op.round = true;
+        part(e[0], e[1], V(lx, ly, z), V(0, 0, exz), op);
+        if (e[1] === 'zoom') zSw = z + e[2] * .5;
+        z += e[2]; li++;
+      });
+      var gR = (S.compact ? .86 : 1.1) * s, cap = new THREE.SphereGeometry(gR, 64, 8, 0, Math.PI * 2, 0, .62);
+      cap.rotateX(Math.PI / 2); cap.translate(0, 0, -gR * Math.cos(.62));
+      var fg = part(cap, 'frontGlass', V(lx, ly, z), V(0, 0, 2.0 + li * .5 + .25), { glass: true, th: 30, kind: 'lens', round: true });
+      seg(circPts(.48 * s, .1 * s, 48), 'frontGlass', fg);
+      if (!S.compact) {
+        part(B(.12, .24, .34), 'switch', V(lx - .86 * s, ly + .14, zSw), V(-.9, 0, 3.5), { kind: 'lens' });
+        part(B(.12, .24, .34), 'switch', V(lx - .86 * s, ly - .22, zSw), V(-.9, 0, 3.5), { kind: 'lens' });
+      }
+
+      /* measure assembled and exploded */
+      function pose(E) { parts.forEach(function (q) { q.g.position.copy(q.base).addScaledVector(q.ex, E); if (q.rot) q.g.rotation[q.rot.axis] = q.rot.amt * Math.min(1, E * 1.4); }); }
+      function sphere(E) { pose(E); model.updateMatrixWorld(true); var bx = new THREE.Box3().setFromObject(model); return bx.getBoundingSphere(new THREE.Sphere()); }
+      var s0 = sphere(0), s1 = sphere(1); pose(0);
+      return { model: model, parts: parts, anchors: anchors, iris: iris, c0: s0.center.clone(), r0: s0.radius, c1: s1.center.clone(), r1: s1.radius };
+    }
+
+    /* ---------------- kit items ---------------- */
+    var kitG = new THREE.Group(); world.add(kitG);
+    var kitItems = [], kitMats = [];
+    (function buildKit() {
+      function km(i) { var m = new THREE.LineBasicMaterial({ color: C(KIT_COLORS[i]), transparent: true, opacity: 1 }); kitMats.push(m); return m; }
+      function item(i, geos) {
+        var g = new THREE.Group(), m = km(i);
+        geos.forEach(function (e) { var gg = e[0]; if (e[1]) gg.translate(e[1].x, e[1].y, e[1].z); g.add(new THREE.Mesh(gg, solidMat)); g.add(new THREE.LineSegments(new THREE.EdgesGeometry(gg, 22), m)); });
+        var holder = new THREE.Group(); holder.add(g); kitG.add(holder);
+        var ang = -Math.PI * .5 + i / 8 * Math.PI * 2 + .2;
+        kitItems.push({ g: holder, inner: g, dir: V(Math.cos(ang), Math.sin(ang) * .78, (i % 2 ? .4 : -.4)), phase: rnd() * 6.283, spin: (i % 2 ? 1 : -1) * (.25 + rnd() * .2) });
+      }
+      var hood = cyl(.62, .86, .7, 48); item(0, [[hood], [ring(.88, .8, .06, 48), V(0, 0, .7)]]);
+      item(1, [[ring(.8, 0, .1, 48)], [ring(.62, .54, .05, 48), V(0, 0, .1)]]);
+      item(2, [[B(.95, .32, 1.25)], [B(.2, .06, .1), V(-.2, .18, .55)], [B(.2, .06, .1), V(.15, .18, .55)]]);
+      var card = new THREE.ExtrudeGeometry(rrect(.82, 1.12, .06), { depth: .05, bevelEnabled: false }); item(3, [[card], [B(.6, .12, .02), V(0, -.42, .06)]]);
+      item(4, [[ring(.82, .7, .12, 48)], [solidCylZ(.7, .03, 48), V(0, 0, .04)]]);
+      item(5, [[ring(.62, .48, .14, 48)], [cyl(.58, .58, .55, 48), V(0, 0, .14)], [gear(.64, .6, 48, .3, .48), V(0, 0, .3)], [ring(.66, .5, .08, 48), V(0, 0, .69)]]);
+      item(6, [[new THREE.TorusGeometry(.9, .05, 8, 56, Math.PI * 1.25)], [B(.18, .08, .3), V(.9, 0, 0)]]);
+      var plate = new THREE.ExtrudeGeometry(rrect(1.3, .56, .1), { depth: .16, bevelEnabled: false }); item(7, [[plate], [solidCylZ(.12, .2), V(0, 0, .16)]]);
+    })();
+
+    /* ---------------- HUD (orthographic, pixel space) ---------------- */
+    var hudScene = new THREE.Scene(), hudCam = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+    var hud = new THREE.Group(); hudScene.add(hud);
+    var hudMats = [], ro = 0;
+    function hmat(m, base, demo, kind) { m.transparent = true; m.depthTest = false; m.depthWrite = false; hudMats.push({ m: m, base: base, demo: demo || null, kind: kind || null }); return m; }
+    function hadd(obj, parent) { obj.renderOrder = ro++; (parent || hud).add(obj); return obj; }
+    function mbasic(c, base, demo, kind) { return hmat(new THREE.MeshBasicMaterial({ color: C(c), side: THREE.DoubleSide }), base, demo, kind); }
+    function lbasic(c, base, demo, kind) { return hmat(new THREE.LineBasicMaterial({ color: C(c) }), base, demo, kind); }
+    function hline(pts, mat, parent) { return hadd(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), mat), parent); }
+
+    hadd(new THREE.Mesh(new THREE.RingGeometry(.865, 1.0, 160), mbasic('#252223', .95)));
+    var disk = hadd(new THREE.Mesh(new THREE.CircleGeometry(.845, 120), mbasic('#191718', 1, null, 'disk')));
+    var segMats = [];
+    for (var si = 0; si < 6; si++) {
+      var st = Math.PI / 2 - si * Math.PI / 3 - .02, m6 = mbasic(PAL[si], .9, null, 'seg' + si); segMats.push(m6);
+      hadd(new THREE.Mesh(new THREE.RingGeometry(.972, 1.0, 40, 1, st - Math.PI / 3 + .04, Math.PI / 3 - .04), m6));
+    }
+    var NT = 180, tickGeo = new THREE.BufferGeometry(), tickPos = new Float32Array(NT * 6), tickCol = new Float32Array(NT * 6);
+    for (var ti = 0; ti < NT; ti++) { var ta = ti / NT * Math.PI * 2, r1 = .9, r2 = ti % 5 === 0 ? .945 : .93; tickPos.set([Math.cos(ta) * r1, Math.sin(ta) * r1, 0, Math.cos(ta) * r2, Math.sin(ta) * r2, 0], ti * 6); }
+    tickGeo.setAttribute('position', new THREE.BufferAttribute(tickPos, 3)); tickGeo.setAttribute('color', new THREE.BufferAttribute(tickCol, 3));
+    var ticks = hadd(new THREE.LineSegments(tickGeo, hmat(new THREE.LineBasicMaterial({ vertexColors: true }), 1)));
+    hline(circPts(.868, 0, 160), lbasic('#4a4446', .9));
+    hline(circPts(.85, 0, 160), lbasic('#3a3537', .9));
+    var fine = []; for (var fi = 0; fi < 90; fi++) { var fa = fi / 90 * Math.PI * 2; fine.push(V(Math.cos(fa) * .876, Math.sin(fa) * .876), V(Math.cos(fa) * .886, Math.sin(fa) * .886)); }
+    var fineL = hline(fine, lbasic('#5a5355', .7));
+    var sweep = hadd(new THREE.Mesh(new THREE.RingGeometry(.74, .8, 48, 1, 0, 1.15), mbasic('#3d3839', .9, null, 'sweep')));
+    var sweep2 = hadd(new THREE.Mesh(new THREE.RingGeometry(.805, .815, 48, 1, 0, 2.2), mbasic('#4a4445', .8, null, 'sweep')));
+    var glint = hadd(new THREE.Mesh(new THREE.RingGeometry(.8, .815, 32, 1, -.45, .62), mbasic('#f2b08c', .95)));
+
+    /* demo groups */
+    var demos = {};
+    function demoGroup(name) { var g = new THREE.Group(); hadd(g); demos[name] = { g: g }; return g; }
+
+    // aperture
+    var apG = demoGroup('aperture');
+    var apGlow = hadd(new THREE.Mesh(new THREE.CircleGeometry(.7, 96), mbasic('#e5483b', .22, 'aperture', 'acc')), apG);
+    var bok = [];
+    for (var bi = 0; bi < 16; bi++) {
+      var ba = rnd() * Math.PI * 2, br = Math.sqrt(rnd()) * .5;
+      var bm = mbasic(bi % 3 ? '#f2b08c' : '#e5483b', .5, 'aperture');
+      var bmesh = hadd(new THREE.Mesh(new THREE.CircleGeometry(1, 40), bm), apG);
+      bmesh.position.set(Math.cos(ba) * br, Math.sin(ba) * br, 0);
+      bok.push({ mesh: bmesh, mat: bm, base: .02 + rnd() * .025, ph: rnd() * 6.28 });
+    }
+    var apBlades = makeBlades(9, .7, mbasic('#2c2728', 1, 'aperture'), lbasic('#9a7f74', 1, 'aperture'));
+    apBlades.group.renderOrder = ro++; apBlades.mesh.renderOrder = ro++; apBlades.lines.renderOrder = ro++; apBlades.outer.renderOrder = ro++; apG.add(apBlades.group);
+
+    // shutter
+    var shG = demoGroup('shutter');
+    hline(rectPts(.92, .62, 0), lbasic('#6a6163', 1, 'shutter'), shG);
+    var subj = hadd(new THREE.Mesh(new THREE.CircleGeometry(.04, 32), mbasic('#f08a24', 1, 'shutter')), shG);
+    var trail = [];
+    for (var tr = 0; tr < 16; tr++) { var tm = mbasic('#f08a24', .55 * (1 - tr / 16), 'shutter'); trail.push(hadd(new THREE.Mesh(new THREE.CircleGeometry(.032, 24), tm), shG)); }
+    var slats = [], slatLineMat = lbasic('#8a6a52', 1, 'shutter'), slatFill = mbasic('#2e292a', 1, 'shutter');
+    for (var sl = 0; sl < 12; sl++) {
+      var sg = new THREE.Group(); hadd(sg, shG);
+      var smesh = new THREE.Mesh(new THREE.PlaneGeometry(.9, .1), slatFill); smesh.renderOrder = ro++; sg.add(smesh);
+      var sline = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(rectPts(.9, .1, 0)), slatLineMat); sline.renderOrder = ro++; sg.add(sline);
+      slats.push(sg);
+    }
+
+    // ISO grain
+    var isoG = demoGroup('iso');
+    var isoPts = [];
+    for (var gx1 = -7; gx1 <= 7; gx1++) for (var gy1 = -7; gy1 <= 7; gy1++) { var px = gx1 * .088, py = gy1 * .088; if (px * px + py * py < .64 * .64) isoPts.push([px, py, Math.sqrt(px * px + py * py), rnd()]); }
+    var isoGeo = new THREE.BufferGeometry(), isoPos = new Float32Array(isoPts.length * 3), isoCol = new Float32Array(isoPts.length * 3);
+    isoGeo.setAttribute('position', new THREE.BufferAttribute(isoPos, 3)); isoGeo.setAttribute('color', new THREE.BufferAttribute(isoCol, 3));
+    var isoMat = hmat(new THREE.PointsMaterial({ size: 4, vertexColors: true, sizeAttenuation: false }), 1, 'iso');
+    hadd(new THREE.Points(isoGeo, isoMat), isoG);
+
+    // focus
+    var foG = demoGroup('focus');
+    var subjects = [];
+    var spots = [[-.32, .26], [.3, .3], [.05, -.02], [-.36, -.24], [.34, -.28], [-.02, .44], [.02, -.46]];
+    spots.forEach(function (sp, i) {
+      var g = new THREE.Group(); g.position.set(sp[0], sp[1], 0); hadd(g, foG);
+      var blurM = mbasic('#3c82e6', .5, 'focus'), sharpM = lbasic('#8fb6ff', 1, 'focus'), coreM = mbasic('#3c82e6', 1, 'focus');
+      var blur = new THREE.Mesh(new THREE.CircleGeometry(1, 40), blurM); blur.renderOrder = ro++; g.add(blur);
+      var sharp = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(circPts(1, 0, 40)), sharpM); sharp.renderOrder = ro++; g.add(sharp);
+      var core = new THREE.Mesh(new THREE.CircleGeometry(1, 24), coreM); core.renderOrder = ro++; g.add(core);
+      subjects.push({ g: g, depth: i / (spots.length - 1), blur: blur, blurM: blurM, sharp: sharp, sharpM: sharpM, core: core, coreM: coreM, r: .055 + (i % 3) * .012 });
+    });
+    var ret = []; var rs = .11, rl = .045;
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (c) { ret.push(V(c[0] * rs, c[1] * rs), V(c[0] * (rs - rl), c[1] * rs), V(c[0] * rs, c[1] * rs), V(c[0] * rs, c[1] * (rs - rl))); });
+    var reticle = hline(ret, lbasic('#ffffff', 1, 'focus'), foG);
+    var focusIdx = 2, focusT = 0, retPos = V(spots[2][0], spots[2][1]), fdepth = subjects[2].depth;
+
+    // white balance
+    var wbG = demoGroup('wb');
+    function kColor(a) { var u = (Math.sin(a) + 1) / 2; var warm = C('#ff9a3c'), mid = C('#f4efe6'), cool = C('#5b8cff'); return u < .5 ? warm.clone().lerp(mid, u * 2) : mid.clone().lerp(cool, (u - .5) * 2); }
+    for (var wi = 0; wi < 60; wi++) { var wa = wi / 60 * Math.PI * 2; hadd(new THREE.Mesh(new THREE.RingGeometry(.5, .64, 4, 1, wa + .006, Math.PI * 2 / 60 - .012), hmat(new THREE.MeshBasicMaterial({ color: kColor(wa), side: THREE.DoubleSide }), .9, 'wb')), wbG); }
+    var wbCenterM = mbasic('#f4efe6', .9, 'wb');
+    hadd(new THREE.Mesh(new THREE.CircleGeometry(.42, 96), wbCenterM), wbG);
+    var needle = new THREE.Group(); hadd(needle, wbG);
+    var nl = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([V(.44, 0), V(.7, 0)]), lbasic('#ffffff', 1, 'wb')); nl.renderOrder = ro++; needle.add(nl);
+    var nd = new THREE.Mesh(new THREE.CircleGeometry(.025, 24), mbasic('#ffffff', 1, 'wb')); nd.position.x = .7; nd.renderOrder = ro++; needle.add(nd);
+    hline(circPts(.67, 0, 120), lbasic('#43b25e', .8, 'wb'), wbG);
+
+    /* ---------------- state ---------------- */
+    var rig = null, introE = 0, introSpin = 0, highlight = null;
+    var cur = { theme: 0, mode: 0, vis: 1, fx: .66, fy: .5, rp: 200, rx: .28, ry: .55, rz: 0, E: 0, labels: 0, hud: 1, hfx: .66, hfy: .5, hR: 220, disk: 0, segAll: 1, kit: 0, irisOpen: .9 };
+    var demoW = { aperture: 0, shutter: 0, iso: 0, focus: 0, wb: 0 };
+    var segV = [1, 1, 1, 1, 1, 1];
+    var accC = PALC[0].clone();
+    var bg = COL.darkBg.clone();
+    var W = 1, H = 1, wide = true, first = true;
+
+    function setModel(id) {
+      if (rig) { spinG.remove(rig.model); rig.model.traverse(function (ob) { if (ob.geometry) ob.geometry.dispose(); }); }
+      rig = buildRig(id); spinG.add(rig.model);
+      if (!first) { introE = 1; introSpin = 1; }
+    }
+
+    function layout() {
+      if (wide) return { mfx: .645, mfy: .52, mrp: Math.min(W * .25, H * .37), hfx: .66, hfy: .5, hR: Math.min(W * .26, H * .41) };
+      return { mfx: .5, mfy: .27, mrp: Math.min(W * .4, H * .19), hfx: .5, hfy: .27, hR: Math.min(W * .43, H * .22) };
+    }
+
+    function sceneState(name, p, t, L) {
+      var s = { theme: 0, mode: 0, vis: 1, fx: L.mfx, fy: L.mfy, rp: L.mrp, rx: .3, ry: 0, rz: 0, E: 0, labels: 0, hud: 0, hfx: L.hfx, hfy: L.hfy, hR: L.hR, disk: 0, segAll: 0, kit: 0, demo: null, accent: 0, irisOpen: .9 };
+      var still = reduce ? 0 : 1;
+      switch (name) {
+        case 'hero': s.hud = 1; s.segAll = 1; s.fx = L.hfx; s.fy = L.hfy; s.rp = L.hR * .58; s.rx = .26; s.ry = .55 + Math.sin(t * .35) * .75 * still; s.rz = -.05; s.irisOpen = .6 + .3 * Math.sin(t * .8) * still; break;
+        case 'meet': s.rx = .4 - .18 * p; s.ry = -.2 - 1.1 * p; s.rz = -.2 + .32 * p; s.hR = L.hR * 1.7; break;
+        case 'anatomy': s.theme = 1; s.mode = 1; s.E = .1; s.labels = 1; s.rx = .32; s.ry = -.95 + 1.2 * p; s.rz = .18 - .1 * p; break;
+        case 'explode': s.theme = 1; s.mode = 1; s.E = .15 + ease(clamp(p * 1.2)) * 1.0; s.rx = .44 - .22 * p; s.ry = .3 + 2.1 * p; s.rz = .05; s.irisOpen = .5 + .38 * Math.sin(t * .9) * still; break;
+        case 'aperture': case 'shutter': case 'iso': case 'focus': case 'wb':
+          s.hud = 1; s.disk = 1; s.vis = 0; s.demo = name; s.accent = DEMO_ACCENT[name]; s.ry = .4 + p * .6; s.rx = .3; break;
+        case 'kit': s.theme = 1; s.mode = 1; s.E = .32; s.kit = ease(clamp(p * 1.5)); s.rp = L.mrp * .72; s.rx = .36; s.ry = -.6 + 1.1 * p; break;
+        case 'end': s.rp = L.mrp * .85; s.fx = wide ? .68 : L.mfx; s.rx = .26; s.ry = .75 + Math.sin(t * .3) * .5 * still; s.rz = -.08; break;
+      }
+      return s;
+    }
+
+    var vproj = V();
+    function project(obj) { obj.getWorldPosition(vproj); vproj.project(cam); return [(vproj.x + 1) / 2 * W, (1 - vproj.y) / 2 * H, vproj.z]; }
+
+    function resize() {
+      var w = stage.clientWidth || 1, h = stage.clientHeight || 1;
+      if (w === W && h === H) return;
+      W = w; H = h; wide = W >= 900;
+      gl.setSize(W, H, false);
+      cam.aspect = W / H; cam.updateProjectionMatrix();
+      hudCam.left = -W / 2; hudCam.right = W / 2; hudCam.top = H / 2; hudCam.bottom = -H / 2; hudCam.updateProjectionMatrix();
+      isoMat.size = Math.max(3, Math.min(W, H) * .006) * Math.min(window.devicePixelRatio || 1, 2);
+    }
+
+    var last = performance.now(), t = 0, raf = 0, dead = false, active = 'hero';
+    var tmpC = new THREE.Color();
+    function frame(now) {
+      if (dead) return;
+      raf = requestAnimationFrame(frame);
+      var dt = Math.min(.05, Math.max(0, (now - last) / 1000)); last = now; t += dt;
+      resize();
+      var sr = stage.getBoundingClientRect();
+      var secs = root.querySelectorAll('[data-scene]'), probe = sr.top + H * .5, p = 0, found = false;
+      for (var i = 0; i < secs.length; i++) {
+        var r = secs[i].getBoundingClientRect();
+        if (r.top <= probe && r.bottom > probe) { active = secs[i].getAttribute('data-scene'); p = clamp((sr.top - r.top) / Math.max(1, r.height - H)); found = true; break; }
+      }
+      if (!found && secs.length) { var r0 = secs[0].getBoundingClientRect(); if (r0.top > probe) { active = secs[0].getAttribute('data-scene'); p = 0; } }
+      var Lo = layout(), s = sceneState(active, p, t, Lo);
+      var k = first ? 1 : 1 - Math.pow(1 - (reduce ? 1 : .075), dt * 60), ks = first ? 1 : 1 - Math.pow(1 - (reduce ? 1 : .055), dt * 60);
+      for (var key in cur) { if (s[key] === undefined) continue; cur[key] += (s[key] - cur[key]) * (key === 'E' || key === 'kit' ? ks : k); }
+      for (var dn in demoW) demoW[dn] += ((s.demo === dn ? 1 : 0) - demoW[dn]) * k;
+      for (var sj = 0; sj < 6; sj++) segV[sj] += ((s.segAll ? 1 : (s.hud && sj === s.accent ? 1 : .22)) - segV[sj]) * k;
+      if (s.demo) accC.lerp(PALC[s.accent], k); else if (active === 'hero') accC.lerp(PALC[0], k);
+      first = false;
+
+      /* colors */
+      bg.copy(COL.darkBg).lerp(COL.lightBg, cur.theme);
+      gl.setClearColor(bg, 1);
+      var m = clamp(cur.mode);
+      [solidMat, solidDS].forEach(function (sm) {
+        sm.color.copy(COL.solid).lerp(COL.black, m); sm.emissive.copy(COL.black).lerp(bg, m);
+        sm.metalness = .3 * (1 - m); sm.roughness = .52 + .48 * m;
+      });
+      glassMat.opacity = .92 * (1 - m); glassMat.visible = m < .97;
+      tmpC.copy(COL.edge).lerp(COL.ink, m);
+      for (var lk in lineMats) {
+        var lmm = lineMats[lk];
+        if (highlight && lk === highlight && cur.labels > .3) { lmm.color.copy(COL.hi); lmm.opacity = 1; }
+        else { lmm.color.copy(tmpC); lmm.opacity = .1 + .9 * m; }
+      }
+      kitMats.forEach(function (km) { km.opacity = clamp(cur.kit * 1.4) * (.3 + .7 * m); });
+
+      /* model transforms */
+      var wpp = 2 * Math.tan(12 * Math.PI / 180) * D / H;
+      introE *= Math.pow(.955, dt * 60); introSpin *= Math.pow(.955, dt * 60);
+      if (introE < .002) introE = 0;
+      var Ee = Math.max(0, cur.E + introE * 1.1), Em = Math.min(Ee, 1.2);
+      if (rig) {
+        var rad = rig.r0 + (rig.r1 - rig.r0) * Math.min(Em, 1) + (Em > 1 ? (rig.r1 - rig.r0) * (Em - 1) : 0);
+        var vis = clamp(cur.vis);
+        var sc = cur.rp * wpp / rad * (.25 + .75 * vis);
+        world.visible = vis > .02;
+        world.scale.setScalar(Math.max(1e-4, sc));
+        world.position.set((cur.fx - .5) * W * wpp, (.5 - cur.fy) * H * wpp, -(1 - vis) * 6);
+        spinG.rotation.set(cur.rx + introE * .3, cur.ry - introSpin * 2.4 + (reduce ? 0 : Math.sin(t * .4) * .04), cur.rz);
+        rig.model.position.copy(rig.c0).lerp(rig.c1, Math.min(Em, 1)).multiplyScalar(-1);
+        var fl = reduce ? 0 : Math.min(1, Ee);
+        for (var qi = 0; qi < rig.parts.length; qi++) {
+          var q = rig.parts[qi];
+          q.g.position.copy(q.base).addScaledVector(q.ex, Ee);
+          if (fl > .01) {
+            q.g.position.x += Math.sin(t * .9 + q.phase) * .055 * fl;
+            q.g.position.y += Math.cos(t * .7 + q.phase * 1.3) * .07 * fl;
+            if (!q.rot && !q.round) q.g.rotation.z = Math.sin(t * .5 + q.phase) * .06 * fl;
+            if (q.round) q.g.rotation.z = Math.sin(t * .3 + q.phase) * .5 * fl;
+          } else if (!q.rot) { q.g.rotation.z = 0; }
+          if (q.rot) q.g.rotation[q.rot.axis] = q.rot.amt * Math.min(1, Ee * 1.4);
+        }
+        if (rig.iris) rig.iris.set(cur.irisOpen, t * .1);
+        /* kit */
+        var K = clamp(cur.kit);
+        kitG.visible = K > .01;
+        kitG.position.set(0, 0, 0);
+        var kr = rig.r0 * 1.55;
+        kitItems.forEach(function (it, ii) {
+          var bob = reduce ? 0 : Math.sin(t * .8 + it.phase) * .12;
+          it.g.position.set(it.dir.x * kr * K, it.dir.y * kr * K + bob, it.dir.z * kr * K);
+          it.g.scale.setScalar(Math.max(1e-3, rig.r0 * .3 * K));
+          it.inner.rotation.y = t * it.spin; it.inner.rotation.x = .5 + Math.sin(t * .4 + it.phase) * .3;
+        });
+      }
+
+      /* HUD */
+      var ha = clamp(cur.hud);
+      hud.visible = ha > .005;
+      hud.position.set((cur.hfx - .5) * W, (.5 - cur.hfy) * H, 0);
+      hud.scale.setScalar(cur.hR);
+      var rot = reduce ? 0 : t;
+      ticks.rotation.z = rot * .06; fineL.rotation.z = -rot * .03;
+      sweep.rotation.z = 1.2 - rot * .25; sweep2.rotation.z = -rot * .12 + 2; glint.rotation.z = Math.sin(rot * .4) * .3;
+      for (var tq = 0; tq < NT; tq++) {
+        var aa = tq / NT * Math.PI * 2, bright = .25 + .75 * Math.pow(.5 + .5 * Math.cos(aa * 2 - rot * .5), 3);
+        var cr = accC.r * bright, cg = accC.g * bright, cb = accC.b * bright;
+        tickCol.set([cr, cg, cb, cr, cg, cb], tq * 6);
+      }
+      tickGeo.attributes.color.needsUpdate = true;
+      hudMats.forEach(function (e) {
+        var a = e.base * ha;
+        if (e.demo) a *= demoW[e.demo];
+        if (e.kind === 'disk') a *= cur.disk;
+        else if (e.kind && e.kind.indexOf('seg') === 0) a = e.base * ha * segV[+e.kind.slice(3)];
+        else if (e.kind === 'acc') e.m.color.copy(accC);
+        e.m.opacity = a;
+      });
+      for (var dk in demos) { var dw = demoW[dk] * ha; demos[dk].g.visible = dw > .01; demos[dk].g.scale.setScalar(.9 + .1 * demoW[dk]); }
+
+      if (demos.aperture.g.visible) {
+        var open = .5 + .42 * Math.sin(t * .9);
+        if (reduce) open = .7;
+        apBlades.set(open, t * .15);
+        bok.forEach(function (b) { var rr = b.base * (.4 + open * 3.2); b.mesh.scale.setScalar(rr); });
+      }
+      if (demos.shutter.g.visible) {
+        var Tp = 2.8, u = reduce ? .45 : (t % Tp) / Tp, loopN = Math.floor(t / Tp);
+        for (var c2 = 0; c2 < 12; c2++) {
+          var j = c2 % 6, isFirst = c2 < 6, spread = .25 - j * .1, y;
+          if (isFirst) { var f1 = clamp((u - .12 - j * .012) / .2); f1 = ease(f1); y = spread + ((-.26 - j * .006) - spread) * f1; }
+          else { var f2 = clamp((u - .6 - (5 - j) * .012) / .2); f2 = ease(f2); var compT = .26 + j * .006; y = compT + (spread - compT) * f2; }
+          slats[c2].position.set(0, y, 0);
+        }
+        var fast = loopN % 2 === 0, sx = -.42 + .84 * clamp((u - .3) / .3), tl2 = fast ? .004 : .03;
+        subj.position.set(sx, .02, 0);
+        trail.forEach(function (tm2, ti2) { tm2.position.set(sx - ti2 * tl2, .02, 0); tm2.visible = sx - ti2 * tl2 > -.44; });
+      }
+      if (demos.iso.g.visible) {
+        for (var pi = 0; pi < isoPts.length; pi++) {
+          var P = isoPts[pi], lvl = reduce ? .5 : .5 + .5 * Math.sin(t * 1.1 - P[2] * 6);
+          var jit = lvl * .022, nz = Math.random();
+          isoPos[pi * 3] = P[0] + (Math.random() - .5) * jit; isoPos[pi * 3 + 1] = P[1] + (Math.random() - .5) * jit; isoPos[pi * 3 + 2] = 0;
+          var br2 = clamp(.18 + .5 * (1 - lvl) * .6 + lvl * nz * 1.1);
+          isoCol[pi * 3] = .14 * br2 + .05; isoCol[pi * 3 + 1] = .72 * br2 + .05; isoCol[pi * 3 + 2] = .64 * br2 + .05;
+        }
+        isoGeo.attributes.position.needsUpdate = true; isoGeo.attributes.color.needsUpdate = true;
+      }
+      if (demos.focus.g.visible) {
+        focusT += dt;
+        if (focusT > 1.9 && !reduce) { focusT = 0; focusIdx = (focusIdx + 3) % subjects.length; }
+        var tgS = subjects[focusIdx];
+        retPos.lerp(V(tgS.g.position.x, tgS.g.position.y), 1 - Math.pow(.9, dt * 60));
+        fdepth += (tgS.depth - fdepth) * (1 - Math.pow(.93, dt * 60));
+        reticle.position.copy(retPos);
+        subjects.forEach(function (sb) {
+          var bl = Math.abs(sb.depth - fdepth) * 2.2, sharpA = clamp(1 - bl * 1.6);
+          sb.blur.scale.setScalar(sb.r * (1 + bl * 3.2)); sb.core.scale.setScalar(sb.r * .35);
+          sb.sharp.scale.setScalar(sb.r);
+          sb.blurM.opacity *= clamp(bl * 1.2) * .6 / (1 + bl * 1.5);
+          sb.sharpM.opacity *= sharpA; sb.coreM.opacity *= .3 + .7 * sharpA;
+        });
+      }
+      if (demos.wb.g.visible) {
+        var th = reduce ? .4 : Math.sin(t * .55) * 2.7;
+        needle.rotation.z = th;
+        wbCenterM.color.copy(kColor(th)).lerp(C('#1d1b1c'), .35);
+      }
+
+      /* leader lines */
+      var labs = o.labels ? o.labels() : [];
+      if (labs.length) {
+        scene.updateMatrixWorld(true);
+        var Lw = clamp(cur.labels);
+        for (var li2 = 0; li2 < labs.length; li2++) {
+          var lb = labs[li2]; if (!lb || !lb.path) continue;
+          var el = lb.el, a2 = rig && rig.anchors[lb.key];
+          var rr2 = el ? el.getBoundingClientRect() : null;
+          if (!a2 || !rr2 || !rr2.width || Lw < .01) { lb.path.style.opacity = '0'; continue; }
+          var pp = project(a2), sy = rr2.top - sr.top + rr2.height / 2, sx2, ex2;
+          var dy = Math.abs(pp[1] - sy);
+          if (lb.side === 'right') { sx2 = rr2.left - sr.left - 10; ex2 = Math.min(sx2, pp[0] + dy); }
+          else { sx2 = rr2.right - sr.left + 10; ex2 = Math.max(sx2, pp[0] - dy); }
+          var draw = clamp(Lw * 1.7 - li2 * .05);
+          lb.path.setAttribute('d', 'M' + sx2.toFixed(1) + ' ' + sy.toFixed(1) + ' H' + ex2.toFixed(1) + ' L' + pp[0].toFixed(1) + ' ' + pp[1].toFixed(1));
+          lb.path.style.opacity = String(draw);
+          lb.path.style.strokeDashoffset = String(1 - draw);
+          lb.path.style.stroke = (highlight === lb.key) ? '#e5483b' : '';
+          if (el) el.style.opacity = String(.25 + .75 * clamp(Lw * 1.5 - li2 * .04));
+        }
+      }
+
+      /* progress */
+      if (o.cursor) {
+        var rr3 = root.getBoundingClientRect();
+        o.cursor.style.left = (clamp((sr.top - rr3.top) / Math.max(1, rr3.height - H)) * 100).toFixed(2) + '%';
+      }
+
+      gl.clear();
+      gl.render(scene, cam);
+      if (hud.visible) gl.render(hudScene, hudCam);
+    }
+
+    setModel(o.model || 'canon-r');
+    resize();
+    raf = requestAnimationFrame(frame);
+
+    return {
+      setModel: setModel,
+      setHighlight: function (k) { highlight = k || null; },
+      scene: function () { return active; },
+      dispose: function () { dead = true; cancelAnimationFrame(raf); try { gl.dispose(); } catch (e) {} }
+    };
+  }
+
+  window.JSCameraStage = JSCameraStage;
+})();
+
+</script>
+<script>
+(function(){
+  var K = window.JS_CONTENT, $ = function(id){return document.getElementById(id);};
+  var esc = function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var model = 'canon-r', engine = null;
+  var arrow = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+  $('ticks').innerHTML = Array.from({length:60},function(_,i){return '<b style="height:'+(i%10===0?80:(i%2?34:52))+'%"></b>';}).join('');
+  $('lines').innerHTML = K.SLOTS.map(function(){return '<path pathLength="1"></path>';}).join('');
+  function M(){ return K.MODELS.filter(function(m){return m.id===model;})[0]; }
+  function render(){
+    var m = M(), names = K.labelNames(model), st = K.settings(m.brand);
+    var h = '';
+    h += '<section class="ch dark" data-scene="hero" style="height:1100px"><div class="pin"><div class="col">'
+      + '<div class="eyebrow mono">Joe Studio · Camera Book</div><h1>Choose your camera.</h1>'
+      + '<p class="lede">Pick the body closest to the one in your hands. Every name, button and setting in this book follows your choice.</p>'
+      + '<div class="picks" role="group" aria-label="Camera bodies">' + K.MODELS.map(function(x,i){return '<button class="pick" data-i="'+i+'" aria-pressed="'+(x.id===model)+'"><span class="tag mono">'+x.tag+'</span><span class="nm">'+x.name+'</span><span class="sb">'+x.sub+'</span></button>';}).join('') + '</div>'
+      + '<div class="hint mono">'+arrow.replace('M5 12h12M12 6l6 6-6 6','M12 5v12M6 12l6 6 6-6')+'Scroll to meet your camera</div></div></div></section>';
+    h += '<section class="ch dark" data-scene="meet" style="height:1500px"><div class="pin"><div class="col">'
+      + '<div class="eyebrow mono">'+m.tag+' · '+m.name+'</div><h2>'+m.title+'</h2><p class="lede">'+m.desc+'</p>'
+      + '<dl class="specs">'+m.specs.map(function(s){return '<div><dt class="mono">'+s[0]+'</dt><dd>'+s[1]+'</dd></div>';}).join('')+'</dl></div></div></section>';
+    h += '<section class="ch light" data-scene="anatomy" style="height:2000px"><div class="pin" style="justify-content:flex-start;padding-top:64px"><div class="col">'
+      + '<div class="eyebrow mono">Anatomy</div><h2>Every control, exactly where it lives.</h2><p class="lede">Twelve parts you touch on almost every shot. Point at a name to find it on your '+m.tag+'.</p></div>'
+      + '<ul class="labels r mono">'+names.slice(0,6).map(function(n,i){return '<li><button class="lab" data-k="'+K.SLOTS[i]+'" data-i="'+i+'">'+n+'</button></li>';}).join('')+'</ul>'
+      + '<ul class="labels l mono">'+names.slice(6).map(function(n,i){return '<li><button class="lab" data-k="'+K.SLOTS[i+6]+'" data-i="'+(i+6)+'">'+n+'</button></li>';}).join('')+'</ul></div></section>';
+    h += '<section class="ch light" data-scene="explode" style="height:1900px"><div class="pin"><div class="col">'
+      + '<div class="eyebrow mono">Inside</div><h2>Take it apart.</h2><p class="lede">Under the shell: a sensor that records light, a shutter that times it and glass that bends it into focus. Stop scrolling and watch every piece drift.</p>'
+      + '<div class="chips mono">'+K.internals(model).map(function(x){return '<span>'+x+'</span>';}).join('')+'</div></div></div></section>';
+    st.forEach(function(s){
+      h += '<section class="ch dark" data-scene="'+s.id+'" style="height:1300px"><div class="pin"><div class="col">'
+        + '<div class="eyebrow mono" style="color:'+s.color+';opacity:1">'+s.group+' · '+s.num+'</div><h2 style="color:'+s.color+'">'+s.title+'</h2><p class="lede">'+s.body+'</p>'
+        + '<ul class="arrows mono">'+s.items.map(function(x){return '<li style="--c:'+s.color+'"><span style="color:'+s.color+'">'+arrow+'</span>'+x+'</li>';}).join('')+'</ul>'
+        + '<div class="lcd mono">'+['Mode','Value','Value','Value'].map(function(_,i){return '<div><small>'+(i===0?'Mode':(s.id==='focus'?['','Detect','Area','Track'][i]:(s.id==='wb'?['','Temp','Look','File'][i]:['','Aperture','Shutter','ISO'][i])))+'</small><span>'+s.lcd[i]+'</span></div>';}).join('')+'</div></div></div></section>';
+    });
+    h += '<section class="ch light" data-scene="kit" style="height:1900px"><div class="pin"><div class="col">'
+      + '<div class="eyebrow mono">Kit</div><h2>Build a kit that grows with you.</h2><p class="lede">Start with the camera. Add a piece only when your photos need it.</p>'
+      + '<div class="legend"><h3>Your kit <span class="mono" style="font-weight:400;color:#a49b95">8 pieces</span></h3><div class="bar">'+K.KIT.map(function(k){return '<b style="flex:1;background:'+k[1]+'"></b>';}).join('')+'</div>'
+      + '<ul>'+K.KIT.map(function(k){return '<li><i style="background:'+k[1]+'"></i><span>'+k[0]+'</span></li>';}).join('')+'</ul></div></div></div></section>';
+    h += '<section class="ch dark" data-scene="end" style="height:1000px"><div class="pin"><div class="col">'
+      + '<div class="eyebrow mono">Next</div><h2>You know your camera. Now make it sing.</h2><p class="lede">Chapter 1 puts aperture, shutter speed and ISO in your hands with a live simulator.</p>'
+      + '<div class="btns"><button class="btn" data-go="hero">Pick another camera</button><button class="btn ghost" data-go="anatomy">Back to anatomy</button></div></div></div></section>';
+    $('overlay').innerHTML = h;
+  }
+  render();
+  $('overlay').addEventListener('click', function(e){
+    var p = e.target.closest('.pick');
+    if (p) { model = K.MODELS[+p.dataset.i].id; render(); if (engine) engine.setModel(model); return; }
+    var g = e.target.closest('[data-go]');
+    if (g) { var s = document.querySelector('[data-scene="'+g.dataset.go+'"]'); if (s) s.scrollIntoView({behavior:'smooth'}); }
+  });
+  $('overlay').addEventListener('mouseover', function(e){ var l = e.target.closest('.lab'); if (engine) engine.setHighlight(l ? l.dataset.k : null); });
+  $('overlay').addEventListener('focusin', function(e){ var l = e.target.closest('.lab'); if (engine) engine.setHighlight(l ? l.dataset.k : null); });
+  var paths = Array.prototype.slice.call(document.querySelectorAll('#lines path'));
+  engine = window.JSCameraStage({
+    canvas: $('cv'), stage: $('stage'), root: $('story'), cursor: $('cursor'), model: model,
+    labels: function(){
+      var els = document.querySelectorAll('.lab');
+      return paths.map(function(p,i){ var el = els[i]; return { el: el, path: p, key: K.SLOTS[i], side: i < 6 ? 'right' : 'left' }; });
+    }
+  });
+})();
+</script>
+</body>
+</html>
