@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="description" content="Choose your camera: pick a Canon or Sony body and watch it come apart, part by part. Step 1 of the free Joe Studio Camera Book."><link rel="canonical" href="https://www.joenellphotography.ca/camera-book/choose-your-camera"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Choose Your Camera · Joe Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#d6d1cb;color:#2b2926;font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:#2b2926}a:hover{color:#df3a2c}
+.wrap{overflow-x:clip;width:100%}
+.gut{padding-left:max(24px,calc((100% - 1320px)/2));padding-right:max(24px,calc((100% - 1320px)/2))}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.story{position:relative}
+.stage{position:sticky;top:0;height:100svh;min-height:560px;z-index:0}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.labels{position:absolute;top:40px;right:max(24px,calc((100% - 1320px)/2));margin:0;padding:0;list-style:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px}
+.labels button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:2px 0;color:#57524c;transition:color .3s}
+.labels button.on{color:#2b2926;font-weight:500}
+.labels button:focus-visible,.pick:focus-visible,.btn:focus-visible{outline:2px solid #df3a2c;outline-offset:3px}
+.labels .dash{display:block;height:1.5px;background:currentColor;width:8px;transition:width .4s}
+.labels .on .dash{background:var(--accent)}
+.ticker{position:absolute;right:max(24px,calc((100% - 1320px)/2));bottom:28px;width:min(440px,calc(100% - 48px));height:48px;background:#1c1c1d;border-radius:12px}
+.ticks,.track{position:absolute;inset:11px 20px}
+.ticks{display:flex;justify-content:space-between;align-items:center}
+.ticks b{display:block;width:1px;background:#8a8780;flex:none}
+#cursor{position:absolute;top:0;bottom:0;left:0;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--accent)}
+.overlay{position:relative;z-index:1;margin-top:max(-100svh,-100vh);pointer-events:none}
+@supports not (height:100svh){.stage{height:100vh}}
+.intro{min-height:100svh;display:flex;align-items:center;padding-block:40px}
+.intro-grid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:32px;width:100%}
+.intro-copy{display:flex;flex-direction:column;gap:22px;pointer-events:auto}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#57524c}
+h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-.025em;font-weight:700;text-wrap:balance}
+.lede{margin:0;font-size:20px;line-height:1.45;max-width:30ch}
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pick{all:unset;box-sizing:border-box;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:96px;padding:14px 16px;border-radius:14px;background:rgba(214,209,203,.7);border:1.5px solid #b9b3ab;transition:border-color .2s,background .2s}
+.pick[aria-pressed="true"]{background:#ece8e2;border-color:#2b2926}
+.pick .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#57524c}
+.pick[aria-pressed="true"] .tag{color:#b3261b}
+.pick .nm{font-size:17px;font-weight:600;line-height:1.2}
+.pick:hover .nm{color:#df3a2c}
+.pick .sb{font-size:13px;color:#57524c;line-height:1.35}
+.step{height:640px;display:flex;align-items:center}
+.card{pointer-events:auto;width:min(420px,100%);background:rgba(214,209,203,.9);border:1px solid #b9b3ab;border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:10px}
+.card .num{font-size:12px;letter-spacing:.1em;color:#b3261b}
+.card h2{margin:0;font-size:34px;line-height:1.05;letter-spacing:-.02em;font-weight:700}
+.card p{margin:0;font-size:16px;line-height:1.55}
+.card .tip{font-size:14px;line-height:1.5;color:#57524c}
+.card .tip strong{color:#2b2926}
+.outro{background:#2b2926;color:#ece8e2;padding-block:72px;display:flex;flex-wrap:wrap;gap:40px;align-items:flex-end;justify-content:space-between}
+.outro h2{margin:0;font-size:48px;line-height:1.04;letter-spacing:-.025em}
+.outro p{margin:0;font-size:18px;line-height:1.5;color:#d6d1cb;max-width:60ch}
+.btn{all:unset;cursor:pointer;background:var(--accent);color:#1c1c1d;font-weight:600;font-size:15px;padding:14px 20px;border-radius:10px}
+:root{--accent:#df3a2c}
+@media (max-width:860px){
+  .intro-grid{grid-template-columns:minmax(0,1fr);padding-top:min(380px,46svh)}
+  .step{align-items:flex-end;padding-bottom:40px}
+  .labels{display:none}
+  h1{font-size:40px}
+  .outro h2{font-size:34px}
+}
+@media (max-width:420px){.picks{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="story" id="story">
+    <div class="stage">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <ul class="labels" id="labels" aria-label="Camera parts"></ul>
+      <div class="ticker" aria-hidden="true"><div class="ticks" id="ticks"></div><div class="track"><i id="cursor"></i></div></div>
+    </div>
+    <div class="overlay">
+      <section class="intro gut">
+        <div class="intro-grid">
+          <div class="intro-copy">
+            <div class="eyebrow mono">Joe Studio · Camera Book · Step 1</div>
+            <h1>Choose your camera</h1>
+            <p class="lede">Pick the body closest to yours. Then scroll: it stays locked in place and comes apart one part at a time, with every name matched to your brand.</p>
+            <div class="picks" id="picks" role="group" aria-label="Camera bodies"></div>
+            <div class="mono" style="font-size:13px;color:#57524c">Scroll to take the <span class="short"></span> apart ↓</div>
+          </div>
+          <div></div>
+        </div>
+      </section>
+      <div id="steps"></div>
+    </div>
+  </div>
+  <section class="outro gut">
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:620px">
+      <div class="eyebrow mono" style="color:#b9b3ab">You've met every part of your <span class="short"></span></div>
+      <h2>Next: make the dials do something.</h2>
+      <p>Chapter 1 puts aperture, shutter speed and ISO in your hands with a live simulator, then the recipes show you exactly what to set for golden hour, night life and the stars.</p>
+    </div>
+    <a class="btn" href="/camera-book/#exposure" style="text-decoration:none;margin-right:10px">Open Chapter 1 →</a><button class="btn" id="toTop">Pick another camera</button>
+  </section>
+</div>
+<script>
+class DCLogic { constructor(props){ this.props = props || {}; this.state = {}; } }
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = { model: 'canon-r', active: -1 };
+    this.canvasRef = (el) => { this._canvas = el; };
+    this.storyRef = (el) => { this._story = el; };
+    this.cursorRef = (el) => { this._cursor = el; };
+  }
+
+  models(){
+    return [
+      { id:'canon-r', brand:'canon', tag:'Canon', name:'Full-frame mirrorless', short:'mirrorless Canon', sub:'Deep grip, centre viewfinder, RF mount' },
+      { id:'sony-a', brand:'sony', tag:'Sony', name:'APS-C mirrorless', short:'mirrorless Sony', sub:'Slim body, corner viewfinder, E mount' },
+      { id:'canon-dslr', brand:'canon', tag:'Canon', name:'DSLR', short:'Canon DSLR', sub:'Optical viewfinder, mirror box, EF / EF-S mount' },
+      { id:'sony-rx', brand:'sony', tag:'Sony', name:'1-inch compact', short:'Sony compact', sub:'Built-in zoom, pop-up viewfinder' }
+    ];
+  }
+
+  stepsFor(id){
+    const c = id.indexOf('canon') === 0, dslr = id === 'canon-dslr', compact = id === 'sony-rx';
+    return [
+      { t:'Mode dial', d: c ? 'Av is aperture priority, Tv is shutter priority, M is full manual. C1–C3 store complete setups you can recall with one turn.' : 'A is aperture priority, S is shutter priority, M is full manual. MR recalls setups you saved.', tip: c ? 'Live in Av for a week. Watch which shutter speed the camera picks.' : 'Live in A for a week. Watch which shutter speed the camera picks.' },
+      { t:'Shutter button', d: compact ? 'Half-press to lock focus and exposure, recompose, then press fully. The ring around it is the zoom lever.' : 'Half-press to focus and meter, press fully to shoot. Many pros move focusing to the AF-ON button so the shutter only takes the picture.', tip: compact ? 'Half-press on a face, slide the frame so they sit on a third, then shoot.' : 'Set up back-button focus and shoot a moving subject with continuous AF.' },
+      { t:'Viewfinder', d: dslr ? 'An optical viewfinder: a mirror and pentaprism show the scene through the lens. Judge brightness from the histogram after each shot.' : (compact ? 'A pop-up electronic viewfinder. Hold it to your eye to steady the camera and see clearly in bright sun.' : 'An electronic viewfinder shows the exposure before you shoot, so what you see is what you get.'), tip:'Adjust the diopter wheel beside the eyepiece until the text inside looks sharp.' },
+      { t:'Grip', d: compact ? 'A small textured grip. The camera is light, so slow shutter speeds shake easily.' : 'Holds the battery and gives your right hand a firm hold. Your left hand supports the lens from below.', tip: compact ? 'Loop the wrist strap and use both hands below 1/30s.' : 'Tuck your elbows in and exhale before pressing the shutter at slow speeds.' },
+      { t:'Rear screen', d: c ? 'Menus, playback and the histogram. Press INFO to cycle the display and Q for quick settings.' : 'Menus, playback and the histogram. Press DISP to cycle the display and Fn for quick settings.', tip:'Turn on the histogram and the 3×3 grid and leave them on for good.' },
+      { t:'Sensor', d: compact ? 'A 1-inch sensor: smaller than full-frame, so it gets grainy sooner. ISO amplifies its signal.' : (dslr ? 'Sits behind a mirror that flips up for each shot. ISO amplifies its signal; every doubling is one stop brighter.' : 'Turns light into the photo. ISO amplifies the signal; every doubling is one stop brighter and a little grainier.'), tip: compact ? 'Indoors, cap Auto ISO around 1600 and open the lens to its widest.' : 'Set an Auto ISO ceiling, for example 6400, so the camera never goes uglier than you accept.' },
+      { t: compact ? 'Built-in lens' : 'Lens mount', d: compact ? 'No mount: the zoom lens is part of the camera, so dust never reaches the sensor.' : (dslr ? 'The EF mount takes full-frame EF lenses; APS-C bodies also take EF-S lenses.' : (c ? 'The RF mount. Older EF lenses fit with Canon’s EF-EOS R adapter.' : 'The E mount, shared by Sony’s APS-C and full-frame bodies.')), tip: compact ? 'Keep a cloth for the front element; fingerprints soften every photo.' : 'Change lenses facing the camera down, out of the wind.' },
+      { t:'Zoom ring', d: compact ? 'The zoom lever drives the built-in lens from wide to telephoto. The widest end lets in the most light.' : 'Changes focal length: wide (16–35mm) for landscapes and rooms, 50mm for everyday, 85mm and longer for flattering portraits.', tip:'Shoot one subject at your widest and longest settings and compare the backgrounds.' },
+      { t: compact ? 'Control ring' : 'Focus ring', d: compact ? 'The ring around the lens can be set to focus, zoom or exposure. Set it to whatever you change most.' : (c ? 'Turn it for manual focus. Switch on MF peaking and the sharp edges light up in colour.' : 'Turn it for manual focus. Switch on Peaking Display and the sharp edges light up in colour.'), tip:'At night, magnify a bright star and turn the ring until it is a tiny point.' },
+      { t:'Aperture iris', d: c ? 'The blades open to f/1.8 for blurry backgrounds and close to f/16 for front-to-back sharpness. Set it in Av mode.' : 'The blades open to f/1.8 for blurry backgrounds and close to f/16 for front-to-back sharpness. Set it in A mode.', tip:'Shoot the same flower at your widest aperture and at f/11. That gap is the whole lesson.' }
+    ];
+  }
+
+  scrollToStep(i){
+    const s = this._story; if(!s) return;
+    const r = s.getBoundingClientRect();
+    const total = Math.max(1, s.offsetHeight - (this._stageH || 800));
+    const y = (window.scrollY || 0) + r.top + total * (i / 10);
+    try { window.scrollTo({ top: y, behavior: 'smooth' }); } catch(e) { window.scrollTo(0, y); }
+  }
+
+  renderVals(){
+    const accent = this.props.accent ?? '#df3a2c';
+    const cur = this.state.model, active = this.state.active;
+    const ms = this.models();
+    const sel = ms.find(m => m.id === cur) || ms[0];
+    const models = ms.map(m => ({ ...m,
+      pressed: m.id === cur ? 'true' : 'false',
+      tagColor: m.id === cur ? '#b3261b' : '#57524c',
+      cardStyle: 'display:flex;flex-direction:column;gap:4px;min-height:96px;padding:14px 16px;border-radius:14px;background:' + (m.id === cur ? '#ece8e2' : 'rgba(214,209,203,.7)') + ';border:1.5px solid ' + (m.id === cur ? '#2b2926' : '#b9b3ab') + ';transition:border-color .2s, background .2s',
+      pick: () => { if (m.id !== this.state.model) { this.setState({ model: m.id }); if (this._swap) this._swap(m.id); } }
+    }));
+    const st = this.stepsFor(cur).map((s, i) => ({ ...s, num: String(i + 1).padStart(2, '0'), brand: sel.tag + ' ' + sel.name }));
+    const labels = st.map((s, i) => ({ name: s.t.toLowerCase(),
+      dash: i === active ? '40px' : (Math.abs(i - active) === 1 ? '14px' : '8px'),
+      style: 'all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:2px 0;color:' + (i === active ? '#2b2926' : '#57524c') + ';' + (i === active ? 'font-weight:500;' : ''),
+      go: () => this.scrollToStep(i + 1)
+    }));
+    const ticks = Array.from({ length: 56 }, (_, i) => ({ style: 'display:block;width:1px;background:#8a8780;height:' + (i % 8 === 0 ? '70%' : (i % 2 ? '36%' : '50%')) }));
+    return { accent, models, steps: st, labels, ticks, modelShort: sel.short,
+      canvasRef: this.canvasRef, storyRef: this.storyRef, cursorRef: this.cursorRef,
+      toTop: () => this.scrollToStep(0) };
+  }
+
+  componentDidMount(){ this._tries = 0; this._boot(); }
+  componentWillUnmount(){
+    this._dead = true; cancelAnimationFrame(this._raf);
+    if (this._onScroll) { document.removeEventListener('scroll', this._onScroll, true); window.removeEventListener('scroll', this._onScroll); }
+    if (this._ro) this._ro.disconnect();
+    if (this._gl) this._gl.dispose();
+  }
+
+  _boot(){
+    if (this._dead) return;
+    const T = window.THREE;
+    if (!T || !this._canvas || !this._story) { if (this._tries++ < 60) setTimeout(() => this._boot(), 100); return; }
+    let gl;
+    try { gl = new T.WebGLRenderer({ canvas: this._canvas, antialias: true }); } catch (e) { return; }
+    this._gl = gl;
+    gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const BG = '#d6d1cb', INK = '#2b2926';
+    gl.setClearColor(BG, 1);
+    const scene = new T.Scene();
+    const cam = new T.PerspectiveCamera(26, 1, .1, 300);
+    const root = new T.Group(); scene.add(root);
+    const fill = new T.MeshBasicMaterial({ color: BG, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+    const V = (x, y, z) => new T.Vector3(x, y, z);
+    const KEYS = ['dial','btn','evf','grip','screen','sensor','mount','zoom','focus','iris'];
+    let mats = {};
+    const mat = (k) => mats[k] || (mats[k] = new T.LineBasicMaterial({ color: INK }));
+
+    function rrect(w, h, r){ const s = new T.Shape(), x = -w/2, y = -h/2; s.moveTo(x+r, y); s.lineTo(x+w-r, y); s.quadraticCurveTo(x+w, y, x+w, y+r); s.lineTo(x+w, y+h-r); s.quadraticCurveTo(x+w, y+h, x+w-r, y+h); s.lineTo(x+r, y+h); s.quadraticCurveTo(x, y+h, x, y+h-r); s.lineTo(x, y+r); s.quadraticCurveTo(x, y, x+r, y); return s; }
+    function ring(ro, ri, d){ const s = new T.Shape(); s.absarc(0, 0, ro, 0, Math.PI*2, false); if (ri) { const h = new T.Path(); h.absarc(0, 0, ri, 0, Math.PI*2, true); s.holes.push(h); } return new T.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 72 }); }
+    function gear(ro, rr, teeth, d, ri){ const s = new T.Shape();
+      for (let i = 0; i < teeth; i++) { const a0 = i/teeth*Math.PI*2, a1 = (i+.5)/teeth*Math.PI*2, a2 = (i+1)/teeth*Math.PI*2;
+        [[ro,a0],[ro,a1],[rr,a1],[rr,a2]].forEach((p, j) => { const x = Math.cos(p[1])*p[0], y = Math.sin(p[1])*p[0]; if (i === 0 && j === 0) s.moveTo(x, y); else s.lineTo(x, y); }); }
+      s.closePath(); if (ri) { const h = new T.Path(); h.absarc(0, 0, ri, 0, Math.PI*2, true); s.holes.push(h); }
+      return new T.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 48 }); }
+    function cyl(rb, rt, len){ const g = new T.CylinderGeometry(rt, rb, len, 72, 1, true); g.rotateX(Math.PI/2); g.translate(0, 0, len/2); return g; }
+    function up(g){ g.rotateX(-Math.PI/2); return g; }
+    function circ(r, z, n){ n = n || 72; const p = []; for (let i = 0; i < n; i++) { const a = i/n*Math.PI*2, b = (i+1)/n*Math.PI*2; p.push(V(Math.cos(a)*r, Math.sin(a)*r, z), V(Math.cos(b)*r, Math.sin(b)*r, z)); } return p; }
+    function trap(b, t, h){ const s = new T.Shape(); s.moveTo(-b/2, 0); s.lineTo(b/2, 0); s.lineTo(t/2, h); s.lineTo(-t/2, h); s.closePath(); return s; }
+
+    const SPECS = {
+      'canon-r':   { bw:4.0, bh:2.5, bd:1.1, r:.3,  grip:[.95,2.35,.42,.5], evf:'center', ew:1.56, eh:.62, lx:-.35, ly:-.12, ls:1,   ll:1,   dial:-1.35, btn:1.45, rdial:.85, lcd:false },
+      'sony-a':    { bw:3.9, bh:2.25,bd:.95, r:.22, grip:[.85,2.15,.3,.45], evf:'left',   lx:-.25, ly:-.1, ls:.86, ll:.85, dial:1.05, btn:1.45, rdial:.55, lcd:false },
+      'canon-dslr':{ bw:4.5, bh:3.0, bd:1.5, r:.38, grip:[1.05,2.85,.46,.55],evf:'prism', ew:1.75, eh:1.0, lx:-.3, ly:-.2, ls:1.08, ll:1.15, dial:-1.6, btn:1.6, rdial:1.0, lcd:true },
+      'sony-rx':   { bw:3.4, bh:1.95,bd:.72, r:.2,  grip:[.38,1.5,.12,.12], evf:'popup',  lx:.25, ly:-.08, ls:.72, ll:.45, dial:1.15, btn:.75, rdial:null, lcd:false }
+    };
+
+    const build = (id) => {
+      const S = SPECS[id], model = new T.Group(), parts = [];
+      const part = (geo, k, pos, ex, grp, opt) => { opt = opt || {}; const g = new T.Group();
+        if (!opt.noFill) g.add(new T.Mesh(geo, fill));
+        g.add(new T.LineSegments(new T.EdgesGeometry(geo, opt.th || 22), mat(k)));
+        g.position.copy(pos); model.add(g); parts.push({ g, base: pos.clone(), ex: ex || V(0,0,0), grp: grp || 'body' }); return g; };
+      const seg = (pts, k, parent) => { const l = new T.LineSegments(new T.BufferGeometry().setFromPoints(pts), mat(k)); parent.add(l); return l; };
+      const top = S.bh/2, front = S.bd/2 + .06;
+      const bg = new T.ExtrudeGeometry(rrect(S.bw, S.bh, S.r), { depth: S.bd, bevelEnabled: true, bevelThickness: .06, bevelSize: .06, bevelSegments: 2, curveSegments: 10 }); bg.translate(0, 0, -S.bd/2);
+      const body = part(bg, 'body', V(0,0,0));
+      seg([V(-S.bw/2+.05, -S.bh*.24, front), V(S.lx-.95*S.ls, -S.bh*.24, front)], 'body', body);
+      // grip
+      const G = S.grip, gg = new T.ExtrudeGeometry(rrect(G[0], G[1], G[2]), { depth: G[3], bevelEnabled: true, bevelThickness: .06, bevelSize: .06, bevelSegments: 2, curveSegments: 10 });
+      const grip = part(gg, 'grip', V(S.bw/2 - G[0]/2 - .02, -.03, front - .03), V(.7, 0, .45));
+      for (let i = 0; i < 5; i++) seg([V(-G[0]*.3, -G[1]*.32 + i*G[1]*.16, G[3]+.07), V(G[0]*.3, -G[1]*.32 + i*G[1]*.16, G[3]+.07)], 'grip', grip);
+      // viewfinder
+      if (S.evf === 'center' || S.evf === 'prism') {
+        const eg = new T.ExtrudeGeometry(trap(S.ew, S.ew*.6, S.eh), { depth: S.bd*.88, bevelEnabled: true, bevelThickness: .03, bevelSize: .03, bevelSegments: 1 }); eg.translate(0, 0, -S.bd*.44);
+        const evf = part(eg, 'evf', V(S.lx, top - .02, -.04), V(0, .8, 0));
+        if (S.evf === 'prism') seg([V(-S.ew*.3, S.eh*.5, S.bd*.45), V(S.ew*.3, S.eh*.5, S.bd*.45)], 'evf', evf);
+        part(new T.BoxGeometry(S.ew*.4, .07, S.bd*.46), 'evf', V(S.lx, top + S.eh + .02, -.04), V(0, 1.3, 0));
+        part(new T.BoxGeometry(S.ew*.58, .55, .26), 'evf', V(S.lx, top + .22, -S.bd/2 - .17), V(0, .8, -.35));
+      } else if (S.evf === 'left') {
+        part(new T.BoxGeometry(1.15, .5, S.bd*.92), 'evf', V(-S.bw/2 + .7, top + .22, -.02), V(0, .8, 0));
+        part(new T.BoxGeometry(.75, .45, .22), 'evf', V(-S.bw/2 + .7, top + .2, -S.bd/2 - .16), V(0, .8, -.35));
+        part(new T.BoxGeometry(.55, .06, .45), 'evf', V(-.1, top + .05, -.02), V(0, 1.1, 0));
+      } else {
+        const pop = part(new T.BoxGeometry(.95, .34, .5), 'evf', V(-S.bw/2 + .65, top - .16, -.05), V(0, .75, 0));
+        seg(circ(.11, .26, 32).map(v => V(v.x, v.y, -.26)), 'evf', pop);
+      }
+      // dials and buttons
+      const dial = part(up(gear(.42*Math.min(1, S.ls+.1), .39*Math.min(1, S.ls+.1), 44, .22)), 'dial', V(S.dial, top + .02, .02), V(0, .85, 0));
+      seg(circ(.28, 0, 48).map(v => V(v.x, .23, v.y)), 'dial', dial);
+      seg([V(0, .23, .07), V(0, .23, .28)], 'dial', dial);
+      const by = S.evf === 'popup' ? top + .02 : top + .03, bz = S.evf === 'popup' ? .1 : front + .17;
+      part(up(gear(.27, .24, 26, .07)), 'btn', V(S.btn, by, bz), V(0, .95, 0));
+      part(up(ring(.15, 0, .12)), 'btn', V(S.btn, by + .07, bz), V(0, 1.35, 0));
+      if (S.rdial !== null) part(up(gear(.3, .27, 32, .13)), 'btn', V(S.rdial, top + .02, -S.bd*.3), V(0, .65, 0));
+      if (S.lcd) { const l = part(new T.BoxGeometry(.95, .06, .62), 'body', V(1.05, top + .04, .05), V(0, .55, 0)); seg([V(-.38, .04, -.22), V(.38, .04, -.22), V(.38, .04, -.22), V(.38, .04, .22), V(.38, .04, .22), V(-.38, .04, .22), V(-.38, .04, .22), V(-.38, .04, -.22)], 'body', l); }
+      // rear screen
+      const sw = S.bw*.6, sh = S.bh*.64, scx = S.evf === 'popup' ? -.3 : -S.bw*.1;
+      const scr = part(new T.BoxGeometry(sw, sh, .08), 'screen', V(scx, -.12, -S.bd/2 - .1), V(0, 0, -.75));
+      const sx = sw/2 - .1, sy = sh/2 - .1, sz = -.045;
+      seg([V(-sx,-sy,sz),V(sx,-sy,sz),V(sx,-sy,sz),V(sx,sy,sz),V(sx,sy,sz),V(-sx,sy,sz),V(-sx,sy,sz),V(-sx,-sy,sz),
+           V(-sx/3,-sy,sz),V(-sx/3,sy,sz),V(sx/3,-sy,sz),V(sx/3,sy,sz),V(-sx,-sy/3,sz),V(sx,-sy/3,sz),V(-sx,sy/3,sz),V(sx,sy/3,sz)], 'screen', scr);
+      // strap lugs
+      part(new T.BoxGeometry(.16, .3, .16), 'body', V(-S.bw/2 - .06, top*.55, 0), V(-.3, 0, 0));
+      part(new T.BoxGeometry(.16, .3, .16), 'body', V(S.bw/2 + .06, top*.55, 0), V(.3, 0, 0));
+      // sensor
+      const s = S.ls, lx = S.lx, ly = S.ly, z0 = front;
+      const sen = part(new T.BoxGeometry(1.0*s, .68*s, .05), 'sensor', V(lx, ly, z0), V(0, 0, .9), 'lens');
+      const gp = []; for (let i = 1; i < 6; i++) { const x = (-.5 + i/6)*s; gp.push(V(x, -.34*s, .03), V(x, .34*s, .03)); } for (let j = 1; j < 4; j++) { const y = (-.34 + j*.17)*s; gp.push(V(-.5*s, y, .03), V(.5*s, y, .03)); } seg(gp, 'sensor', sen);
+      if (S.evf === 'prism') { const mir = part(new T.BoxGeometry(1.15*s, .05, .9*s), 'sensor', V(lx, ly + .05, z0 - .3), V(0, 0, 1.25), 'lens'); mir.rotation.x = -.6; }
+      // lens stack
+      const L = S.evf === 'popup'
+        ? [[ring(.86*s, .62*s, .12), 'mount', .12], [cyl(.8*s, .8*s, .3*S.ll), 'body', .3*S.ll], [gear(.9*s, .85*s, 48, .4*S.ll, .62*s), 'zoom', .4*S.ll], [cyl(.8*s, .8*s, .3*S.ll), 'body', .3*S.ll], [gear(.88*s, .84*s, 64, .28, .62*s), 'focus', .28], [ring(.92*s, .72*s, .08), 'body', .08]]
+        : [[ring(.86*s, .62*s, .14), 'mount', .14], [cyl(.8*s, .8*s, .42*S.ll), 'body', .42*S.ll], [gear(.9*s, .84*s, 64, .6*S.ll, .62*s), 'zoom', .6*S.ll], [ring(.8*s, .62*s, .24*S.ll), 'body', .24*S.ll], [gear(.87*s, .82*s, 84, .42*S.ll, .62*s), 'focus', .42*S.ll], [cyl(.83*s, .96*s, .38*S.ll), 'body', .38*S.ll], [ring(.98*s, .72*s, .09), 'body', .09]];
+      let z = z0 + .03;
+      L.forEach((e, i) => { part(e[0], e[1], V(lx, ly, z), V(0, 0, .35 + i*.55), 'lens'); z += e[2]; });
+      const n = L.length, zRim = z, gR = 1.1*s;
+      const cap = new T.SphereGeometry(gR, 72, 10, 0, Math.PI*2, 0, .7); cap.rotateX(Math.PI/2); cap.translate(0, 0, -gR*Math.cos(.7));
+      const glass = part(cap, 'iris', V(lx, ly, zRim), V(0, 0, .35 + (n - 1)*.55 + .35), 'lens', { noFill: true, th: 30 });
+      seg(circ(.5*s, .12*s, 64), 'iris', glass);
+      const irisG = new T.Group(); irisG.position.set(lx, ly, zRim - .2); model.add(irisG);
+      parts.push({ g: irisG, base: irisG.position.clone(), ex: V(0, 0, .35 + (n - 1)*.55 + .05), grp: 'lens' });
+      const R0 = .7*s; seg(circ(R0, 0, 72), 'iris', irisG);
+      const bladeGeo = new T.BufferGeometry(); bladeGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(42), 3));
+      irisG.add(new T.LineSegments(bladeGeo, mat('iris')));
+      const setIris = (f) => { const r = Math.max(.02, Math.min(.99, f))*R0, al = Math.acos(r/R0), a = bladeGeo.attributes.position.array, spin = f*1.2;
+        for (let i = 0; i < 7; i++) { const c = i/7*Math.PI*2 + spin; a.set([Math.cos(c-al)*R0, Math.sin(c-al)*R0, 0, Math.cos(c+al)*R0, Math.sin(c+al)*R0, 0], i*6); }
+        bladeGeo.attributes.position.needsUpdate = true; };
+      const lensLen = zRim - z0;
+      return { model, parts, setIris, span: Math.max(S.bw, S.bh*1.4, lensLen + S.bd), lensLen };
+    };
+
+    const KF = [
+      { ry:.62, rx:.38, eb:0, el:0, ir:.92 },
+      { ry:.35, rx:.75, eb:.35, el:0, ir:.92 },
+      { ry:-.15, rx:.65, eb:.6, el:0, ir:.92 },
+      { ry:-.55, rx:.45, eb:.8, el:0, ir:.92 },
+      { ry:-1.1, rx:.25, eb:.85, el:0, ir:.92 },
+      { ry:-2.55, rx:.28, eb:.85, el:0, ir:.92 },
+      { ry:-5.2, rx:.32, eb:.5, el:.55, ir:.92 },
+      { ry:-5.45, rx:.3, eb:.4, el:.75, ir:.92 },
+      { ry:-5.75, rx:.32, eb:.4, el:.95, ir:.92 },
+      { ry:-5.95, rx:.3, eb:.4, el:1, ir:.92 },
+      { ry:-5.55, rx:.12, eb:.4, el:1.05, ir:.22 }
+    ];
+    const ease = (t) => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+    const target = (p) => { const k = p*10, i = Math.min(9, Math.floor(k)), f = ease(k - i), a = KF[i], b = KF[i+1], o = {}; for (const key in a) o[key] = a[key] + (b[key] - a[key])*f; return o; };
+
+    let rig = null, intro = 1, spin = 0;
+    const holder = new T.Group(); root.add(holder);
+    this._swap = (id) => {
+      if (rig) { holder.remove(rig.model); rig.model.traverse(o => { if (o.geometry) o.geometry.dispose(); }); }
+      rig = build(id); holder.add(rig.model); intro = 1; spin = 1;
+    };
+    this._swap(this.state.model);
+
+    const cur = { ry: KF[0].ry, rx: KF[0].rx, eb: 0, el: 0, ir: KF[0].ir };
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) intro = 0;
+    let W = 1, H = 1, wide = true, prog = 0;
+    const size = () => {
+      const c = this._canvas; if (!c) return;
+      const st = c.parentElement; W = st.clientWidth || 1; H = st.clientHeight || 1; this._stageH = H;
+      gl.setSize(W, H, false); cam.aspect = W/H; cam.updateProjectionMatrix(); wide = W > 860;
+    };
+    size();
+    if (window.ResizeObserver) { this._ro = new ResizeObserver(size); this._ro.observe(this._canvas.parentElement); }
+    const measure = () => {
+      const s = this._story; if (!s) return;
+      const r = s.getBoundingClientRect(), total = Math.max(1, s.offsetHeight - H);
+      prog = Math.min(1, Math.max(0, -r.top/total));
+    };
+    this._onScroll = measure;
+    document.addEventListener('scroll', measure, true); window.addEventListener('scroll', measure, { passive: true });
+    measure();
+
+    const t0 = performance.now();
+    let last = -2;
+    const frame = (now) => {
+      if (this._dead) return;
+      const tg = target(prog), lerp = reduce ? 1 : .09;
+      for (const k in cur) cur[k] += (tg[k] - cur[k])*lerp;
+      const k10 = prog*10, ai = k10 < .5 ? -1 : Math.min(9, Math.round(k10) - 1);
+      if (ai !== last) { last = ai; this.setState({ active: ai }); }
+      const hk = ai >= 0 ? KEYS[ai] : null, accent = this.props.accent ?? '#df3a2c';
+      for (const k in mats) mats[k].color.set(k === hk ? accent : INK);
+      intro *= reduce ? 0 : .955; spin *= .955;
+      const sway = (!reduce && (this.props.idleSway ?? true)) ? Math.sin((now - t0)/2600)*.07 : 0;
+      const eb = cur.eb + intro*1.4, el = cur.el + intro*1.6;
+      root.rotation.set(cur.rx + intro*.25, cur.ry - spin*2.2 + sway, 0);
+      rig.parts.forEach(q => q.g.position.copy(q.base).addScaledVector(q.ex, q.grp === 'lens' ? el : eb));
+      rig.model.position.z = -(rig.lensLen*.4 + el*2.0);
+      rig.setIris(cur.ir);
+      const fitW = (rig.span + el*5.2)*(wide ? 1.75 : 1.25), fitH = (rig.span*.9 + eb*1.2)*(wide ? 1.55 : 2.2);
+      const tan = Math.tan(13*Math.PI/180);
+      cam.position.set(0, 0, Math.max(fitH/(2*tan), fitW/(2*tan*cam.aspect)));
+      const vh = 2*tan*cam.position.z, vw = vh*cam.aspect;
+      if (wide) root.position.set(vw*.17*(1 - Math.min(1, el)*.35), -vh*.02, 0); else root.position.set(0, vh*.2, 0);
+      if (this._cursor) this._cursor.style.left = (prog*100) + '%';
+      gl.render(scene, cam);
+      this._raf = requestAnimationFrame(frame);
+    };
+    this._raf = requestAnimationFrame(frame);
+  }
+}
+
+(function(){
+  const comp = new Component({ accent: '#df3a2c', idleSway: true });
+  document.documentElement.style.setProperty('--accent', comp.props.accent);
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let v = null, stepsFor = null, activeShown = null;
+  $('ticks').innerHTML = Array.from({length:56}, (_, i) => `<b style="height:${i%8===0?70:(i%2?36:50)}%"></b>`).join('');
+  function render(){
+    v = comp.renderVals();
+    $('picks').innerHTML = v.models.map((m, i) => `<button class="pick" data-i="${i}" aria-pressed="${m.pressed}"><span class="tag mono">${esc(m.tag)}</span><span class="nm">${esc(m.name)}</span><span class="sb">${esc(m.sub)}</span></button>`).join('');
+    document.querySelectorAll('.short').forEach(e => e.textContent = v.modelShort);
+    if (stepsFor !== comp.state.model) {
+      stepsFor = comp.state.model;
+      $('steps').innerHTML = v.steps.map(s => `<section class="step gut"><article class="card"><div class="num mono">${s.num} / 10 · ${esc(s.brand)}</div><h2>${esc(s.t)}</h2><p>${esc(s.d)}</p><p class="tip"><strong>Try it:</strong> ${esc(s.tip)}</p></article></section>`).join('');
+      $('labels').innerHTML = v.labels.map((l, i) => `<li><button data-i="${i}"><span class="dash"></span>${esc(l.name)}</button></li>`).join('');
+      activeShown = null;
+    }
+    const a = comp.state.active;
+    if (a !== activeShown) {
+      activeShown = a;
+      $('labels').querySelectorAll('button').forEach((b, i) => {
+        b.classList.toggle('on', i === a);
+        b.querySelector('.dash').style.width = i === a ? '40px' : (Math.abs(i - a) === 1 ? '14px' : '8px');
+      });
+    }
+  }
+  comp.setState = function(o){ Object.assign(this.state, o); render(); };
+  $('picks').addEventListener('click', e => { const b = e.target.closest('.pick'); if (b) v.models[+b.dataset.i].pick(); });
+  $('labels').addEventListener('click', e => { const b = e.target.closest('button'); if (b) v.labels[+b.dataset.i].go(); });
+  $('toTop').addEventListener('click', () => v.toTop());
+  render();
+  comp.canvasRef($('cv')); comp.storyRef($('story')); comp.cursorRef($('cursor'));
+  comp.componentDidMount();
+})();
+</script>
+</body>
+</html>
