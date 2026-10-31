@@ -3,7 +3,9 @@
 // to the bookings sheet (Google Apps Script). Env: STRIPE_WEBHOOK_SECRET, optional SHEET_WEBHOOK_URL.
 import { hmacHex, safeEqual } from '../_lib/crypto.js';
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env: rawEnv }) {
+  // Trim pasted secrets (copying from chat/notes can add stray spaces or line breaks).
+  const env = Object.fromEntries(Object.entries(rawEnv || {}).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
   const body = await request.text();
   const sig = request.headers.get('Stripe-Signature') || '';
   if (!env.STRIPE_WEBHOOK_SECRET) return new Response('not configured', { status: 503 });

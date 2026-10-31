@@ -10,7 +10,9 @@ const page = (title, msg, status = 400) => new Response(
   `<h1 style="font-weight:500">${title}</h1><p>${msg}</p><p><a href="https://www.joenellphotography.ca/contact" style="color:#3f4a3c">Contact Joenell</a> · <a href="https://wa.me/12362341041" style="color:#3f4a3c">WhatsApp</a></p></body>`,
   { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet({ request, env: rawEnv }) {
+  // Trim pasted secrets (copying from chat/notes can add stray spaces or line breaks).
+  const env = Object.fromEntries(Object.entries(rawEnv || {}).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
   if (!env.STRIPE_SECRET_KEY || !env.LINK_SECRET) return page('Payments are not set up yet', 'Card payments aren’t switched on yet. Please contact Joenell to pay by Interac e-Transfer.', 503);
   const url = new URL(request.url);
   const d = url.searchParams.get('d') || '', s = url.searchParams.get('s') || '';
