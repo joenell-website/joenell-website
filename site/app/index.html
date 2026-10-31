@@ -136,7 +136,7 @@ const views = {
         ${!b.depositPaid ? `<button class="b ${b.contractSigned ? '' : 'alt'}" onclick="sendInv('deposit')">${b.depositInvoiceSent ? 'Resend' : 'Send'} deposit invoice${b.contractSigned ? '' : ' only'}</button>` : ''}
         ${b.depositPaid && b.owed > 0 ? `<button class="b" onclick="sendInv('balance')">${b.balanceInvoiceSent ? 'Resend' : 'Send'} balance invoice</button>` : ''}
         ${b.owed > 0 ? `<button class="b alt" onclick="payDlg()">Record payment</button>` : ''}
-        <a class="b alt" href="#/edit/${encodeURIComponent(b.ref)}">Edit</a></div>
+        <a class="b alt" href="#/edit/${encodeURIComponent(b.ref)}">Edit</a>${b.paid > 0 ? `<button class="b alt" onclick="refundDlg()">Record refund</button>` : ''}</div>
       <div class="card"><dl>
         <dt>Service</dt><dd>${esc(b.service)}</dd><dt>Package</dt><dd>${esc(b.pkg || '—')}</dd>
         <dt>Date</dt><dd>${fdate(b.date)}${b.time ? ' · ' + esc(b.time) : ''}</dd><dt>Location</dt><dd>${esc(b.location || '—')}</dd>
@@ -178,7 +178,20 @@ const views = {
   },
   async payments() {
     const { payments } = await api('payments');
-    return `<h2>Payments</h2>${payments.length ? payments.map(p => `<a class="card row" href="#/b/${encodeURIComponent(p.ref)}"><div><div class="t">${esc(p.name || p.ref)}</div><div class="s">${esc(p.kind)} · ${esc(p.method)} · ${fdate(p.paidAt)}${p.mode === 'test' ? ' · <i>test</i>' : ''}</div></div><div class="money">${money(p.amount)}</div></a>`).join('') : '<div class="empty">No payments yet.</div>'}`;
+    return `<div class="row"><h2>Payments</h2><a class="pill" href="#/report">Income report →</a></div>${payments.length ? payments.map(p => `<a class="card row" href="#/b/${encodeURIComponent(p.ref)}"><div><div class="t">${esc(p.name || p.ref)}</div><div class="s">${esc(p.kind)} · ${esc(p.method)} · ${fdate(p.paidAt)}${p.mode === 'test' ? ' · <i>test</i>' : ''}</div></div><div class="money">${money(p.amount)}</div></a>`).join('') : '<div class="empty">No payments yet.</div>'}`;
+  },
+  async report(q) {
+    const year = Number(q.y) || new Date().getFullYear(), r = await api('report', { year });
+    const max = Math.max(1, ...r.months), mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const pct = Math.min(100, Math.round(r.rolling / r.gstThreshold * 100));
+    return `<div class="row"><h2>Income ${year}</h2><span><a class="pill" href="#/report?y=${year - 1}">← ${year - 1}</a> <a class="pill" href="#/report?y=${year + 1}">${year + 1} →</a></span></div>
+      <div class="stats"><div class="stat"><small>Received in ${year}</small><strong class="money">${money(r.total)}</strong></div><div class="stat"><small>Still owed (all bookings)</small><strong class="money">${money(r.owed)}</strong></div></div>
+      <h3>By month</h3><div class="card">${r.months.map((v, i) => `<div class="row" style="gap:8px;margin:4px 0"><span style="width:34px;color:var(--muted);font-size:14px">${mn[i]}</span><span style="flex:1;background:var(--brand-soft);border-radius:6px;height:14px;overflow:hidden"><span style="display:block;height:100%;width:${Math.max(0, v) / max * 100}%;background:var(--brand)"></span></span><span class="money" style="width:90px;text-align:right;font-size:14px">${money(v)}</span></div>`).join('')}</div>
+      <h3>GST threshold (last 4 quarters)</h3><div class="card"><div class="row"><b class="money">${money(r.rolling)}</b><span style="color:var(--muted)">of $30,000</span></div>
+        <div style="background:var(--brand-soft);border-radius:6px;height:12px;margin:8px 0;overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct >= 80 ? 'var(--warn)' : 'var(--brand)'}"></div></div>
+        <div class="s" style="color:var(--muted);font-size:14px">${r.quarters.map(x => `${x.label}: ${money(x.total)}`).join(' · ')}<br>Once you pass $30,000 in four quarters in a row, you must register for GST. Check with an accountant.</div></div>
+      <h3>By service</h3>${r.bySvc.length ? r.bySvc.map(x => `<div class="card row"><span>${esc(x.service)}</span><span class="money">${money(x.total)}</span></div>`).join('') : '<div class="empty">No income yet.</div>'}
+      <div class="btns"><button class="b alt" onclick="csvExport(${year})">Download CSV for ${year}</button></div>`;
   },
   async clients() {
     const { clients } = await api('clients');
@@ -219,6 +232,17 @@ async function save(e) {
   const d = Object.fromEntries(new FormData(f)); if (location.hash.startsWith('#/edit/')) d.ref = decodeURIComponent(location.hash.slice(7));
   try { const r = await api('saveBooking', d); toast('Saved'); location.hash = '#/b/' + encodeURIComponent(r.ref); }
   catch (err) { toast(err.message); btn.disabled = false; }
+}
+async function csvExport(year) {
+  const { payments } = await api('payments', {}, { fresh: true });
+  const rows = [['Date', 'Booking ref', 'Client', 'Kind', 'Method', 'Amount (CAD)']].concat(payments.filter(p => p.mode !== 'test' && new Date(p.paidAt).getFullYear() === year)
+    .map(p => [new Date(p.paidAt).toISOString().slice(0, 10), p.ref, p.name, p.kind, p.method, p.amount.toFixed(2)]));
+  const csv = rows.map(r => r.map(x => '"' + String(x ?? '').replace(/"/g, '""') + '"').join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `joenell-income-${year}.csv`; a.click();
+}
+async function refundDlg() {
+  const b = window._b, amt = prompt(`Refund amount for ${b.name} (CAD). Do the refund itself in Stripe or by e-Transfer first — this only records it.`, b.paid);
+  if (!amt) return; try { await api('recordRefund', { ref: b.ref, amount: amt }); toast('Refund recorded'); route(); } catch (err) { toast(err.message); }
 }
 async function sendContract() {
   const b = window._b; if (!b.email) return toast('Add the client email first (Edit).');

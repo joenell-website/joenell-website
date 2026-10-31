@@ -2,7 +2,7 @@
 import { cleanEnv, json, readSession } from '../../_lib/session.js';
 import { makeSignLink } from '../../_lib/agreement.js';
 
-const ACTIONS = new Set(['dashboard', 'bookings', 'booking', 'saveBooking', 'sendInvoice', 'recordPayment', 'payments', 'clients', 'enquiries', 'setEnquiry', 'convertEnquiry', 'syncCalendar', 'sendContract']);
+const ACTIONS = new Set(['dashboard', 'bookings', 'booking', 'saveBooking', 'sendInvoice', 'recordPayment', 'payments', 'clients', 'enquiries', 'setEnquiry', 'convertEnquiry', 'syncCalendar', 'sendContract', 'report', 'recordRefund']);
 
 export async function onRequestPost({ request, env: raw, params }) {
   const env = cleanEnv(raw);

@@ -371,6 +371,14 @@ function appApi_(r) {
         return jsonOut_({ ok: true, booking: appBooking_(d.ref).booking });
       }
       case 'payments': return jsonOut_({ payments: appPayments_() });
+      case 'report': return jsonOut_(appReport_(Number(d.year) || new Date().getFullYear()));
+      case 'recordRefund': {
+        const amt = Math.round(Number(d.amount) * 100) / 100; if (!(amt > 0)) throw new Error('amount must be more than 0');
+        const row = findRowByRef_(d.ref), o = row ? rowObj_(bk_(), row) : {};
+        SpreadsheetApp.getActive().getSheetByName('Payments').appendRow([d.date ? new Date(d.date + 'T12:00:00') : new Date(), d.ref || '', 'refund', -amt, 'CAD',
+          o['Client name'] || '', o['Client email'] || '', 'refund:' + Utilities.getUuid(), '', 'live', '', '', d.method || 'refund']);
+        return jsonOut_({ ok: true });
+      }
       case 'sendContract': {
         const row = findRowByRef_(d.ref); if (!row) throw new Error('booking not found');
         if (!/^https:\/\/(www\.)?joenellphotography\.ca\/sign\?/.test(d.url || '')) throw new Error('bad link');
@@ -613,4 +621,29 @@ function onEnquiry(e) {
     `New website enquiry\n\n${lines}\n\nOpen in your app: https://www.joenellphotography.ca/app/#/leads` +
     (wa ? `\nWhatsApp: https://wa.me/${wa}` : '') + (email ? `\nReply to this email to answer ${name.split(' ')[0]} directly.` : ''),
     { name: BRAND + ' enquiries', replyTo: email || REPLY_TO });
+}
+
+// Income report: by month, by service, and the GST small-supplier test ($30,000 over 4 consecutive calendar quarters).
+function appReport_(year) {
+  const pays = appPayments_().filter(p => p.mode !== 'test'), bks = appBookings_(), svc = {};
+  bks.forEach(b => svc[b.ref] = b.service || 'Other');
+  const months = Array.from({ length: 12 }, () => 0), bySvc = {}, refunds = [];
+  let total = 0;
+  pays.forEach(p => {
+    const d = new Date(p.paidAt); if (isNaN(d)) return;
+    if (p.amount < 0) refunds.push(p);
+    if (d.getFullYear() !== year) return;
+    months[d.getMonth()] += p.amount; total += p.amount;
+    const k = svc[p.ref] || 'Other'; bySvc[k] = (bySvc[k] || 0) + p.amount;
+  });
+  const now = new Date(), q = Math.floor(now.getMonth() / 3), quarters = [];
+  for (let i = 3; i >= 0; i--) {
+    const qi = q - i, y = now.getFullYear() + Math.floor(qi / 4), qq = ((qi % 4) + 4) % 4;
+    const sum = pays.filter(p => { const d = new Date(p.paidAt); return d.getFullYear() === y && Math.floor(d.getMonth() / 3) === qq; }).reduce((a, p) => a + p.amount, 0);
+    quarters.push({ label: `Q${qq + 1} ${y}`, total: Math.round(sum * 100) / 100 });
+  }
+  const r2 = n => Math.round(n * 100) / 100;
+  return { year, total: r2(total), months: months.map(r2), bySvc: Object.keys(bySvc).map(k => ({ service: k, total: r2(bySvc[k]) })).sort((a, b) => b.total - a.total),
+    quarters, rolling: r2(quarters.reduce((a, x) => a + x.total, 0)), gstThreshold: 30000,
+    owed: r2(bks.filter(b => !/cancel/i.test(String(b.status))).reduce((a, b) => a + b.owed, 0)), refunds: refunds.slice(0, 20) };
 }
