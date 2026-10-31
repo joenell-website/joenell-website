@@ -81,7 +81,7 @@ function doPost(e) {
     }
     sh.appendRow([r.paid_at ? new Date(r.paid_at) : new Date(), r.ref || '', r.kind || '', Number(amount), cur,
       r.name || '', r.email || '', r.session, r.payment_intent || '', r.livemode ? 'live' : 'test', receipt, quest]);
-    GmailApp.sendEmail(OWNER, `${test}💳 ${r.name || 'Client'} paid $${amount} ${cur} (${kindLabel}${r.ref ? ', ' + r.ref : ''})`,
+    GmailApp.sendEmail(OWNER, `${test}New payment: ${r.name || 'Client'} paid $${amount} ${cur} (${kindLabel}${r.ref ? ', ' + r.ref : ''})`,
       `New card payment\n\nClient: ${r.name || '-'} <${r.email || '-'}>\nBooking ref: ${r.ref || '-'}\nKind: ${kindLabel}\n` +
       `Amount: $${amount} ${cur}\nReceipt sent: ${receipt ? 'yes' : 'no'}\nQuestionnaire sent: ${quest ? 'yes' : 'no'}\n\n` +
       `Sheet: ${SpreadsheetApp.getActive().getUrl()}`, { name: BRAND + ' bookings' });
