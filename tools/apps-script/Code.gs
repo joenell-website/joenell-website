@@ -196,6 +196,10 @@ function sendInvoice_(r, kind, reminder) {
     ['Package', o['Package'] || '—'], ['Total', money_(o['Total (CAD)'])]];
   if (kind === 'balance') rows.push(['Deposit paid', money_(o['Deposit (CAD)'])]);
   rows.push([kind === 'deposit' ? 'Deposit due now (20%)' : 'Balance due', `<b>${money_(amount)} CAD</b>`]);
+  if (kind === 'deposit' && Number(o['Balance (CAD)']) > 0) {
+    rows.push(['Remaining balance', money_(o['Balance (CAD)'])]);
+    rows.push(['Balance due by', dateStr_(o['Balance due']) + ' (I\'ll email the payment link a week before)']);
+  }
   const html = `<div style="background:#f8f6f2;padding:28px 12px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#2b2a27">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden">
 <div style="background:#3f4a3c;color:#fff;padding:22px 28px;font-size:20px;letter-spacing:.5px">${BRAND}</div>
@@ -281,13 +285,25 @@ function recordPayment_(p) {
     const test = p.live ? '' : '[TEST] ';
     const amount = Number(p.amount || 0).toFixed(2), cur = p.currency || 'CAD';
     const kindLabel = p.kind === 'deposit' ? 'deposit' : (p.kind === 'balance' ? 'balance payment' : 'payment');
-    const first = (p.name || '').split(' ')[0] || 'there';
+    const br0 = findRowByRef_(p.ref), bo = br0 ? rowObj_(bk_(), br0) : null;
+    const first = String((bo && bo['Client name']) || p.name || '').split(/\s+/)[0] || 'there';
+    let summary = '';
+    if (bo) {
+      const total = Number(bo['Total (CAD)']) || 0;
+      const paidBefore = data.filter(row => row[1] === p.ref).reduce((s, row) => s + (Number(row[3]) || 0), 0);
+      const paidNow = Math.round((paidBefore + Number(amount)) * 100) / 100;
+      const left = Math.max(0, Math.round((total - paidNow) * 100) / 100);
+      summary = `\n\nYour booking\nReference: ${p.ref}\nService: ${bo['Service']}${bo['Package'] ? ' — ' + bo['Package'] : ''}\n` +
+        `Date: ${dateStr_(bo['Event date'])}\nTotal: ${money_(total)}\nPaid so far: ${money_(paidNow)}\n` +
+        (left > 0 ? `Remaining balance: ${money_(left)}, due by ${dateStr_(bo['Balance due'])} — I'll email you the payment link a week before.`
+          : `Remaining balance: $0.00 — you're paid in full. Thank you!`);
+    }
     let receipt = '', quest = '';
     if (p.email) {
       GmailApp.sendEmail(p.email, `${test}Payment received — ${BRAND}`,
         `Hi ${first},\n\nThank you — I've received your ${kindLabel} of $${amount} ${cur}` + (p.ref ? ` for booking ${p.ref}` : '') +
-        (p.kind === 'deposit' ? `. Your date is officially reserved!` : '.') +
-        (p.method === 'card' ? `\n\nStripe will also email you an official receipt.` : '') +
+        (p.kind === 'deposit' ? `. Your date is officially reserved!` : '.') + summary +
+        (p.method === 'card' ? `\n\nStripe will also email you an official card receipt.` : '') +
         `\n\nIf anything looks wrong, just reply to this email.\n\nJoenell\n${BRAND}\nwww.joenellphotography.ca`,
         { name: BRAND, replyTo: REPLY_TO });
       receipt = new Date();
