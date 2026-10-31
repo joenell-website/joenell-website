@@ -22,7 +22,7 @@ const PAY_HEAD = ['Paid at', 'Booking ref', 'Kind', 'Amount', 'Currency', 'Clien
   'Stripe session', 'Payment intent', 'Mode', 'Receipt sent', 'Questionnaire sent', 'Method'];
 const BK_HEAD = ['Booking ref', 'Client name', 'Client email', 'Service', 'Event date', 'Package', 'Total (CAD)',
   'Deposit (CAD)', 'Balance (CAD)', 'Balance due', 'Status', 'Send deposit invoice', 'Deposit invoice sent',
-  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes', 'Client phone', 'Location', 'Start time'];
+  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes', 'Client phone', 'Location', 'Start time', 'Calendar event'];
 const SERVICES = ['Wedding', 'Elopement', 'Engagement session', 'Surprise proposal'];
 const PACKAGES = ['The Vow — $1,000', 'The Story — $1,450', 'The Complete Story — $1,950', 'Intimate Elopement — $850',
   'Adventure Elopement — $1,250', 'Surprise proposal — $250', 'Engagement session — $225', 'Custom'];
@@ -369,6 +369,10 @@ function appApi_(r) {
       }
       case 'payments': return jsonOut_({ payments: appPayments_() });
       case 'clients': return jsonOut_({ clients: appClients_() });
+      case 'enquiries': return jsonOut_({ enquiries: appEnquiries_() });
+      case 'setEnquiry': setEnqStatus_(d.key, { status: d.status, note: d.note }); return jsonOut_({ ok: true });
+      case 'convertEnquiry': return jsonOut_(appConvertEnquiry_(d.key));
+      case 'syncCalendar': { let n = 0; appBookings_().forEach(b => { if (syncCalendar_(b.row)) n++; }); return jsonOut_({ ok: true, synced: n }); }
     }
     return jsonOut_({ error: 'unknown action' });
   } catch (err) { return jsonOut_({ error: String(err.message || err) }); }
@@ -429,6 +433,7 @@ function appSave_(d) {
     setCell_(sh, row, map[k], v);
   });
   fillRow_(sh, row);
+  try { syncCalendar_(row); } catch (err) { console.warn('calendar: ' + err); }
   return { ok: true, ref: sh.getRange(row, 1).getValue() };
 }
 function appClients_() {
@@ -450,9 +455,95 @@ function appDashboard_() {
     today, upcoming: upcoming.slice(0, 8),
     owed: Math.round(bks.reduce((s, b) => s + b.owed, 0) * 100) / 100,
     overdue: bks.filter(b => b.owed > 0 && b.depositPaid && b.balanceDue && b.balanceDue < today),
+    newEnquiries: (() => { try { return appEnquiries_().filter(e => e.status === 'New').slice(0, 5); } catch (err) { return []; } })(),
     needsInvoice: bks.filter(b => !b.depositInvoiceSent && /draft/i.test(String(b.status || 'draft'))),
     incomeMonth: sum(pays.filter(p => iso_(new Date(p.paidAt)).slice(0, 7) === month)),
     incomeYear: sum(pays.filter(p => iso_(new Date(p.paidAt)).slice(0, 4) === year)),
     recent: pays.slice(0, 6), bookedCount: upcoming.length,
   };
+}
+
+// ---------- website enquiries (Google Form "Joenell Photography - Website Enquiries" responses sheet) ----------
+const ENQ_SHEET_ID = '1OTNlsOw1ZcMbxPkzqrJ5WM8doLLy5wKjgfkEbolP7p8';
+const ENQ_HEAD = ['Key', 'Status', 'Booking ref', 'Note', 'Updated'];
+function enqSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName('Enquiries');
+  if (!sh) { sh = ss.insertSheet('Enquiries'); sh.getRange(1, 1, 1, ENQ_HEAD.length).setValues([ENQ_HEAD]).setFontWeight('bold'); sh.setFrozenRows(1); }
+  return sh;
+}
+function enqStatusMap_() {
+  const sh = enqSheet_(), m = {};
+  if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues().forEach((r, i) => m[r[0]] = { row: i + 2, status: r[1], ref: r[2], note: r[3] });
+  return m;
+}
+function setEnqStatus_(key, o) {
+  if (!key) throw new Error('missing enquiry');
+  const sh = enqSheet_(), m = enqStatusMap_(), cur = m[key] || {};
+  const row = cur.row || sh.getLastRow() + 1;
+  sh.getRange(row, 1, 1, 5).setValues([[key, o.status || cur.status || 'New', o.ref !== undefined ? o.ref : (cur.ref || ''),
+    o.note !== undefined ? o.note : (cur.note || ''), new Date()]]);
+}
+function appEnquiries_() {
+  const src = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('ENQ_SHEET_ID') || ENQ_SHEET_ID);
+  const sh = src.getSheetByName('Form Responses 1') || src.getSheets()[0];
+  if (sh.getLastRow() < 2) return [];
+  const v = sh.getDataRange().getValues(), h = v[0].map(x => String(x).toLowerCase());
+  const col = re => h.findIndex(x => re.test(x));
+  const c = { at: col(/timestamp/), name: col(/name/), phone: col(/phone/), email: col(/e-?mail/), session: col(/session|service/),
+    date: col(/^date|wedding date|event date/), location: col(/location|venue/), message: col(/message/), source: col(/hear/), page: col(/page|source/) };
+  const st = enqStatusMap_(), g = (r, k) => c[k] >= 0 ? r[c[k]] : '';
+  return v.slice(1).filter(r => r[c.at] || g(r, 'name')).map(r => {
+    const at = r[c.at] instanceof Date ? r[c.at] : new Date(r[c.at]);
+    const key = (isNaN(at) ? String(r[c.at]) : at.toISOString()) + '|' + String(g(r, 'name')).slice(0, 40);
+    const s = st[key] || {};
+    return { key, at: isNaN(at) ? String(r[c.at]) : at.toISOString(), name: String(g(r, 'name')), phone: String(g(r, 'phone')), email: String(g(r, 'email')),
+      session: String(g(r, 'session')), date: g(r, 'date') instanceof Date ? iso_(g(r, 'date')) : String(g(r, 'date')), location: String(g(r, 'location')),
+      message: String(g(r, 'message')), source: String(g(r, 'source')), page: String(g(r, 'page')), status: s.status || 'New', ref: s.ref || '', note: s.note || '' };
+  }).reverse();
+}
+function appConvertEnquiry_(key) {
+  const e = appEnquiries_().find(x => x.key === key); if (!e) throw new Error('enquiry not found');
+  if (e.ref && findRowByRef_(e.ref)) return { ok: true, ref: e.ref };
+  const ss = e.session.toLowerCase();
+  const service = /elop/.test(ss) ? 'Elopement' : /propos/.test(ss) ? 'Surprise proposal' : /engag|couple|portrait/.test(ss) ? 'Engagement session' : /wed/.test(ss) ? 'Wedding' : '';
+  const dt = /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? e.date : (e.date && !isNaN(new Date(e.date)) ? iso_(new Date(e.date)) : '');
+  const r = appSave_({ name: e.name || 'New client', email: e.email, phone: e.phone, service, date: dt, location: e.location,
+    notes: 'From website enquiry ' + iso_(new Date(e.at)) + (e.message ? ':\n' + e.message : '') + (e.date && !dt ? '\nDate asked: ' + e.date : '') });
+  setEnqStatus_(key, { status: 'Booked', ref: r.ref });
+  return r;
+}
+
+// ---------- Google Calendar sync (owner's main calendar) ----------
+function syncCalendar_(row) {
+  const sh = bk_(), o = rowObj_(sh, row);
+  if (!o['Booking ref']) return false;
+  const cal = CalendarApp.getDefaultCalendar();
+  let ev = null;
+  if (o['Calendar event']) { try { ev = cal.getEventById(o['Calendar event']); } catch (err) { ev = null; } }
+  if (/cancel/i.test(String(o['Status'])) || !(o['Event date'] instanceof Date)) {
+    if (ev) { ev.deleteEvent(); setCell_(sh, row, 'Calendar event', ''); }
+    return false;
+  }
+  const title = `${o['Service'] || 'Shoot'} — ${o['Client name']}`;
+  const desc = `Booking ${o['Booking ref']} · ${o['Status'] || 'Draft'}\n${o['Package'] || ''}\nPhone: ${o['Client phone'] || '-'}\nEmail: ${o['Client email'] || '-'}\n` +
+    `Total ${money_(o['Total (CAD)'])} · balance due ${dateStr_(o['Balance due'])}\n\nhttps://www.joenellphotography.ca/app/#/b/${encodeURIComponent(o['Booking ref'])}`;
+  const day = new Date(o['Event date']); day.setHours(0, 0, 0, 0);
+  const m = String(o['Start time'] || '').match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  let start = null, end = null;
+  if (m) {
+    let hh = Number(m[1]) % 12 + (/pm/i.test(m[3] || '') ? 12 : 0); if (!m[3] && Number(m[1]) > 12) hh = Number(m[1]);
+    if (!m[3] && Number(m[1]) <= 7) hh += 12; // "3:00" means afternoon
+    start = new Date(day); start.setHours(hh, Number(m[2] || 0));
+    end = new Date(start.getTime() + (/wedding/i.test(o['Service']) ? 8 : /elope/i.test(o['Service']) ? 4 : 1.5) * 3600e3);
+  }
+  if (ev) {
+    ev.setTitle(title); ev.setDescription(desc); ev.setLocation(String(o['Location'] || ''));
+    if (start) ev.setTime(start, end); else ev.setAllDayDate(day);
+  } else {
+    ev = start ? cal.createEvent(title, start, end, { description: desc, location: String(o['Location'] || '') })
+      : cal.createAllDayEvent(title, day, { description: desc, location: String(o['Location'] || '') });
+    setCell_(sh, row, 'Calendar event', ev.getId());
+  }
+  return true;
 }

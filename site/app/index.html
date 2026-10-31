@@ -67,10 +67,10 @@ dialog::backdrop{background:rgba(43,41,38,.45)}
 <main id="v"><div class="spin">Loading…</div></main>
 <nav>
   <a href="#/" data-n="home"><b>⌂</b>Home</a>
-  <a href="#/bookings" data-n="bookings"><b>☰</b>Bookings</a>
+  <a href="#/leads" data-n="leads"><b>✉</b>Leads</a>
   <a href="#/new" data-n="new"><b>＋</b>New</a>
+  <a href="#/bookings" data-n="bookings"><b>☰</b>Bookings</a>
   <a href="#/payments" data-n="payments"><b>$</b>Payments</a>
-  <a href="#/clients" data-n="clients"><b>☺</b>Clients</a>
 </nav>
 <div id="toast"></div>
 <dialog id="dlg"></dialog>
@@ -109,6 +109,7 @@ const views = {
       <div class="stat"><small>Upcoming</small><strong>${d.bookedCount}</strong></div>
       <div class="stat"><small>This month</small><strong class="money">${money(d.incomeMonth)}</strong></div>
       <div class="stat"><small>This year</small><strong class="money">${money(d.incomeYear)}</strong></div></div>
+      ${(d.newEnquiries || []).length ? `<h3>New enquiries</h3><div class="list">${d.newEnquiries.map(leadCard).join('')}</div>` : ''}
       ${d.overdue.length ? `<h3>Overdue balances</h3><div class="list">${d.overdue.map(bookingCard).join('')}</div>` : ''}
       ${d.needsInvoice.length ? `<h3>Draft — invoice not sent</h3><div class="list">${d.needsInvoice.map(bookingCard).join('')}</div>` : ''}
       <h3>Coming up</h3><div class="list">${d.upcoming.length ? d.upcoming.map(b => bookingCard(b).replace('</div></div><div', `${days(b.date) <= 14 ? ` · <b>${days(b.date) === 0 ? 'today' : 'in ' + days(b.date) + ' days'}</b>` : ''}</div></div><div`)).join('') : '<div class="empty">No upcoming bookings yet.</div>'}</div>
@@ -121,7 +122,7 @@ const views = {
       .sort((a, b) => f === 'past' ? String(b.date).localeCompare(a.date) : String(a.date).localeCompare(b.date));
     const chip = (k, t) => `<button class="${f === k ? 'on' : ''}" onclick="location.hash='#/bookings?f=${k}'">${t}</button>`;
     setTimeout(() => { const s = $('#q'); s && s.addEventListener('input', () => document.querySelectorAll('.list .card').forEach(c => c.style.display = c.textContent.toLowerCase().includes(s.value.toLowerCase()) ? '' : 'none')); });
-    return `<h2>Bookings</h2><input id="q" class="search" type="search" placeholder="Search name, service, ref…">
+    return `<div class="row"><h2>Bookings</h2><a class="pill" href="#/clients">Clients →</a></div><input id="q" class="search" type="search" placeholder="Search name, service, ref…">
       <div class="chips">${chip('upcoming', 'Upcoming')}${chip('owed', 'Money owed')}${chip('past', 'Past')}${chip('cancelled', 'Cancelled')}${chip('all', 'All')}</div>
       <div class="list">${sel.length ? sel.map(bookingCard).join('') : '<div class="empty">Nothing here.</div>'}</div>`;
   },
@@ -151,6 +152,29 @@ const views = {
   },
   async new(q, ref) { return form(null); },
   async edit(q, ref) { const { booking } = await api('booking', { ref }); return form(booking); },
+  async leads(q) {
+    const { enquiries } = await api('enquiries');
+    const f = q.f || 'New', sel = enquiries.filter(e => f === 'All' || e.status === f);
+    const chip = k => `<button class="${f === k ? 'on' : ''}" onclick="location.hash='#/leads?f=${k}'">${k}</button>`;
+    return `<h2>Enquiries</h2><div class="chips">${['New', 'Contacted', 'Booked', 'Lost', 'All'].map(chip).join('')}</div>
+      <div class="list">${sel.length ? sel.map(leadCard).join('') : '<div class="empty">Nothing here. New website enquiries show up automatically.</div>'}</div>`;
+  },
+  async lead(q, key) {
+    const { enquiries } = await api('enquiries'), e = enquiries.find(x => x.key === key);
+    if (!e) return '<div class="empty">Enquiry not found.</div>';
+    window._e = e;
+    const wa = String(e.phone).replace(/\D/g, '').replace(/^(\d{10})$/, '1$1');
+    return `<h2>${esc(e.name || 'Enquiry')}</h2><div>${pill(e.status)} <span style="color:var(--muted)">${fdate(e.at)}</span></div>
+      <div class="btns">${e.ref ? `<a class="b" href="#/b/${encodeURIComponent(e.ref)}">Open booking</a>` : `<button class="b" onclick="convLead()">Create booking</button>`}
+        ${e.email ? `<a class="b alt" href="mailto:${esc(e.email)}?subject=${encodeURIComponent('Your photography enquiry — Joenell Photography')}">Email</a>` : ''}
+        ${e.phone ? `<a class="b alt" href="https://wa.me/${esc(wa)}">WhatsApp</a><a class="b alt" href="tel:${esc(e.phone)}">Call</a>` : ''}</div>
+      <div class="card"><dl><dt>Session</dt><dd>${esc(e.session || '—')}</dd><dt>Date</dt><dd>${esc(e.date || '—')}</dd><dt>Location</dt><dd>${esc(e.location || '—')}</dd>
+        <dt>Email</dt><dd>${esc(e.email || '—')}</dd><dt>Phone</dt><dd>${esc(e.phone || '—')}</dd><dt>Heard via</dt><dd>${esc(e.source || '—')}</dd></dl></div>
+      ${e.message ? `<h3>Message</h3><div class="card" style="white-space:pre-wrap">${esc(e.message)}</div>` : ''}
+      <h3>Status</h3><div class="card"><div class="chips" style="margin:0">${['New', 'Contacted', 'Booked', 'Lost'].map(k => `<button class="${e.status === k ? 'on' : ''}" onclick="setLead('${k}')">${k}</button>`).join('')}</div>
+        <label style="display:block;font-size:14px;color:var(--muted);margin:12px 0 4px">Note</label><textarea id="ln" rows="2">${esc(e.note)}</textarea>
+        <div class="btns"><button class="b alt" onclick="setLead()">Save note</button></div></div>`;
+  },
   async payments() {
     const { payments } = await api('payments');
     return `<h2>Payments</h2>${payments.length ? payments.map(p => `<a class="card row" href="#/b/${encodeURIComponent(p.ref)}"><div><div class="t">${esc(p.name || p.ref)}</div><div class="s">${esc(p.kind)} · ${esc(p.method)} · ${fdate(p.paidAt)}${p.mode === 'test' ? ' · <i>test</i>' : ''}</div></div><div class="money">${money(p.amount)}</div></a>`).join('') : '<div class="empty">No payments yet.</div>'}`;
@@ -162,6 +186,15 @@ const views = {
       ${c.bookings.map(b => `<div style="margin-top:6px"><a href="#/b/${encodeURIComponent(b.ref)}">${esc(b.service)} · ${fdate(b.date)}</a> ${pill(b.status)}</div>`).join('')}</div>`).join('') : '<div class="empty">No clients yet.</div>'}`;
   },
 };
+
+const leadCard = e => `<a class="card row" href="#/lead/${encodeURIComponent(e.key)}"><div><div class="t">${esc(e.name || 'Enquiry')}</div><div class="s">${esc(e.session || '')}${e.date ? ' · ' + esc(e.date) : ''}</div></div><div style="text-align:right">${pill(e.status)}<div class="s">${fdate(e.at)}</div></div></a>`;
+async function setLead(status) {
+  const e = window._e; try { await api('setEnquiry', { key: e.key, status: status || e.status, note: $('#ln').value }); toast('Saved'); route(); } catch (err) { toast(err.message); }
+}
+async function convLead() {
+  if (!confirm('Create a booking from this enquiry?')) return;
+  try { const r = await api('convertEnquiry', { key: window._e.key }); toast('Booking created'); location.hash = '#/edit/' + encodeURIComponent(r.ref); } catch (err) { toast(err.message); }
+}
 
 function form(b) {
   b = b || {};
@@ -211,7 +244,7 @@ async function recPay(e) {
 async function route() {
   const [path, qs] = (location.hash.slice(2) || '').split('?'), [name, arg] = path.split('/');
   const view = views[name || 'home'] ? (name || 'home') : 'home', q = Object.fromEntries(new URLSearchParams(qs || ''));
-  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.n === ({ b: 'bookings', edit: 'bookings' }[view] || view)));
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.n === ({ b: 'bookings', edit: 'bookings', clients: 'bookings', lead: 'leads' }[view] || view)));
   v.innerHTML = '<div class="spin">Loading…</div>';
   try { v.innerHTML = await views[view](q, decodeURIComponent(arg || '')); window.scrollTo(0, 0); }
   catch (err) { v.innerHTML = `<div class="empty">Couldn't load: ${esc(err.message)}<br><br><button class="b alt" onclick="route()">Try again</button></div>`; }

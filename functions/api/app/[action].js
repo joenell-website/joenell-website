@@ -1,7 +1,7 @@
 // POST /api/app/<action> — owner session required; forwards to the Apps Script web app (bookings sheet) with APP_KEY.
 import { cleanEnv, json, readSession } from '../../_lib/session.js';
 
-const ACTIONS = new Set(['dashboard', 'bookings', 'booking', 'saveBooking', 'sendInvoice', 'recordPayment', 'payments', 'clients']);
+const ACTIONS = new Set(['dashboard', 'bookings', 'booking', 'saveBooking', 'sendInvoice', 'recordPayment', 'payments', 'clients', 'enquiries', 'setEnquiry', 'convertEnquiry', 'syncCalendar']);
 
 export async function onRequestPost({ request, env: raw, params }) {
   const env = cleanEnv(raw);
