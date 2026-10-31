@@ -22,7 +22,7 @@ const PAY_HEAD = ['Paid at', 'Booking ref', 'Kind', 'Amount', 'Currency', 'Clien
   'Stripe session', 'Payment intent', 'Mode', 'Receipt sent', 'Questionnaire sent', 'Method'];
 const BK_HEAD = ['Booking ref', 'Client name', 'Client email', 'Service', 'Event date', 'Package', 'Total (CAD)',
   'Deposit (CAD)', 'Balance (CAD)', 'Balance due', 'Status', 'Send deposit invoice', 'Deposit invoice sent',
-  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes', 'Client phone', 'Location', 'Start time', 'Calendar event'];
+  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes', 'Client phone', 'Location', 'Start time', 'Calendar event', 'Contract sent', 'Contract signed', 'Signed by', 'Contract hash'];
 const SERVICES = ['Wedding', 'Elopement', 'Engagement session', 'Surprise proposal'];
 const PACKAGES = ['The Vow — $1,000', 'The Story — $1,450', 'The Complete Story — $1,950', 'Intimate Elopement — $850',
   'Adventure Elopement — $1,250', 'Surprise proposal — $250', 'Engagement session — $225', 'Custom'];
@@ -222,6 +222,7 @@ function sendInvoice_(r, kind, reminder) {
   if (kind === 'deposit') { setCell_(sh, r, 'Deposit invoice sent', now); setCell_(sh, r, 'Status', 'Deposit invoice sent'); }
   else if (reminder) setCell_(sh, r, 'Balance reminder sent', now);
   else { setCell_(sh, r, 'Balance invoice sent', now); setCell_(sh, r, 'Status', 'Balance invoice sent'); }
+  return url;
 }
 
 function dailyCheck() {
@@ -247,6 +248,7 @@ function doPost(e) {
   let r;
   try { r = JSON.parse(e.postData.contents); } catch (err) { return out_('bad json'); }
   if (r && r.source === 'app') return appApi_(r);
+  if (r && r.source === 'sign') return signContract_(r);
   if (!r || r.source !== 'stripe' || !/^cs_(test|live)_/.test(r.session || '')) return out_('ignored');
   return out_(recordPayment_({ id: r.session, method: 'card', ref: r.ref, kind: r.kind, amount: Number(r.amount || 0),
     currency: r.currency || 'CAD', name: r.name, email: r.email, paid_at: r.paid_at, pi: r.payment_intent, live: !!r.livemode }));
@@ -368,6 +370,12 @@ function appApi_(r) {
         return jsonOut_({ ok: true, booking: appBooking_(d.ref).booking });
       }
       case 'payments': return jsonOut_({ payments: appPayments_() });
+      case 'sendContract': {
+        const row = findRowByRef_(d.ref); if (!row) throw new Error('booking not found');
+        if (!/^https:\/\/(www\.)?joenellphotography\.ca\/sign\?/.test(d.url || '')) throw new Error('bad link');
+        sendContract_(row, d.url);
+        return jsonOut_({ ok: true, booking: appBooking_(d.ref).booking });
+      }
       case 'clients': return jsonOut_({ clients: appClients_() });
       case 'enquiries': return jsonOut_({ enquiries: appEnquiries_() });
       case 'setEnquiry': setEnqStatus_(d.key, { status: d.status, note: d.note }); return jsonOut_({ ok: true });
@@ -391,14 +399,15 @@ function appBookings_() {
   const pays = appPayments_().filter(p => p.mode !== 'test'), paid = {};
   pays.forEach(p => paid[p.ref] = (paid[p.ref] || 0) + p.amount);
   return sh.getRange(2, 1, sh.getLastRow() - 1, BK_HEAD.length).getValues().map((v, i) => {
-    const o = {}; BK_HEAD.forEach((h, j) => o[h] = v[j] instanceof Date ? (/sent|paid$/i.test(h) ? v[j].toISOString() : iso_(v[j])) : v[j]);
+    const o = {}; BK_HEAD.forEach((h, j) => o[h] = v[j] instanceof Date ? (/sent|paid$|signed$/i.test(h) ? v[j].toISOString() : iso_(v[j])) : v[j]);
     if (!o['Booking ref'] && !o['Client name']) return null;
     const total = Number(o['Total (CAD)']) || 0, p = Math.round((paid[o['Booking ref']] || 0) * 100) / 100;
     return { row: i + 2, ref: o['Booking ref'], name: o['Client name'], email: o['Client email'], phone: o['Client phone'], service: o['Service'],
       date: o['Event date'], time: o['Start time'], location: o['Location'], pkg: o['Package'], total, deposit: Number(o['Deposit (CAD)']) || 0,
       balance: Number(o['Balance (CAD)']) || 0, balanceDue: o['Balance due'], status: o['Status'], notes: o['Notes'], paid: p, owed: Math.max(0, Math.round((total - p) * 100) / 100),
       depositInvoiceSent: o['Deposit invoice sent'], depositPaid: o['Deposit paid'], balanceInvoiceSent: o['Balance invoice sent'],
-      balanceReminderSent: o['Balance reminder sent'], balancePaid: o['Balance paid'] };
+      balanceReminderSent: o['Balance reminder sent'], balancePaid: o['Balance paid'],
+      contractSent: o['Contract sent'], contractSigned: o['Contract signed'], signedBy: o['Signed by'] };
   }).filter(Boolean);
 }
 function appBooking_(ref) {
@@ -546,4 +555,51 @@ function syncCalendar_(row) {
     setCell_(sh, row, 'Calendar event', ev.getId());
   }
   return true;
+}
+
+// ---------- booking agreement (e-signature) ----------
+function sendContract_(row, url) {
+  const sh = bk_(), o = rowObj_(sh, row), first = String(o['Client name']).split(/\s+/)[0];
+  if (!o['Client email']) throw new Error('missing Client email');
+  const html = `<div style="background:#f8f6f2;padding:28px 12px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#2b2a27">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden">
+<div style="background:#3f4a3c;color:#fff;padding:22px 28px;font-size:20px">${BRAND}</div>
+<div style="padding:26px 28px;font-size:16px;line-height:1.6"><p>Hi ${first},</p>
+<p>I'm so happy to be photographing your ${String(o['Service']).toLowerCase()} on <b>${dateStr_(o['Event date'])}</b>! Before I send your deposit invoice, please read and sign the booking agreement — it takes about 3 minutes.</p>
+<p style="margin:22px 0"><a href="${url}" style="background:#3f4a3c;color:#fff;text-decoration:none;padding:13px 26px;border-radius:6px;display:inline-block">Review &amp; sign the agreement</a></p>
+<p>As soon as you sign, your deposit invoice (20% to reserve your date) arrives by email.</p>
+<p>Any questions, just reply to this email.</p><p>Joenell</p></div></div></div>`;
+  GmailApp.sendEmail(o['Client email'], `Your booking agreement — ${o['Service']} on ${dateStr_(o['Event date'])}`,
+    `Hi ${first},\n\nPlease review and sign your booking agreement:\n${url}\n\nAs soon as you sign, your deposit invoice arrives by email.\n\nJoenell\n${BRAND}`,
+    { htmlBody: html, name: BRAND, replyTo: REPLY_TO });
+  setCell_(sh, row, 'Contract sent', new Date());
+  if (!o['Status'] || /draft/i.test(o['Status'])) setCell_(sh, row, 'Status', 'Agreement sent');
+}
+
+function signContract_(r) {
+  const key = PropertiesService.getScriptProperties().getProperty('APP_KEY');
+  if (!key || r.key !== key) return jsonOut_({ error: 'unauthorized' });
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const sh = bk_(), row = findRowByRef_(r.ref);
+    if (!row) return jsonOut_({ error: 'booking not found' });
+    let o = rowObj_(sh, row);
+    if (!o['Contract signed']) {
+      setCell_(sh, row, 'Contract signed', new Date(r.at || Date.now()));
+      setCell_(sh, row, 'Signed by', String(r.signedName).slice(0, 120));
+      setCell_(sh, row, 'Contract hash', `${r.version} sha256:${r.hash} ip:${r.ip}`);
+      setCell_(sh, row, 'Status', 'Agreement signed');
+      const copy = `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#2b2a27;max-width:680px;margin:0 auto;line-height:1.55">
+${r.agreementHtml}<hr><p><b>Signed electronically by:</b> ${String(r.signedName).replace(/</g, '&lt;')}<br><b>Date:</b> ${Utilities.formatDate(new Date(r.at || Date.now()), 'America/Vancouver', 'MMMM d, yyyy h:mm a z')}<br>
+<b>Agreement version:</b> ${r.version} · <b>Fingerprint:</b> ${String(r.hash).slice(0, 16)}</p><p>${BRAND} · www.joenellphotography.ca · ${REPLY_TO}</p></div>`;
+      const subj = `Signed booking agreement — ${o['Service']} on ${dateStr_(o['Event date'])} (${r.ref})`;
+      if (o['Client email']) GmailApp.sendEmail(o['Client email'], subj, 'Your signed booking agreement is below (HTML email).', { htmlBody: copy, name: BRAND, replyTo: REPLY_TO });
+      GmailApp.sendEmail(OWNER, subj, `${r.signedName} signed the agreement for ${r.ref}.`, { htmlBody: copy, name: BRAND + ' bookings' });
+    }
+    o = rowObj_(sh, row);
+    let payUrl = '';
+    if (!o['Deposit paid']) { payUrl = sendInvoice_(row, 'deposit') || ''; setCell_(sh, row, 'Send deposit invoice', true); }
+    return jsonOut_({ ok: true, payUrl });
+  } catch (err) { return jsonOut_({ error: String(err.message || err) }); }
+  finally { lock.releaseLock(); }
 }

@@ -78,7 +78,7 @@ dialog::backdrop{background:rgba(43,41,38,.45)}
 const SERVICES = ['Wedding', 'Elopement', 'Engagement session', 'Surprise proposal'];
 const PACKAGES = ['The Vow — $1,000', 'The Story — $1,450', 'The Complete Story — $1,950', 'Intimate Elopement — $850',
   'Adventure Elopement — $1,250', 'Surprise proposal — $250', 'Engagement session — $225', 'Custom'];
-const STATUSES = ['Draft', 'Deposit invoice sent', 'Deposit paid — date reserved', 'Balance invoice sent', 'Paid in full', 'Completed', 'Cancelled'];
+const STATUSES = ['Draft', 'Agreement sent', 'Agreement signed', 'Deposit invoice sent', 'Deposit paid — date reserved', 'Balance invoice sent', 'Paid in full', 'Completed', 'Cancelled'];
 const $ = s => document.querySelector(s), v = $('#v');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => '$' + Number(n || 0).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -132,7 +132,8 @@ const views = {
     window._b = b;
     return `<h2>${esc(b.name)}</h2><div>${pill(b.status)} <span class="s" style="color:var(--muted)">${esc(b.ref)}</span></div>
       <div class="btns">
-        ${!b.depositPaid ? `<button class="b" onclick="sendInv('deposit')">${b.depositInvoiceSent ? 'Resend' : 'Send'} deposit invoice</button>` : ''}
+        ${!b.depositPaid && !b.contractSigned ? `<button class="b" onclick="sendContract()">${b.contractSent ? 'Resend' : 'Send'} agreement to sign</button>` : ''}
+        ${!b.depositPaid ? `<button class="b ${b.contractSigned ? '' : 'alt'}" onclick="sendInv('deposit')">${b.depositInvoiceSent ? 'Resend' : 'Send'} deposit invoice${b.contractSigned ? '' : ' only'}</button>` : ''}
         ${b.depositPaid && b.owed > 0 ? `<button class="b" onclick="sendInv('balance')">${b.balanceInvoiceSent ? 'Resend' : 'Send'} balance invoice</button>` : ''}
         ${b.owed > 0 ? `<button class="b alt" onclick="payDlg()">Record payment</button>` : ''}
         <a class="b alt" href="#/edit/${encodeURIComponent(b.ref)}">Edit</a></div>
@@ -145,7 +146,7 @@ const views = {
         <dt>Total</dt><dd class="money">${money(b.total)}</dd><dt>Deposit (20%)</dt><dd class="money">${money(b.deposit)}</dd>
         <dt>Paid so far</dt><dd class="money">${money(b.paid)}</dd><dt><b>Still owed</b></dt><dd class="money"><b>${money(b.owed)}</b></dd>
         <dt>Balance due by</dt><dd>${fdate(b.balanceDue)}</dd></dl></div>
-      <h3>Timeline</h3><div class="card"><dl>${step('Deposit invoice sent', b.depositInvoiceSent)}${step('Deposit paid', b.depositPaid)}${step('Balance invoice sent', b.balanceInvoiceSent)}${step('Reminder sent', b.balanceReminderSent)}${step('Balance paid', b.balancePaid)}</dl></div>
+      <h3>Timeline</h3><div class="card"><dl>${step('Agreement sent', b.contractSent)}${step('Agreement signed', b.contractSigned)}${b.signedBy ? `<dt>Signed by</dt><dd>${esc(b.signedBy)}</dd>` : ''}${step('Deposit invoice sent', b.depositInvoiceSent)}${step('Deposit paid', b.depositPaid)}${step('Balance invoice sent', b.balanceInvoiceSent)}${step('Reminder sent', b.balanceReminderSent)}${step('Balance paid', b.balancePaid)}</dl></div>
       <h3>Payments</h3>${payments.length ? payments.map(p => `<div class="card row"><div><div class="t">${esc(p.kind)} · ${esc(p.method)}</div><div class="s">${fdate(p.paidAt)}${p.mode === 'test' ? ' · test' : ''}</div></div><div class="money">${money(p.amount)}</div></div>`).join('') : '<div class="empty">No payments yet.</div>'}
       ${b.notes ? `<h3>Notes</h3><div class="card" style="white-space:pre-wrap">${esc(b.notes)}</div>` : ''}
       <h3>Plan of the day (questionnaire)</h3>${questionnaire ? `<div class="card qa">${questionnaire.map(x => `<p><b>${esc(x.q)}</b>${esc(x.a)}</p>`).join('')}</div>` : '<div class="empty">Not filled in yet — the link goes out with the first payment receipt.</div>'}`;
@@ -218,6 +219,11 @@ async function save(e) {
   const d = Object.fromEntries(new FormData(f)); if (location.hash.startsWith('#/edit/')) d.ref = decodeURIComponent(location.hash.slice(7));
   try { const r = await api('saveBooking', d); toast('Saved'); location.hash = '#/b/' + encodeURIComponent(r.ref); }
   catch (err) { toast(err.message); btn.disabled = false; }
+}
+async function sendContract() {
+  const b = window._b; if (!b.email) return toast('Add the client email first (Edit).');
+  if (!confirm(`Email the booking agreement to ${b.email}? Once they sign, the deposit invoice goes out automatically.`)) return;
+  toast('Sending…'); try { await api('sendContract', { ref: b.ref }); toast('Agreement sent ✓'); route(); } catch (err) { toast(err.message); }
 }
 async function sendInv(kind) {
   const b = window._b; if (!b.email) return toast('Add the client email first (Edit).');
