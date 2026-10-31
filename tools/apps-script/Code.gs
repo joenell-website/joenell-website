@@ -493,22 +493,18 @@ function setEnqStatus_(key, o) {
   sh.getRange(row, 1, 1, 5).setValues([[key, o.status || cur.status || 'New', o.ref !== undefined ? o.ref : (cur.ref || ''),
     o.note !== undefined ? o.note : (cur.note || ''), new Date()]]);
 }
+const ENQ_FORM_ID = '17-RemTisO5s7OE5wacIW9yxe_os-y-rGvh9Xl_6IAmc'; // Google Form "Website enquiries - joenellphotography.ca"
 function appEnquiries_() {
-  const src = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('ENQ_SHEET_ID') || ENQ_SHEET_ID);
-  const sh = src.getSheetByName('Form Responses 1') || src.getSheets()[0];
-  if (sh.getLastRow() < 2) return [];
-  const v = sh.getDataRange().getValues(), h = v[0].map(x => String(x).toLowerCase());
-  const col = re => h.findIndex(x => re.test(x));
-  const c = { at: col(/timestamp/), name: col(/name/), phone: col(/phone/), email: col(/e-?mail/), session: col(/session|service/),
-    date: col(/^date|wedding date|event date/), location: col(/location|venue/), message: col(/message/), source: col(/hear/), page: col(/page|source/) };
-  const st = enqStatusMap_(), g = (r, k) => c[k] >= 0 ? r[c[k]] : '';
-  return v.slice(1).filter(r => r[c.at] || g(r, 'name')).map(r => {
-    const at = r[c.at] instanceof Date ? r[c.at] : new Date(r[c.at]);
-    const key = (isNaN(at) ? String(r[c.at]) : at.toISOString()) + '|' + String(g(r, 'name')).slice(0, 40);
-    const s = st[key] || {};
-    return { key, at: isNaN(at) ? String(r[c.at]) : at.toISOString(), name: String(g(r, 'name')), phone: String(g(r, 'phone')), email: String(g(r, 'email')),
-      session: String(g(r, 'session')), date: g(r, 'date') instanceof Date ? iso_(g(r, 'date')) : String(g(r, 'date')), location: String(g(r, 'location')),
-      message: String(g(r, 'message')), source: String(g(r, 'source')), page: String(g(r, 'page')), status: s.status || 'New', ref: s.ref || '', note: s.note || '' };
+  const form = FormApp.openById(PropertiesService.getScriptProperties().getProperty('ENQ_FORM_ID') || ENQ_FORM_ID);
+  const st = enqStatusMap_();
+  return form.getResponses().map(resp => {
+    const a = {};
+    resp.getItemResponses().forEach(ir => { const v = ir.getResponse(); a[String(ir.getItem().getTitle()).toLowerCase()] = Array.isArray(v) ? v.join(', ') : String(v); });
+    const pick = re => { const k = Object.keys(a).find(x => re.test(x)); return k ? a[k] : ''; };
+    const key = resp.getId(), s = st[key] || {};
+    return { key, at: resp.getTimestamp().toISOString(), name: pick(/name/), phone: pick(/phone/), email: pick(/e-?mail/) || resp.getRespondentEmail() || '',
+      session: pick(/session|service/), date: pick(/^date|wedding date|event date/), location: pick(/location|venue/), message: pick(/message/),
+      source: pick(/hear/), page: pick(/page/), status: s.status || 'New', ref: s.ref || '', note: s.note || '' };
   }).reverse();
 }
 function appConvertEnquiry_(key) {
