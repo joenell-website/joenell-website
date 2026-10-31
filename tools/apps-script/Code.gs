@@ -63,6 +63,7 @@ function setup() {
   ScriptApp.newTrigger('handleEdit').forSpreadsheet(ss).onEdit().create();
   ScriptApp.newTrigger('dailyCheck').timeBased().everyDays(1).atHour(9).inTimezone('America/Vancouver').create();
   ScriptApp.newTrigger('checkInterac').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('onEnquiry').forForm(PropertiesService.getScriptProperties().getProperty('ENQ_FORM_ID') || ENQ_FORM_ID).onFormSubmit().create();
   return 'ok';
 }
 
@@ -598,4 +599,18 @@ ${r.agreementHtml}<hr><p><b>Signed electronically by:</b> ${String(r.signedName)
     return jsonOut_({ ok: true, payUrl });
   } catch (err) { return jsonOut_({ error: String(err.message || err) }); }
   finally { lock.releaseLock(); }
+}
+
+// New website enquiry → instant email to the owner (installable form-submit trigger, created by setup()).
+function onEnquiry(e) {
+  const a = {};
+  e.response.getItemResponses().forEach(ir => { const v = ir.getResponse(); a[String(ir.getItem().getTitle()).toLowerCase()] = Array.isArray(v) ? v.join(', ') : String(v); });
+  const pick = re => { const k = Object.keys(a).find(x => re.test(x)); return k ? a[k] : ''; };
+  const name = pick(/name/) || 'Someone', email = pick(/e-?mail/), phone = pick(/phone/), session = pick(/session|service/);
+  const wa = String(phone).replace(/\D/g, '').replace(/^(\d{10})$/, '1$1');
+  const lines = Object.keys(a).filter(k => a[k]).map(k => `${k.charAt(0).toUpperCase() + k.slice(1)}: ${a[k]}`).join('\n');
+  GmailApp.sendEmail(OWNER, `New enquiry: ${name}${session ? ' — ' + session : ''}${pick(/^date/) ? ' (' + pick(/^date/) + ')' : ''}`,
+    `New website enquiry\n\n${lines}\n\nOpen in your app: https://www.joenellphotography.ca/app/#/leads` +
+    (wa ? `\nWhatsApp: https://wa.me/${wa}` : '') + (email ? `\nReply to this email to answer ${name.split(' ')[0]} directly.` : ''),
+    { name: BRAND + ' enquiries', replyTo: email || REPLY_TO });
 }
