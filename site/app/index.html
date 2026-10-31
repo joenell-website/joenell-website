@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Joenell Bookings</title>
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="icon" href="/app/icon.svg">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bookings">
+<meta name="theme-color" content="#3f4a3c">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2926;--muted:#6b6a65;--line:#e8e4dc;--bg:#f8f6f2;--card:#fff;--brand:#3f4a3c;--brand-soft:#e9ece6;--warn:#9a5b12;--warn-soft:#f6ecdc;--bad:#a33a2c;--good:#2f6b3a;--good-soft:#e3efe4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 'Jost',system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+a{color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;display:flex;align-items:center;justify-content:space-between}
+header h1{font:500 21px 'Bodoni Moda',Georgia,serif;margin:0;letter-spacing:.3px}
+header button{background:none;border:0;color:#fff;font:inherit;font-size:14px;opacity:.85;padding:6px}
+main{max-width:760px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav a{flex:1;text-align:center;text-decoration:none;font-size:12px;color:var(--muted);padding:6px 0;border-radius:10px}
+nav a b{display:block;font-size:20px;line-height:1.1;font-weight:500}
+nav a.on{color:var(--brand);background:var(--brand-soft)}
+h2{font:500 24px 'Bodoni Moda',Georgia,serif;margin:6px 0 14px}
+h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;font-weight:600}
+.card{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 0 var(--line);margin-bottom:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:14px;padding:14px 16px}
+.stat small{display:block;color:var(--muted);font-size:13px}.stat strong{font-size:22px;font-weight:600}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;text-decoration:none}
+.row .t{font-weight:500}.row .s{color:var(--muted);font-size:14px}
+.list .card{display:block;text-decoration:none}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--brand-soft);color:var(--brand);white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.good{background:var(--good-soft);color:var(--good)}.pill.bad{background:#f6e1de;color:var(--bad)}
+.money{font-variant-numeric:tabular-nums;white-space:nowrap}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}dt{color:var(--muted)}dd{margin:0;text-align:right;word-break:break-word}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+button.b,a.b{appearance:none;border:0;border-radius:11px;padding:12px 16px;font:500 15px 'Jost',sans-serif;background:var(--brand);color:#fff;text-decoration:none;cursor:pointer;flex:1 1 auto;text-align:center;min-height:46px}
+button.b.alt,a.b.alt{background:var(--card);color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand)}
+button.b:disabled{opacity:.5}
+form label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
+input,select,textarea{width:100%;font:16px 'Jost',sans-serif;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.search{margin-bottom:12px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px}
+.chips button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font:14px 'Jost',sans-serif;white-space:nowrap;color:var(--ink)}
+.chips button.on{border-color:var(--brand);background:var(--brand);color:#fff}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.qa p{margin:0 0 10px}.qa b{display:block;font-size:13px;color:var(--muted);font-weight:500}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;z-index:9}
+#toast.on{opacity:1}
+.spin{text-align:center;color:var(--muted);padding:40px}
+dialog{border:0;border-radius:16px;padding:18px;max-width:420px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(43,41,38,.45)}
+.check{display:flex;gap:8px;align-items:center;margin-top:12px;color:var(--ink)}.check input{width:auto}
+@media (min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>Joenell Bookings</h1><button id="out">Sign out</button></header>
+<main id="v"><div class="spin">Loading…</div></main>
+<nav>
+  <a href="#/" data-n="home"><b>⌂</b>Home</a>
+  <a href="#/bookings" data-n="bookings"><b>☰</b>Bookings</a>
+  <a href="#/new" data-n="new"><b>＋</b>New</a>
+  <a href="#/payments" data-n="payments"><b>$</b>Payments</a>
+  <a href="#/clients" data-n="clients"><b>☺</b>Clients</a>
+</nav>
+<div id="toast"></div>
+<dialog id="dlg"></dialog>
+<script>
+const SERVICES = ['Wedding', 'Elopement', 'Engagement session', 'Surprise proposal'];
+const PACKAGES = ['The Vow — $1,000', 'The Story — $1,450', 'The Complete Story — $1,950', 'Intimate Elopement — $850',
+  'Adventure Elopement — $1,250', 'Surprise proposal — $250', 'Engagement session — $225', 'Custom'];
+const STATUSES = ['Draft', 'Deposit invoice sent', 'Deposit paid — date reserved', 'Balance invoice sent', 'Paid in full', 'Completed', 'Cancelled'];
+const $ = s => document.querySelector(s), v = $('#v');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => '$' + Number(n || 0).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fdate = d => { if (!d) return '—'; const x = new Date(String(d).length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? esc(d) : x.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); };
+const days = d => Math.round((new Date(d + 'T12:00:00') - new Date(new Date().toDateString() + ' 12:00')) / 864e5);
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove('on'), 2800); }
+function pill(s) { s = s || 'Draft'; const c = /paid in full|completed/i.test(s) ? 'good' : /cancel|error/i.test(s) ? 'bad' : /draft|sent/i.test(s) ? 'warn' : ''; return `<span class="pill ${c}">${esc(s)}</span>`; }
+
+const cache = {};
+async function api(action, data = {}, { fresh } = {}) {
+  const k = action + JSON.stringify(data);
+  if (!fresh && cache[k] && Date.now() - cache[k].t < 20000) return cache[k].d;
+  const r = await fetch('/api/app/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'app' }, body: JSON.stringify(data) });
+  if (r.status === 401) { location.href = '/app/login'; throw new Error('signed out'); }
+  const d = await r.json().catch(() => ({ error: 'Bad response' }));
+  if (d.error) throw new Error(d.error);
+  if (/^(dashboard|bookings|booking|payments|clients)$/.test(action)) cache[k] = { t: Date.now(), d }; else Object.keys(cache).forEach(x => delete cache[x]);
+  return d;
+}
+
+const bookingCard = b => `<a class="card row" href="#/b/${encodeURIComponent(b.ref)}"><div><div class="t">${esc(b.name)}</div><div class="s">${esc(b.service || '')} · ${fdate(b.date)}</div></div><div style="text-align:right">${pill(b.status)}<div class="s money">${b.owed > 0 ? money(b.owed) + ' owed' : ''}</div></div></a>`;
+
+const views = {
+  async home() {
+    const d = await api('dashboard');
+    return `<div class="stats">
+      <div class="stat"><small>Owed to you</small><strong class="money">${money(d.owed)}</strong></div>
+      <div class="stat"><small>Upcoming</small><strong>${d.bookedCount}</strong></div>
+      <div class="stat"><small>This month</small><strong class="money">${money(d.incomeMonth)}</strong></div>
+      <div class="stat"><small>This year</small><strong class="money">${money(d.incomeYear)}</strong></div></div>
+      ${d.overdue.length ? `<h3>Overdue balances</h3><div class="list">${d.overdue.map(bookingCard).join('')}</div>` : ''}
+      ${d.needsInvoice.length ? `<h3>Draft — invoice not sent</h3><div class="list">${d.needsInvoice.map(bookingCard).join('')}</div>` : ''}
+      <h3>Coming up</h3><div class="list">${d.upcoming.length ? d.upcoming.map(b => bookingCard(b).replace('</div></div><div', `${days(b.date) <= 14 ? ` · <b>${days(b.date) === 0 ? 'today' : 'in ' + days(b.date) + ' days'}</b>` : ''}</div></div><div`)).join('') : '<div class="empty">No upcoming bookings yet.</div>'}</div>
+      <h3>Recent payments</h3>${d.recent.length ? d.recent.map(p => `<a class="card row" href="#/b/${encodeURIComponent(p.ref)}"><div><div class="t">${esc(p.name || p.ref)}</div><div class="s">${esc(p.kind)} · ${esc(p.method)} · ${fdate(p.paidAt)}</div></div><div class="money">${money(p.amount)}</div></a>`).join('') : '<div class="empty">No payments yet.</div>'}`;
+  },
+  async bookings(q) {
+    const { bookings } = await api('bookings');
+    const f = q.f || 'upcoming', today = new Date().toISOString().slice(0, 10);
+    const sel = bookings.filter(b => f === 'all' ? true : f === 'upcoming' ? (b.date >= today && !/cancel/i.test(b.status)) : f === 'owed' ? b.owed > 0 && !/cancel/i.test(b.status) : f === 'past' ? b.date && b.date < today : /cancel/i.test(b.status))
+      .sort((a, b) => f === 'past' ? String(b.date).localeCompare(a.date) : String(a.date).localeCompare(b.date));
+    const chip = (k, t) => `<button class="${f === k ? 'on' : ''}" onclick="location.hash='#/bookings?f=${k}'">${t}</button>`;
+    setTimeout(() => { const s = $('#q'); s && s.addEventListener('input', () => document.querySelectorAll('.list .card').forEach(c => c.style.display = c.textContent.toLowerCase().includes(s.value.toLowerCase()) ? '' : 'none')); });
+    return `<h2>Bookings</h2><input id="q" class="search" type="search" placeholder="Search name, service, ref…">
+      <div class="chips">${chip('upcoming', 'Upcoming')}${chip('owed', 'Money owed')}${chip('past', 'Past')}${chip('cancelled', 'Cancelled')}${chip('all', 'All')}</div>
+      <div class="list">${sel.length ? sel.map(bookingCard).join('') : '<div class="empty">Nothing here.</div>'}</div>`;
+  },
+  async b(q, ref) {
+    const { booking: b, payments, questionnaire } = await api('booking', { ref });
+    const step = (t, d) => `<dt>${t}</dt><dd>${d ? (String(d).length > 10 ? fdate(d) : fdate(d)) : '—'}</dd>`;
+    window._b = b;
+    return `<h2>${esc(b.name)}</h2><div>${pill(b.status)} <span class="s" style="color:var(--muted)">${esc(b.ref)}</span></div>
+      <div class="btns">
+        ${!b.depositPaid ? `<button class="b" onclick="sendInv('deposit')">${b.depositInvoiceSent ? 'Resend' : 'Send'} deposit invoice</button>` : ''}
+        ${b.depositPaid && b.owed > 0 ? `<button class="b" onclick="sendInv('balance')">${b.balanceInvoiceSent ? 'Resend' : 'Send'} balance invoice</button>` : ''}
+        ${b.owed > 0 ? `<button class="b alt" onclick="payDlg()">Record payment</button>` : ''}
+        <a class="b alt" href="#/edit/${encodeURIComponent(b.ref)}">Edit</a></div>
+      <div class="card"><dl>
+        <dt>Service</dt><dd>${esc(b.service)}</dd><dt>Package</dt><dd>${esc(b.pkg || '—')}</dd>
+        <dt>Date</dt><dd>${fdate(b.date)}${b.time ? ' · ' + esc(b.time) : ''}</dd><dt>Location</dt><dd>${esc(b.location || '—')}</dd>
+        <dt>Email</dt><dd>${b.email ? `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : '—'}</dd>
+        <dt>Phone</dt><dd>${b.phone ? `<a href="tel:${esc(b.phone)}">${esc(b.phone)}</a> · <a href="https://wa.me/${esc(String(b.phone).replace(/\D/g, '').replace(/^(\d{10})$/, '1$1'))}">WhatsApp</a>` : '—'}</dd></dl></div>
+      <h3>Money</h3><div class="card"><dl>
+        <dt>Total</dt><dd class="money">${money(b.total)}</dd><dt>Deposit (20%)</dt><dd class="money">${money(b.deposit)}</dd>
+        <dt>Paid so far</dt><dd class="money">${money(b.paid)}</dd><dt><b>Still owed</b></dt><dd class="money"><b>${money(b.owed)}</b></dd>
+        <dt>Balance due by</dt><dd>${fdate(b.balanceDue)}</dd></dl></div>
+      <h3>Timeline</h3><div class="card"><dl>${step('Deposit invoice sent', b.depositInvoiceSent)}${step('Deposit paid', b.depositPaid)}${step('Balance invoice sent', b.balanceInvoiceSent)}${step('Reminder sent', b.balanceReminderSent)}${step('Balance paid', b.balancePaid)}</dl></div>
+      <h3>Payments</h3>${payments.length ? payments.map(p => `<div class="card row"><div><div class="t">${esc(p.kind)} · ${esc(p.method)}</div><div class="s">${fdate(p.paidAt)}${p.mode === 'test' ? ' · test' : ''}</div></div><div class="money">${money(p.amount)}</div></div>`).join('') : '<div class="empty">No payments yet.</div>'}
+      ${b.notes ? `<h3>Notes</h3><div class="card" style="white-space:pre-wrap">${esc(b.notes)}</div>` : ''}
+      <h3>Plan of the day (questionnaire)</h3>${questionnaire ? `<div class="card qa">${questionnaire.map(x => `<p><b>${esc(x.q)}</b>${esc(x.a)}</p>`).join('')}</div>` : '<div class="empty">Not filled in yet — the link goes out with the first payment receipt.</div>'}`;
+  },
+  async new(q, ref) { return form(null); },
+  async edit(q, ref) { const { booking } = await api('booking', { ref }); return form(booking); },
+  async payments() {
+    const { payments } = await api('payments');
+    return `<h2>Payments</h2>${payments.length ? payments.map(p => `<a class="card row" href="#/b/${encodeURIComponent(p.ref)}"><div><div class="t">${esc(p.name || p.ref)}</div><div class="s">${esc(p.kind)} · ${esc(p.method)} · ${fdate(p.paidAt)}${p.mode === 'test' ? ' · <i>test</i>' : ''}</div></div><div class="money">${money(p.amount)}</div></a>`).join('') : '<div class="empty">No payments yet.</div>'}`;
+  },
+  async clients() {
+    const { clients } = await api('clients');
+    return `<h2>Clients</h2>${clients.length ? clients.map(c => `<div class="card"><div class="row"><div class="t">${esc(c.name)}</div><div class="money s">${money(c.paid)} paid</div></div>
+      <div class="s" style="color:var(--muted)">${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}${c.phone ? ' · <a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : ''}</div>
+      ${c.bookings.map(b => `<div style="margin-top:6px"><a href="#/b/${encodeURIComponent(b.ref)}">${esc(b.service)} · ${fdate(b.date)}</a> ${pill(b.status)}</div>`).join('')}</div>`).join('') : '<div class="empty">No clients yet.</div>'}`;
+  },
+};
+
+function form(b) {
+  b = b || {};
+  const opt = (arr, cur) => ['<option value=""></option>', ...arr.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`)].join('');
+  return `<h2>${b.ref ? 'Edit booking' : 'New booking'}</h2><form id="f" class="card" onsubmit="save(event)">
+    <label>Client name(s)</label><input name="name" required value="${esc(b.name)}" placeholder="e.g. Sarah & Tom Lee">
+    <div class="two"><div><label>Email</label><input name="email" type="email" value="${esc(b.email)}"></div><div><label>Phone</label><input name="phone" type="tel" value="${esc(b.phone)}"></div></div>
+    <label>Service</label><select name="service" required>${opt(SERVICES, b.service)}</select>
+    <div class="two"><div><label>Date</label><input name="date" type="date" required value="${esc(b.date)}"></div><div><label>Start time</label><input name="time" value="${esc(b.time)}" placeholder="e.g. 3:00 PM"></div></div>
+    <label>Location</label><input name="location" value="${esc(b.location)}">
+    <label>Package</label><select name="pkg" onchange="const m=this.value.match(/\\$([\\d,]+)/);if(m)this.form.total.value=m[1].replace(/,/g,'')">${opt(PACKAGES, b.pkg)}</select>
+    <label>Total (CAD)</label><input name="total" type="number" step="0.01" min="0" inputmode="decimal" value="${b.total || ''}">
+    ${b.ref ? `<label>Status</label><select name="status">${opt(STATUSES, b.status)}</select>` : ''}
+    <label>Notes</label><textarea name="notes" rows="3">${esc(b.notes)}</textarea>
+    <div class="btns"><button class="b" type="submit">Save</button>${b.ref ? `<a class="b alt" href="#/b/${encodeURIComponent(b.ref)}">Cancel</a>` : ''}</div>
+    <p class="s" style="color:var(--muted);font-size:13px">Deposit (20%), balance and due date are worked out automatically.</p></form>`;
+}
+
+async function save(e) {
+  e.preventDefault(); const f = e.target, btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  const d = Object.fromEntries(new FormData(f)); if (location.hash.startsWith('#/edit/')) d.ref = decodeURIComponent(location.hash.slice(7));
+  try { const r = await api('saveBooking', d); toast('Saved'); location.hash = '#/b/' + encodeURIComponent(r.ref); }
+  catch (err) { toast(err.message); btn.disabled = false; }
+}
+async function sendInv(kind) {
+  const b = window._b; if (!b.email) return toast('Add the client email first (Edit).');
+  if (!confirm(`Email the ${kind} invoice to ${b.email}?`)) return;
+  toast('Sending…'); try { await api('sendInvoice', { ref: b.ref, kind }); toast('Invoice sent ✓'); route(); } catch (err) { toast(err.message); }
+}
+function payDlg() {
+  const b = window._b, kind = b.depositPaid ? 'balance' : 'deposit', amt = kind === 'deposit' ? b.deposit : b.owed, dl = $('#dlg');
+  dl.innerHTML = `<form method="dialog" onsubmit="recPay(event)"><h2 style="margin-top:0">Record payment</h2>
+    <label>Kind</label><select name="kind"><option ${kind === 'deposit' ? 'selected' : ''} value="deposit">Deposit</option><option ${kind === 'balance' ? 'selected' : ''} value="balance">Balance</option></select>
+    <div class="two"><div><label>Amount</label><input name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required value="${amt}"></div>
+    <div><label>Method</label><select name="method"><option value="interac">Interac</option><option value="cash">Cash</option><option value="other">Other</option></select></div></div>
+    <label>Date received</label><input name="date" type="date" value="${new Date().toISOString().slice(0, 10)}">
+    <label class="check"><input type="checkbox" name="sendReceipt" checked> Email the client a receipt</label>
+    <div class="btns"><button class="b" type="submit">Save payment</button><button class="b alt" type="button" onclick="$('#dlg').close()">Cancel</button></div></form>`;
+  dl.showModal();
+}
+async function recPay(e) {
+  e.preventDefault(); const f = e.target, d = Object.fromEntries(new FormData(f)); d.sendReceipt = !!f.sendReceipt.checked; d.ref = window._b.ref;
+  f.querySelector('button').disabled = true;
+  try { await api('recordPayment', d); $('#dlg').close(); toast('Payment saved ✓'); route(); } catch (err) { toast(err.message); f.querySelector('button').disabled = false; }
+}
+
+async function route() {
+  const [path, qs] = (location.hash.slice(2) || '').split('?'), [name, arg] = path.split('/');
+  const view = views[name || 'home'] ? (name || 'home') : 'home', q = Object.fromEntries(new URLSearchParams(qs || ''));
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.n === ({ b: 'bookings', edit: 'bookings' }[view] || view)));
+  v.innerHTML = '<div class="spin">Loading…</div>';
+  try { v.innerHTML = await views[view](q, decodeURIComponent(arg || '')); window.scrollTo(0, 0); }
+  catch (err) { v.innerHTML = `<div class="empty">Couldn't load: ${esc(err.message)}<br><br><button class="b alt" onclick="route()">Try again</button></div>`; }
+}
+window.addEventListener('hashchange', route); route();
+$('#out').onclick = async () => { await fetch('/api/app/auth', { method: 'DELETE' }); try { google.accounts.id.disableAutoSelect(); } catch {} location.href = '/app/login'; };
+</script>
+</body>
+</html>

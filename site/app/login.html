@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · Joenell Bookings</title>
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="icon" href="/app/icon.svg">
+<meta name="theme-color" content="#3f4a3c">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#2B2926;--muted:#6b6a65;--bg:#f8f6f2;--card:#fff;--brand:#3f4a3c}
+  *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font-family:'Jost',system-ui,sans-serif;padding:24px}
+  .card{background:var(--card);border-radius:18px;padding:40px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px -30px rgba(43,41,38,.5)}
+  h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:500;font-size:30px;margin:0 0 6px} p{color:var(--muted);margin:0 0 28px}
+  #btn{display:flex;justify-content:center;min-height:44px} #msg{color:#a33;margin-top:18px;min-height:1.2em}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Joenell Bookings</h1>
+  <p>Private — sign in with the business Google account.</p>
+  <div id="btn"></div>
+  <div id="msg"></div>
+</div>
+<script src="https://accounts.google.com/gsi/client" async defer onload="start()"></script>
+<script>
+async function start() {
+  const msg = document.getElementById('msg');
+  const { clientId } = await (await fetch('/api/app/config')).json();
+  if (!clientId) { msg.textContent = 'Sign-in is not set up yet.'; return; }
+  google.accounts.id.initialize({ client_id: clientId, auto_select: true, callback: async r => {
+    msg.style.color = '#6b6a65'; msg.textContent = 'Signing in…';
+    const res = await fetch('/api/app/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: r.credential }) });
+    if (res.ok) location.replace('/app/'); else { msg.style.color = '#a33'; msg.textContent = (await res.json().catch(() => ({}))).error || 'Sign-in failed.'; }
+  }});
+  google.accounts.id.renderButton(document.getElementById('btn'), { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with' });
+  google.accounts.id.prompt();
+}
+</script>
+</body>
+</html>

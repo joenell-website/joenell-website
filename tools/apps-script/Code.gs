@@ -22,7 +22,7 @@ const PAY_HEAD = ['Paid at', 'Booking ref', 'Kind', 'Amount', 'Currency', 'Clien
   'Stripe session', 'Payment intent', 'Mode', 'Receipt sent', 'Questionnaire sent', 'Method'];
 const BK_HEAD = ['Booking ref', 'Client name', 'Client email', 'Service', 'Event date', 'Package', 'Total (CAD)',
   'Deposit (CAD)', 'Balance (CAD)', 'Balance due', 'Status', 'Send deposit invoice', 'Deposit invoice sent',
-  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes'];
+  'Deposit paid', 'Balance invoice sent', 'Balance reminder sent', 'Balance paid', 'Notes', 'Client phone', 'Location', 'Start time'];
 const SERVICES = ['Wedding', 'Elopement', 'Engagement session', 'Surprise proposal'];
 const PACKAGES = ['The Vow — $1,000', 'The Story — $1,450', 'The Complete Story — $1,950', 'Intimate Elopement — $850',
   'Adventure Elopement — $1,250', 'Surprise proposal — $250', 'Engagement session — $225', 'Custom'];
@@ -229,6 +229,7 @@ function dailyCheck() {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   for (let r = 2; r <= sh.getLastRow(); r++) {
     const o = rowObj_(sh, r);
+    if (/cancel/i.test(String(o['Status']))) continue;
     if (!o['Booking ref'] || !o['Deposit paid'] || o['Balance paid'] || !(o['Balance due'] instanceof Date) || !(Number(o['Balance (CAD)']) > 0)) continue;
     const due = new Date(o['Balance due']); due.setHours(0, 0, 0, 0);
     const daysLeft = Math.round((due - today) / 864e5);
@@ -245,6 +246,7 @@ function dailyCheck() {
 function doPost(e) {
   let r;
   try { r = JSON.parse(e.postData.contents); } catch (err) { return out_('bad json'); }
+  if (r && r.source === 'app') return appApi_(r);
   if (!r || r.source !== 'stripe' || !/^cs_(test|live)_/.test(r.session || '')) return out_('ignored');
   return out_(recordPayment_({ id: r.session, method: 'card', ref: r.ref, kind: r.kind, amount: Number(r.amount || 0),
     currency: r.currency || 'CAD', name: r.name, email: r.email, paid_at: r.paid_at, pi: r.payment_intent, live: !!r.livemode }));
@@ -299,7 +301,7 @@ function recordPayment_(p) {
           : `Remaining balance: $0.00 — you're paid in full. Thank you!`);
     }
     let receipt = '', quest = '';
-    if (p.email) {
+    if (p.email && !p.noEmail) {
       GmailApp.sendEmail(p.email, `${test}Payment received — ${BRAND}`,
         `Hi ${first},\n\nThank you — I've received your ${kindLabel} of $${amount} ${cur}` + (p.ref ? ` for booking ${p.ref}` : '') +
         (p.kind === 'deposit' ? `. Your date is officially reserved!` : '.') + summary +
@@ -327,7 +329,7 @@ function recordPayment_(p) {
       else { setCell_(b, br, 'Balance paid', new Date()); setCell_(b, br, 'Status', 'Paid in full'); }
       rowNote = 'booking row updated';
     }
-    GmailApp.sendEmail(OWNER, `${test}New payment: ${p.name || 'Client'} paid $${amount} ${cur} (${kindLabel}${p.ref ? ', ' + p.ref : ''})`,
+    if (!p.manual) GmailApp.sendEmail(OWNER, `${test}New payment: ${p.name || 'Client'} paid $${amount} ${cur} (${kindLabel}${p.ref ? ', ' + p.ref : ''})`,
       `New ${p.method === 'card' ? 'card' : 'Interac'} payment\n\nClient: ${p.name || '-'} <${p.email || '-'}>\nBooking ref: ${p.ref || '-'}\n` +
       `Kind: ${kindLabel}\nAmount: $${amount} ${cur}\nReceipt sent: ${receipt ? 'yes' : 'no'}\nQuestionnaire sent: ${quest ? 'yes' : 'no'}\n` +
       `Bookings sheet: ${rowNote}\n\n${ss.getUrl()}`, { name: BRAND + ' bookings' });
@@ -336,3 +338,121 @@ function recordPayment_(p) {
 }
 
 function out_(s) { return ContentService.createTextOutput(s); }
+
+// ---------- private app API (www.joenellphotography.ca/app → Cloudflare → here) ----------
+// Cloudflare checks the owner's Google sign-in, then posts {source:'app', key, action, data}. APP_KEY is a script property.
+function appApi_(r) {
+  const key = PropertiesService.getScriptProperties().getProperty('APP_KEY');
+  if (!key || r.key !== key) return jsonOut_({ error: 'unauthorized' });
+  try {
+    const d = r.data || {}, sh = bk_();
+    sh.getRange(1, 1, 1, BK_HEAD.length).setValues([BK_HEAD]).setFontWeight('bold'); // keep new columns' headers
+    switch (r.action) {
+      case 'dashboard': return jsonOut_(appDashboard_());
+      case 'bookings': return jsonOut_({ bookings: appBookings_() });
+      case 'booking': return jsonOut_(appBooking_(d.ref));
+      case 'saveBooking': return jsonOut_(appSave_(d));
+      case 'sendInvoice': {
+        const row = findRowByRef_(d.ref); if (!row) throw new Error('booking not found');
+        sendInvoice_(row, d.kind === 'balance' ? 'balance' : 'deposit');
+        if (d.kind !== 'balance') setCell_(sh, row, 'Send deposit invoice', true);
+        return jsonOut_({ ok: true, booking: appBooking_(d.ref).booking });
+      }
+      case 'recordPayment': {
+        const row = findRowByRef_(d.ref); if (!row) throw new Error('booking not found');
+        const o = rowObj_(sh, row), amt = Math.round(Number(d.amount) * 100) / 100;
+        if (!(amt > 0)) throw new Error('amount must be more than 0');
+        recordPayment_({ id: 'manual:' + Utilities.getUuid(), method: d.method || 'interac', manual: true, noEmail: !d.sendReceipt,
+          ref: d.ref, kind: d.kind === 'balance' ? 'balance' : 'deposit', amount: amt, currency: 'CAD',
+          name: o['Client name'], email: o['Client email'], paid_at: d.date ? new Date(d.date + 'T12:00:00').toISOString() : new Date().toISOString(), live: true });
+        return jsonOut_({ ok: true, booking: appBooking_(d.ref).booking });
+      }
+      case 'payments': return jsonOut_({ payments: appPayments_() });
+      case 'clients': return jsonOut_({ clients: appClients_() });
+    }
+    return jsonOut_({ error: 'unknown action' });
+  } catch (err) { return jsonOut_({ error: String(err.message || err) }); }
+}
+
+function jsonOut_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function iso_(d) { return d instanceof Date ? Utilities.formatDate(d, 'America/Vancouver', 'yyyy-MM-dd') : (d || ''); }
+function appPayments_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName('Payments'); if (!sh || sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, PAY_HEAD.length).getValues().filter(r => r[1] || r[3])
+    .map(r => ({ paidAt: r[0] instanceof Date ? r[0].toISOString() : String(r[0]), ref: r[1], kind: r[2], amount: Number(r[3]) || 0,
+      name: r[5], email: r[6], mode: r[9], method: r[12] || 'card' })).reverse();
+}
+function appBookings_() {
+  const sh = bk_(); if (!sh || sh.getLastRow() < 2) return [];
+  const pays = appPayments_().filter(p => p.mode !== 'test'), paid = {};
+  pays.forEach(p => paid[p.ref] = (paid[p.ref] || 0) + p.amount);
+  return sh.getRange(2, 1, sh.getLastRow() - 1, BK_HEAD.length).getValues().map((v, i) => {
+    const o = {}; BK_HEAD.forEach((h, j) => o[h] = v[j] instanceof Date ? (/sent|paid$/i.test(h) ? v[j].toISOString() : iso_(v[j])) : v[j]);
+    if (!o['Booking ref'] && !o['Client name']) return null;
+    const total = Number(o['Total (CAD)']) || 0, p = Math.round((paid[o['Booking ref']] || 0) * 100) / 100;
+    return { row: i + 2, ref: o['Booking ref'], name: o['Client name'], email: o['Client email'], phone: o['Client phone'], service: o['Service'],
+      date: o['Event date'], time: o['Start time'], location: o['Location'], pkg: o['Package'], total, deposit: Number(o['Deposit (CAD)']) || 0,
+      balance: Number(o['Balance (CAD)']) || 0, balanceDue: o['Balance due'], status: o['Status'], notes: o['Notes'], paid: p, owed: Math.max(0, Math.round((total - p) * 100) / 100),
+      depositInvoiceSent: o['Deposit invoice sent'], depositPaid: o['Deposit paid'], balanceInvoiceSent: o['Balance invoice sent'],
+      balanceReminderSent: o['Balance reminder sent'], balancePaid: o['Balance paid'] };
+  }).filter(Boolean);
+}
+function appBooking_(ref) {
+  const b = appBookings_().find(x => x.ref === ref); if (!b) throw new Error('booking not found');
+  const payments = appPayments_().filter(p => p.ref === ref);
+  let questionnaire = null;
+  SpreadsheetApp.getActive().getSheets().filter(s => /form responses/i.test(s.getName())).forEach(s => {
+    if (questionnaire || s.getLastRow() < 2) return;
+    const v = s.getDataRange().getValues(), h = v[0];
+    const ri = h.findIndex(x => /booking reference/i.test(x)), ei = h.findIndex(x => /email/i.test(x));
+    const hit = v.slice(1).reverse().find(r => (ri >= 0 && String(r[ri]).trim().toUpperCase() === ref) || (ei >= 0 && b.email && String(r[ei]).toLowerCase() === String(b.email).toLowerCase()));
+    if (hit) questionnaire = h.map((q, i) => ({ q, a: hit[i] instanceof Date ? iso_(hit[i]) : String(hit[i]) })).filter(x => x.a && !/^timestamp$/i.test(x.q));
+  });
+  return { booking: b, payments, questionnaire };
+}
+function appSave_(d) {
+  const sh = bk_(), map = { name: 'Client name', email: 'Client email', phone: 'Client phone', service: 'Service', date: 'Event date',
+    time: 'Start time', location: 'Location', pkg: 'Package', total: 'Total (CAD)', status: 'Status', notes: 'Notes' };
+  let row = d.ref ? findRowByRef_(d.ref) : 0;
+  if (d.ref && !row) throw new Error('booking not found');
+  if (!row) {
+    if (!d.name) throw new Error('client name is required');
+    const vals = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 1), 2).getValues(), idx = vals.findIndex(r => !r[0] && !r[1]);
+    row = idx < 0 ? sh.getLastRow() + 1 : idx + 2;
+  }
+  Object.keys(map).forEach(k => {
+    if (d[k] === undefined) return;
+    let v = d[k];
+    if (k === 'date') v = v ? new Date(v + 'T12:00:00') : '';
+    if ((k === 'time' || k === 'phone') && v) v = "'" + v; // keep as text
+    if (k === 'total') { v = v === '' ? '' : Number(v); setCell_(sh, row, 'Deposit (CAD)', ''); setCell_(sh, row, 'Balance (CAD)', ''); }
+    setCell_(sh, row, map[k], v);
+  });
+  fillRow_(sh, row);
+  return { ok: true, ref: sh.getRange(row, 1).getValue() };
+}
+function appClients_() {
+  const by = {};
+  appBookings_().forEach(b => {
+    const k = String(b.email || b.name).toLowerCase(); if (!k) return;
+    const c = by[k] || (by[k] = { name: b.name, email: b.email, phone: b.phone, bookings: [], total: 0, paid: 0 });
+    c.bookings.push({ ref: b.ref, service: b.service, date: b.date, status: b.status }); c.total += b.total; c.paid += b.paid;
+    if (b.phone) c.phone = b.phone;
+  });
+  return Object.values(by).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+}
+function appDashboard_() {
+  const today = iso_(new Date()), bks = appBookings_().filter(b => !/cancel/i.test(String(b.status)));
+  const upcoming = bks.filter(b => b.date && b.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  const month = today.slice(0, 7), year = today.slice(0, 4), pays = appPayments_().filter(p => p.mode !== 'test');
+  const sum = a => Math.round(a.reduce((s, p) => s + p.amount, 0) * 100) / 100;
+  return {
+    today, upcoming: upcoming.slice(0, 8),
+    owed: Math.round(bks.reduce((s, b) => s + b.owed, 0) * 100) / 100,
+    overdue: bks.filter(b => b.owed > 0 && b.depositPaid && b.balanceDue && b.balanceDue < today),
+    needsInvoice: bks.filter(b => !b.depositInvoiceSent && /draft/i.test(String(b.status || 'draft'))),
+    incomeMonth: sum(pays.filter(p => iso_(new Date(p.paidAt)).slice(0, 7) === month)),
+    incomeYear: sum(pays.filter(p => iso_(new Date(p.paidAt)).slice(0, 4) === year)),
+    recent: pays.slice(0, 6), bookedCount: upcoming.length,
+  };
+}

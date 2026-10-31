@@ -54,6 +54,7 @@ Allow: /
 
 User-agent: *
 Disallow: /pins/
+Disallow: /app/
 Allow: /
 
 Sitemap: https://www.joenellphotography.ca/sitemap.xml
