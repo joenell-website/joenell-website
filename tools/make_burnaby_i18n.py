@@ -1,7 +1,7 @@
 import re, json, html as H
 T=json.load(open('tools/burnaby_i18n.json'))
 slug='burnaby-wedding-photographer'
-G=[("engagement-shaun-tina-01",800,640,1150,55,20),("couple-jenn-erin-garden",450,800,720,45,22),("engagement-shaun-tina-tulips",800,533,1280,44,24),("engagement-jenn-erin-6",800,640,1200,42,22),("engagement-shaun-tina-03",640,800,960,50,16),("proposal-jake-hannah-yes",800,640,1280,45,26),("engagement-jenn-erin-4",800,640,1280,54,38),("whistler-pinky-shika-kiss",800,533,1200,55,36)]
+G=[("engagement-shaun-tina-01",800,640,1150,55,20),("couple-jenn-erin-garden",450,800,720,45,22),("engagement-shaun-tina-tulips",800,533,1280,44,24),("engagement-jenn-erin-6",800,640,1200,42,22),("engagement-shaun-tina-03",640,800,960,50,16),("proposal-jake-hannah-yes",800,640,1280,45,26),("engagement-jenn-erin-4",800,640,1280,54,38),("whistler-snow-couple-kiss",800,533,1200,55,36)]
 M={'hero-willow-kiss':('engagement-shaun-tina-07',49,15),'ceremony-walk':('engagement-shaun-tina-02',47,18),'ceremony-rings':('engagement-shaun-tina-04',50,22),'reception-first-dance':('engagement-shaun-tina-08',47,16),'sunset-beach-walk':('engagement-jenn-erin-7',38,40),'sunset-holding-hands':('engagement-shaun-tina-10',48,22),'sunset-seawall-couple':('engagement-jenn-erin-4',54,38)}
 def sub1(pat,rep,s,flags=re.S):
     n=re.subn(pat,rep,s,count=1,flags=flags)
