@@ -1,7 +1,7 @@
 # Joenell Photography website — notes for Claude
 
 Read this before changing anything. The fuller project history lives in the owner's Desktop folder
-"Joenell Website - Claude handoff" › HANDOFF - READ FIRST.md (start with the CURRENT STATE box).
+"Claude Handoff" › START HERE.md (index of all projects), then Joenell Photography › HANDOFF - READ FIRST.md (start with the CURRENT STATE box). Bookings app/payments and Lightroom work have their own folders there.
 
 ## Current setup (Oct 28, 2026)
 - Live: https://www.joenellphotography.ca — Cloudflare Pages project `joenell-website`, auto-deploys `main`. Output dir `site/`, no build step.
