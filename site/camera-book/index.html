@@ -355,7 +355,7 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padd
                 <path id="sBody" d="M14 300 C14 196 56 150 100 150 C144 150 186 196 186 300 Z" fill="#2a1d18" stroke="#ffc477" stroke-width="3"/>
               </svg>
             </div>
-            <canvas class="layer" id="noise" width="240" height="150"></canvas>
+            <canvas class="layer" id="noise" width="480" height="300"></canvas>
             <div class="curtain" id="cTop"></div><div class="curtain b" id="cBot"></div>
             <div class="scene-tag" id="sceneTag">Golden hour</div>
             <div class="osd"><span id="osdN">f/2</span><span id="osdT">1/1000</span><span id="osdI">ISO 100</span><span id="osdE">±0.0</span></div>
@@ -373,18 +373,18 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padd
           </div>
           <div class="ctrl">
             <div class="ctrl-top"><label for="rN">Aperture</label><span class="val" id="vN">f/2</span></div>
-            <input type="range" id="rN" min="0" max="9" step="1">
+            <input type="range" id="rN" min="0" max="24" step="1">
             <span class="hint">Slide left: background melts. Slide right: more in focus.</span>
           </div>
           <div class="ctrl">
             <div class="ctrl-top"><label for="rT">Shutter speed</label><span class="val" id="vT">1/1000</span></div>
-            <input type="range" id="rT" min="0" max="19" step="1">
+            <input type="range" id="rT" min="0" max="54" step="1">
             <span class="hint" id="moveHint">Watch the car: fast freezes it, slow smears it into light.</span>
           </div>
           <div class="ctrl">
             <div class="ctrl-top"><label for="rI">ISO</label><span class="val" id="vI">100</span></div>
-            <input type="range" id="rI" min="0" max="8" step="1">
-            <span class="hint">Higher is brighter, with more grain.</span>
+            <input type="range" id="rI" min="0" max="27" step="1">
+            <span class="hint">Higher is brighter. A modern full-frame camera stays clean to about ISO 6400; grain shows from about 12800.</span>
           </div>
           <div class="row">
             <label class="toggle"><input type="checkbox" id="tripod"> On a tripod</label>
@@ -593,10 +593,10 @@ const store = {
 let brand = store.get('jsb-brand','canon');
 
 /* ---------- stops ---------- */
-const APS=[1.4,1.8,2,2.8,4,5.6,8,11,16,22];
-const SHS=[30,20,15,8,4,2,1,1/2,1/4,1/8,1/15,1/30,1/60,1/125,1/250,1/500,1/1000,1/2000,1/4000,1/8000];
-const ISOS=[100,200,400,800,1600,3200,6400,12800,25600];
-const fmtT = t => t>=1 ? (t+'"') : ('1/'+Math.round(1/t));
+const APS=[1.4,1.6,1.8,2,2.2,2.5,2.8,3.2,3.5,4,4.5,5,5.6,6.3,7.1,8,9,10,11,13,14,16,18,20,22];
+const SHS=[30,25,20,15,13,10,8,6,5,4,3.2,2.5,2,1.6,1.3,1,0.8,0.6,0.5,0.4,1/3,1/4,1/5,1/6,1/8,1/10,1/13,1/15,1/20,1/25,1/30,1/40,1/50,1/60,1/80,1/100,1/125,1/160,1/200,1/250,1/320,1/400,1/500,1/640,1/800,1/1000,1/1250,1/1600,1/2000,1/2500,1/3200,1/4000,1/5000,1/6400,1/8000];
+const ISOS=[100,125,160,200,250,320,400,500,640,800,1000,1250,1600,2000,2500,3200,4000,5000,6400,8000,10000,12800,16000,20000,25600,32000,40000,51200];
+const fmtT = t => t>=0.3 ? (t+'"') : ('1/'+Math.round(1/t));
 const fmtN = n => 'f/'+n;
 const near = (arr,v)=>{let b=0;arr.forEach((x,i)=>{if(Math.abs(Math.log(x/v))<Math.abs(Math.log(arr[b]/v)))b=i});return b};
 
@@ -604,18 +604,18 @@ const near = (arr,v)=>{let b=0;arr.forEach((x,i)=>{if(Math.abs(Math.log(x/v))<Ma
 
 /* ---------- scenes ---------- */
 const ENVS={
-  sunny:{kind:'city',label:'Sunny midday',ev:15,sky:['#3f86d8','#a9d2f5'],bld:'#c9c2b6',win:'#7aa3c7',lit:0,ground:'#8d8a84',sun:{x:.82,y:.12,c:'#fffbe8',r:40},subj:'#3a2b24',rim:'#fff4dc'},
-  golden:{kind:'city',label:'Golden hour',ev:12,sky:['#f4a347','#ffd99a'],bld:'#6b3f2a',win:'#ffcf7a',lit:.15,ground:'#5a3826',sun:{x:.2,y:.62,c:'#fff1c2',r:56},subj:'#2a1d18',rim:'#ffc477'},
-  overcast:{kind:'city',label:'Overcast',ev:12,sky:['#8f969e','#c6cbd0'],bld:'#5e6468',win:'#9aa6af',lit:.05,ground:'#55595c',subj:'#2d2a28',rim:'#c9cdd0'},
+  sunny:{kind:'park',label:'Sunny midday',ev:15,sky:['#3f86d8','#a9d2f5'],bld:'#c9c2b6',win:'#7aa3c7',lit:0,ground:'#8d8a84',sun:{x:.82,y:.12,c:'#fffbe8',r:40},subj:'#3a2b24',rim:'#fff4dc'},
+  golden:{kind:'field',label:'Golden hour',ev:12,sky:['#f4a347','#ffd99a'],bld:'#6b3f2a',win:'#ffcf7a',lit:.15,ground:'#5a3826',sun:{x:.2,y:.62,c:'#fff1c2',r:56},subj:'#2a1d18',rim:'#ffc477'},
+  overcast:{kind:'street',label:'Overcast',ev:12,sky:['#8f969e','#c6cbd0'],bld:'#5e6468',win:'#9aa6af',lit:.05,ground:'#55595c',subj:'#2d2a28',rim:'#c9cdd0'},
   shade:{kind:'forest',label:'Forest shade',ev:9,sky:['#2d4a35','#6f8f68'],bld:'#203327',win:'#9fd29a',lit:0,ground:'#1f2b1f',trees:true,subj:'#1f1a17',rim:'#a8cfa0'},
   indoor:{kind:'cafe',label:'Indoor café',ev:7,sky:['#3a2a20','#6a4a34'],bld:'#2a1c15',win:'#ffb866',lit:.55,ground:'#2b1f17',subj:'#1d1410',rim:'#ffb866'},
   concert:{kind:'stage',label:'Concert',ev:6,sky:['#0b0716','#2a0f3a'],bld:'#120a1a',win:'#ff3fa4',lit:.2,ground:'#0c0910',beams:true,subj:'#0d0a10',rim:'#ff5fb4'},
-  blue:{kind:'city',label:'Blue hour',ev:4,sky:['#16285c','#5b78b8'],bld:'#141b30',win:'#ffc76a',lit:.5,ground:'#10162a',subj:'#0f1220',rim:'#8fb0ff'},
+  blue:{kind:'bridge',label:'Blue hour',ev:4,sky:['#16285c','#5b78b8'],bld:'#141b30',win:'#ffc76a',lit:.5,ground:'#10162a',subj:'#0f1220',rim:'#8fb0ff'},
   night:{kind:'city',label:'Night city',ev:4,sky:['#05070f','#141a2e'],bld:'#0b0f1c',win:'#ffb347',lit:.45,ground:'#0a0d16',neon:true,subj:'#08090f',rim:'#38e0ff'},
   astro:{kind:'sky',label:'Dark sky',ev:-7,sky:['#02030a','#0d1430'],bld:'#030408',win:'#ffb347',lit:.02,ground:'#020306',stars:true,subj:'#020305',rim:'#334477'},
   snow:{kind:'beach',label:'Snow / beach',ev:16,sky:['#6fa8e6','#e6f2fb'],bld:'#e8edf1',win:'#9ab9d6',lit:0,ground:'#f4f7fa',sun:{x:.75,y:.15,c:'#ffffff',r:36},subj:'#2c3440',rim:'#ffffff'}
 };
-const S={env:'golden',ai:2,si:16,ii:0,tripod:false};
+const S={env:'golden',ai:3,si:45,ii:0,tripod:false};
 function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
 const MOVERS={
   car:{name:'The car',vb:'0 0 220 70',w:'24%',bottom:'13%',dur:3800,
@@ -626,9 +626,15 @@ const MOVERS={
     html:'<g id="carBody"><circle cx="40" cy="18" r="13" fill="#1a1020"/><path d="M26 36 L54 36 L58 96 L22 96 Z" fill="#2a1638"/><path d="M26 40 L8 6 L14 4 L32 38 Z" fill="#1a1020"/><path d="M54 40 L72 6 L66 4 L48 38 Z" fill="#1a1020"/><path d="M24 96 L18 158 L30 158 L40 108 L50 158 L62 158 L56 96 Z" fill="#1a1020"/></g>'},
   dog:{name:'The dog',vb:'0 0 140 80',w:'13%',bottom:'12%',dur:3200,
     html:'<g id="carBody"><path d="M20 30 Q30 22 70 24 L100 24 Q108 10 120 12 L132 18 L130 28 L118 30 L112 44 L108 70 L100 70 L98 48 L50 48 L40 70 L32 70 L34 46 Q18 44 14 34 L2 30 L4 26 Z" fill="#8a5a32"/><circle cx="122" cy="18" r="2" fill="#111"/><path d="M110 12 L114 2 L120 12 Z" fill="#6b4224"/></g>'},
+  cyclist:{name:'The cyclist',vb:'0 0 120 110',w:'11%',bottom:'11%',dur:4200,
+    html:'<g id="carBody"><circle cx="25" cy="82" r="22" fill="none" stroke="#1a1a1a" stroke-width="5"/><circle cx="95" cy="82" r="22" fill="none" stroke="#1a1a1a" stroke-width="5"/><path d="M25 82 L50 50 L82 50 L95 82 M50 50 L60 82 L82 50" fill="none" stroke="#2b6fb3" stroke-width="5"/><circle cx="66" cy="14" r="10" fill="#3a2a22"/><path d="M58 26 L72 26 L80 52 L54 50 Z" fill="#e8463a"/><path d="M76 34 L92 46" stroke="#3a2a22" stroke-width="6"/><path d="M58 50 L52 70 L60 82" stroke="#222" stroke-width="7" fill="none"/></g>'},
+  runner:{name:'The runner',vb:'0 0 90 160',w:'7.5%',bottom:'12%',dur:5200,
+    html:'<g id="carBody"><circle cx="50" cy="16" r="12" fill="#2a1d18"/><path d="M38 32 L60 32 L58 88 L36 86 Z" fill="#2a1d18"/><path d="M40 38 L18 62 L24 66 L44 48 Z M58 38 L80 56 L76 62 L56 48 Z" fill="#2a1d18"/><path d="M38 86 L14 118 L6 150 L16 152 L26 122 L48 96 Z M54 88 L66 120 L86 140 L80 148 L58 128 L44 98 Z" fill="#2a1d18"/></g>'},
+  walker:{name:'The walker',vb:'0 0 100 170',w:'8.5%',bottom:'12%',dur:7000,
+    html:'<g id="carBody"><path d="M6 46 Q50 0 94 46 Z" fill="#c23b2a"/><rect x="49" y="44" width="3" height="40" fill="#222"/><circle cx="50" cy="60" r="11" fill="#3a2a22"/><path d="M36 74 L64 74 L68 124 L32 124 Z" fill="#3c4a5a"/><path d="M36 124 L28 168 L40 168 L50 132 L58 168 L70 168 L62 124 Z" fill="#1f1f24"/></g>'},
   none:{name:'',vb:'0 0 10 10',w:'0%',bottom:'0',dur:4000,html:'<g id="carBody"></g>'}
 };
-const KIND_MOVER={city:'car',cafe:'waiter',stage:'fan',forest:'dog',beach:'dog',sky:'none'};
+const KIND_MOVER={park:'cyclist',field:'runner',street:'walker',bridge:'car',city:'car',cafe:'waiter',stage:'fan',forest:'dog',beach:'dog',sky:'none'};
 let carAnim=null;
 function setMover(k){
   const m=MOVERS[k],car=$('#car');
@@ -638,7 +644,7 @@ function setMover(k){
   if(k==='none')return;
   if(motion){carAnim=A({targets:'#car',left:['-26%','104%'],duration:m.dur,easing:'linear',loop:true})}else{car.style.left='40%'}
 }
-function bldgs(x,e,r,W,H,base){let bx=-20;while(bx<W){const bw=60+r()*90,bh=140+r()*260,by=H*base-bh;x.fillStyle=e.bld;x.fillRect(bx,by,bw,bh);
+function bldgs(x,e,r,W,H,base,hs=1){let bx=-20;while(bx<W){const bw=(60+r()*90)*(hs<1?.7:1),bh=(140+r()*260)*hs,by=H*base-bh;x.fillStyle=e.bld;x.fillRect(bx,by,bw,bh);
   for(let wy=by+14;wy<H*(base-.02);wy+=22)for(let wx=bx+8;wx<bx+bw-10;wx+=16){if(r()<e.lit){x.fillStyle=e.win;x.globalAlpha=.6+r()*.4;x.fillRect(wx,wy,8,11);x.globalAlpha=1}else if(!e.lit||e.lit<.1){x.fillStyle=e.win;x.globalAlpha=.25;x.fillRect(wx,wy,8,11);x.globalAlpha=1}}
   bx+=bw+4;}}
 function glow(x,cx,cy,rad,col,a){const g=x.createRadialGradient(cx,cy,0,cx,cy,rad);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=a;x.fillStyle=g;x.fillRect(cx-rad,cy-rad,rad*2,rad*2);x.globalAlpha=1}
@@ -692,6 +698,39 @@ function drawScene(){
     x.fillStyle='#04050b';x.beginPath();x.moveTo(0,H*.7);[[.15,.52],[.3,.64],[.45,.48],[.62,.66],[.8,.5],[1,.62],[1,H]].forEach(([px,py])=>x.lineTo(px*W,py>1?py:py*H));x.lineTo(0,H);x.fill();
     x.fillStyle='#2a1a10';x.beginPath();x.moveTo(W*.18,H*.86);x.lineTo(W*.24,H*.76);x.lineTo(W*.3,H*.86);x.fill();glow(x,W*.24,H*.83,50,'#ffb347',.5);
     x.fillStyle=e.ground;x.fillRect(0,H*.86,W,H*.14);
+  } else if(e.kind==='park'){
+    for(let i=0;i<5;i++){const cx=r()*W,cy=H*(.08+r()*.18);x.fillStyle='rgba(255,255,255,.85)';[0,28,56].forEach((o,j)=>{x.beginPath();x.arc(cx+o,cy+(j%2?-10:0),22+r()*10,0,7);x.fill()})}
+    if(e.sun)glow(x,e.sun.x*W,e.sun.y*H,e.sun.r*5,e.sun.c,1);
+    let bx=W*.05;while(bx<W*.95){const bw=30+r()*40,bh=40+r()*90;x.fillStyle='#9aa7b4';x.fillRect(bx,H*.52-bh,bw,bh);bx+=bw+3}
+    const lg=x.createLinearGradient(0,H*.52,0,H);lg.addColorStop(0,'#6fa83f');lg.addColorStop(1,'#4a8a2a');x.fillStyle=lg;x.fillRect(0,H*.52,W,H*.48);
+    x.fillStyle='#d8c9a8';x.beginPath();x.moveTo(0,H*.86);x.quadraticCurveTo(W*.5,H*.72,W,H*.8);x.lineTo(W,H*.92);x.quadraticCurveTo(W*.5,H*.82,0,H*.97);x.fill();
+    [[.1,.5],[.3,.46],[.58,.5],[.86,.47]].forEach(([tx,ty])=>{x.fillStyle='rgba(20,50,10,.45)';x.beginPath();x.ellipse(tx*W+40,ty*H+92,60,10,0,0,7);x.fill();
+      x.fillStyle='#5a3a22';x.fillRect(tx*W-6,ty*H,12,90);x.fillStyle='#2f6b22';x.beginPath();x.arc(tx*W,ty*H-10,52,0,7);x.fill();x.fillStyle='#3f8a2c';x.beginPath();x.arc(tx*W-14,ty*H-24,30,0,7);x.fill()});
+  } else if(e.kind==='field'){
+    glow(x,e.sun.x*W,e.sun.y*H,e.sun.r*7,e.sun.c,1);
+    x.fillStyle='#b06a3a';x.beginPath();x.moveTo(0,H*.62);x.quadraticCurveTo(W*.3,H*.5,W*.6,H*.6);x.quadraticCurveTo(W*.8,H*.66,W,H*.56);x.lineTo(W,H);x.lineTo(0,H);x.fill();
+    x.fillStyle='#7a4526';x.beginPath();x.moveTo(0,H*.72);x.quadraticCurveTo(W*.5,H*.62,W,H*.74);x.lineTo(W,H);x.lineTo(0,H);x.fill();
+    [[.7,.6],[.82,.62]].forEach(([tx,ty])=>{x.fillStyle='#3a1f12';x.fillRect(tx*W-4,ty*H-40,8,44);x.beginPath();x.arc(tx*W,ty*H-56,30,0,7);x.fill()});
+    for(let i=0;i<260;i++){const gx=r()*W,gy=H*(.74+r()*.26);x.strokeStyle=r()<.5?'#e0a35a':'#9a5a2c';x.lineWidth=2;x.beginPath();x.moveTo(gx,gy);x.lineTo(gx+(r()-.5)*10,gy-14-r()*22);x.stroke()}
+    const hz=x.createLinearGradient(0,H*.3,0,H*.9);hz.addColorStop(0,'rgba(255,200,120,0)');hz.addColorStop(.5,'rgba(255,200,120,.3)');hz.addColorStop(1,'rgba(255,200,120,0)');x.fillStyle=hz;x.fillRect(0,H*.3,W,H*.6);
+  } else if(e.kind==='street'){
+    const vx=W*.5,vy=H*.42;
+    x.fillStyle='#7a5a4a';x.beginPath();x.moveTo(0,0);x.lineTo(W*.36,H*.18);x.lineTo(W*.36,H*.62);x.lineTo(0,H*.86);x.fill();
+    x.fillStyle='#6a5246';x.beginPath();x.moveTo(W,0);x.lineTo(W*.64,H*.18);x.lineTo(W*.64,H*.62);x.lineTo(W,H*.86);x.fill();
+    for(let i=0;i<5;i++){const t=i/5;x.fillStyle='rgba(220,228,236,.55)';x.fillRect(W*(.04+t*.27),H*(.12+t*.08),W*(.05-t*.02),H*(.12-t*.04));x.fillRect(W*(.91-t*.27),H*(.12+t*.08),W*(.05-t*.02),H*(.12-t*.04))}
+    x.fillStyle='#2f5a4a';x.beginPath();x.moveTo(0,H*.5);x.lineTo(W*.2,H*.5);x.lineTo(W*.2,H*.56);x.lineTo(0,H*.62);x.fill();
+    x.fillStyle='#8a8f94';x.beginPath();x.moveTo(0,H*.86);x.lineTo(W*.36,H*.62);x.lineTo(W*.64,H*.62);x.lineTo(W,H*.86);x.lineTo(W,H);x.lineTo(0,H);x.fill();
+    for(let row=0;row<14;row++){const y=H*.62+Math.pow(row/14,1.6)*H*.38;x.strokeStyle='rgba(60,64,68,.35)';x.lineWidth=1;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+    for(let i=-8;i<=8;i++){x.beginPath();x.moveTo(vx+i*W*.02,H*.62);x.lineTo(vx+i*W*.09,H);x.stroke()}
+    [[.12,'#2b4a6b'],[.82,'#3a3a3a']].forEach(([px,col])=>{x.fillStyle=col;x.beginPath();x.arc(px*W,H*.66,30,Math.PI,0);x.fill();x.fillStyle='#1f1f24';x.fillRect(px*W-8,H*.68,16,60)});
+  } else if(e.kind==='bridge'){
+    bldgs(x,{...e,lit:.3},rng(11),W,H,.55,.38);
+    const wg=x.createLinearGradient(0,H*.55,0,H*.8);wg.addColorStop(0,'#1d3266');wg.addColorStop(1,'#0e1836');x.fillStyle=wg;x.fillRect(0,H*.55,W,H*.25);
+    for(let i=0;i<70;i++){x.fillStyle=`rgba(255,200,110,${.2+r()*.5})`;x.fillRect(r()*W,H*(.57+r()*.2),2+r()*14,2)}
+    x.strokeStyle='#0a0f22';x.lineWidth=8;[.22,.68].forEach(px=>{x.beginPath();x.moveTo(px*W,H*.62);x.lineTo(px*W,H*.12);x.stroke()});
+    x.lineWidth=3;x.beginPath();x.moveTo(0,H*.42);x.quadraticCurveTo(W*.1,H*.3,W*.22,H*.12);x.quadraticCurveTo(W*.45,H*.5,W*.68,H*.12);x.quadraticCurveTo(W*.85,H*.3,W,H*.4);x.stroke();
+    x.fillStyle='#0a0f22';x.fillRect(0,H*.5,W,10);for(let i=0;i<24;i++){x.fillStyle='#ffd27a';x.beginPath();x.arc(i*W/23,H*.495,3,0,7);x.fill()}
+    x.fillStyle=e.ground;x.fillRect(0,H*.8,W,H*.2);x.fillStyle='#3a3f55';x.fillRect(0,H*.8,W,4);
   } else { // city
     if(e.sun)glow(x,e.sun.x*W,e.sun.y*H,e.sun.r*5,e.sun.c,1);
     bldgs(x,e,r,W,H,.78);
@@ -722,10 +761,11 @@ function update(){
   $('#mblurG').setAttribute('stdDeviation',`${Math.max(mb,dof*.6).toFixed(1)} ${(dof*.5).toFixed(1)}`);
   $('#carBody').style.opacity=(1/(1+t*10)).toFixed(3);
   // brightness + shake
-  const shake=(!S.tripod&&t>1/30)?Math.min(6,(Math.log2(t*30)+1)*1.4):0;
+  const shake=(!S.tripod&&t>1/15)?Math.min(6,(Math.log2(t*15)+1)*1.4):0;
   const bright=Math.pow(2,offC*.62);
   $('#sceneInner').style.filter=`brightness(${bright.toFixed(3)}) ${off>1?`contrast(${(1-Math.min(.35,(off-1)*.12)).toFixed(2)})`:''} ${shake?`blur(${shake.toFixed(1)}px)`:''}`;
-  noiseAmt=Math.max(0,Math.log2(I/100)/8)*.75;
+  // modern full-frame (Canon R6 / Sony A7 IV class): clean to ~ISO 6400, fine grain from ~12800, heavy past 25600; underexposure adds more
+  noiseAmt=I<800?0:Math.min(.55,.018*Math.pow(1.75,Math.log2(I/1600))*(off<-1?1+(-off-1)*.35:1));
   // needle
   const nx=160+offC*46;
   if(motion)A({targets:'#needle',translateX:nx-160,duration:600,easing:'easeOutElastic(1,.6)'});else $('#needle').setAttribute('transform',`translate(${nx-160},0)`);
@@ -737,13 +777,13 @@ function update(){
   else f.push(['TOO DARK',`Under by ${(-off).toFixed(1)} stops. Use a slower shutter, wider aperture or higher ISO.`]);
   f.push(['APERTURE',N<=2.8?'Shallow depth of field: the background melts, the subject pops.':N>=8?'Deep depth of field: front to back is sharp. Great for landscapes.':'Middle ground: some background softness, plenty of sharpness.']);
   const mv=MOVERS[S.mover||'car'];f.push(['SHUTTER',S.mover==='none'?(t>=1/4?'Long exposure: the stars and sky gather light. Use a tripod.':'Nothing here moves fast; shutter mainly controls brightness.'):t<=1/500?`Motion frozen. ${mv.name} is crisp.`:t>=1/4?(S.mover==='car'&&ENVS[S.env].ev<8?'Long exposure: headlights become light trails.':`Long exposure: ${mv.name.toLowerCase()} smears into a ghostly streak.`):'Some motion blur on fast subjects.']);
-  if(shake)f.push(['SHAKE','Handheld below 1/30s: the whole frame is blurred. Tick “On a tripod” or use a faster shutter.']);
-  if(I>=3200)f.push(['ISO','Visible grain. Fine for night life and concerts, avoid it for landscapes.']);
+  if(shake)f.push(['SHAKE','Handheld slower than about 1/15 s, even in-body stabilisation can\'t hold it: the whole frame blurs. Tick “On a tripod” or use a faster shutter.']);
+  if(I>=25600)f.push(['ISO','Heavy grain and duller colour, even on a full-frame camera. Use it only when there is no other way.']);else if(I>=12800)f.push(['ISO','Fine grain on a modern full-frame camera (more on APS-C or older bodies). AI denoise in your editor cleans it well.']);else if(I>=3200)f.push(['ISO','Still clean on a modern full-frame camera. Older or APS-C bodies start to show a little grain here.']);
   $('#feedback').innerHTML=f.map(([k,v])=>`<div><b>${k}</b><span>${v}</span></div>`).join('');
 }
 let noiseAmt=0;
 const nc=$('#noise'),nx=nc.getContext('2d'),nimg=nx.createImageData(nc.width,nc.height);
-function noise(){const d=nimg.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}nx.putImageData(nimg,0,0);nc.style.opacity=noiseAmt.toFixed(2)}
+function noise(){const d=nimg.data;for(let i=0;i<d.length;i+=4){const v=128+(Math.random()+Math.random()-1)*127;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}nx.putImageData(nimg,0,0);nc.style.opacity=noiseAmt.toFixed(3)}
 noise();
 let sceneVisible=true;
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{sceneVisible=es[0].isIntersecting}).observe($('#scene'));
