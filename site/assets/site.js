@@ -666,3 +666,41 @@
     try { if (typeof window.gtag === 'function') { window.gtag('event', 'contact_click', { channel: ch, page_path: location.pathname }); if (ch === 'whatsapp') window.gtag('event', 'whatsapp_click', { page_path: location.pathname }); } } catch (err) {}
   });
 })();
+
+/* ---------- Watermark drawn by the site (photos themselves are clean), always whole in the bottom-right corner ---------- */
+(function () {
+  if (!document.body) return;
+  var st = document.createElement('style');
+  st.textContent = '.wmk{position:absolute;pointer-events:none;z-index:2;background:url(/assets/logo-word-on-dark.svg) no-repeat right bottom/contain;opacity:.74;filter:drop-shadow(0 1px 2px rgba(0,0,0,.42))}.wmk[hidden]{display:none}';
+  document.head.appendChild(st);
+  var SKIP = '.lt,.lt-slide,.lt-loupe,.loupe,.glass,.vf,.cam,[data-camera],.brand,header,footer,nav';
+  var all = [];
+  var ro = 'ResizeObserver' in window ? new ResizeObserver(function (es) { es.forEach(function (e) { place(e.target); }); }) : null;
+  function place(img) {
+    var s = img.__wm; if (!s) return;
+    var w = img.offsetWidth, h = img.offsetHeight;
+    if (w < 110 || h < 90 || !(img.currentSrc || img.getAttribute('src'))) { s.hidden = true; return; }
+    s.hidden = false;
+    var ww = Math.max(46, Math.min(150, w * 0.21)), wh = ww * 66 / 172, m = Math.max(6, w * 0.035);
+    s.style.width = ww + 'px'; s.style.height = wh + 'px';
+    s.style.left = (img.offsetLeft + w - ww - m) + 'px'; s.style.top = (img.offsetTop + h - wh - m) + 'px';
+  }
+  function add(img) {
+    if (img.__wm || img.closest(SKIP)) return;
+    var src = img.getAttribute('src') || '';
+    if (src.indexOf('/images/') < 0 && !img.closest('.lightbox')) return;
+    var p = img.parentElement; if (!p) return;
+    if (getComputedStyle(p).position === 'static') p.style.position = 'relative';
+    var s = img.nextElementSibling && img.nextElementSibling.classList.contains('wmk') ? img.nextElementSibling : null;
+    if (!s) { s = document.createElement('span'); s.className = 'wmk'; s.setAttribute('aria-hidden', 'true'); img.after(s); }
+    img.__wm = s; all.push(img);
+    img.addEventListener('load', function () { place(img); });
+    if (ro) ro.observe(img);
+    place(img);
+  }
+  function scan() { document.querySelectorAll('img').forEach(add); }
+  scan();
+  var t; if ('MutationObserver' in window) new MutationObserver(function () { clearTimeout(t); t = setTimeout(scan, 120); }).observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('resize', function () { all.forEach(place); });
+  window.addEventListener('load', function () { all.forEach(place); });
+})();
