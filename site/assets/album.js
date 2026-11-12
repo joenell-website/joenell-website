@@ -179,7 +179,8 @@ dots.forEach(function(d,i){d.addEventListener('click',function(){go(i);play()})}
 sh.querySelector('.as-pv').addEventListener('click',function(){go(act-1);play()});sh.querySelector('.as-nx').addEventListener('click',function(){go(act+1);play()});
 var sx=null;sh.addEventListener('pointerdown',function(e){sx=e.clientX});sh.addEventListener('pointerup',function(e){if(sx===null)return;var dx=e.clientX-sx;sx=null;if(Math.abs(dx)>45){go(act+(dx<0?1:-1));play();}});
 sh.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){go(act+1);e.preventDefault();e.stopPropagation()}if(e.key==='ArrowLeft'){go(act-1);e.preventDefault();e.stopPropagation()}});
-if('IntersectionObserver' in window){new IntersectionObserver(function(es){es.forEach(function(en){seen=en.isIntersecting&&en.intersectionRatio>0.35;if(seen)play();else stop();})},{threshold:[0,0.35,0.6]}).observe(sh);}else{seen=true}
+function vis(){var r=sh.getBoundingClientRect(),vh=window.innerHeight||document.documentElement.clientHeight,v=Math.min(r.bottom,vh)-Math.max(r.top,0),now=v>Math.min(r.height,vh)*0.35;if(now!==seen){seen=now;if(seen)play();else stop();}}
+window.addEventListener('scroll',vis,{passive:true});window.addEventListener('resize',vis);setTimeout(vis,300);
 sbw();window.addEventListener('resize',sbw);lay();play();
 })();
 var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(!turn&&!busy)build()},160);});
