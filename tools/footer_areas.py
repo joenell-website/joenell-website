@@ -3,7 +3,7 @@ existing area page (all languages) is in the sitemap. Idempotent — run after a
 Labels come from tools/<area>_i18n.json 'footer' (or the existing link title for older pages)."""
 import re,glob,json,os
 REG=[('metro',['burnaby','coquitlam','langley','north-vancouver','richmond','surrey','west-vancouver','white-rock']),
-     ('fraser',['abbotsford','chilliwack']),('sea',['squamish','whistler']),
+     ('fraser',['fraser-valley','abbotsford','chilliwack']),('sea',['squamish','whistler']),
      ('island',['victoria','nanaimo','tofino']),('okanagan',['kelowna'])]
 RN={'':{'metro':'Metro Vancouver','fraser':'Fraser Valley','sea':'Sea to Sky','island':'Vancouver Island','okanagan':'Okanagan'},
     'fr':{'metro':'Grand Vancouver','fraser':'Vallée du Fraser','sea':'Sea to Sky','island':'Île de Vancouver','okanagan':'Okanagan'},
