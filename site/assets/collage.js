@@ -43,6 +43,22 @@
     f.style.setProperty('--w', Math.round(w) + 'px'); f.style.setProperty('--h', Math.round(h) + 'px');
     f.style.setProperty('--r', (rot || 0).toFixed(2) + 'deg'); f.style.zIndex = z || 1;
     f.className = f.className.replace(/\s*cg-(round|feat|pol)/g, '') + (extra ? ' ' + extra : '');
+    aim(f, w, h, extra);
+  }
+  // Keep the faces in every tile: crop around the photo's focus point (data-fx/fy) for the tile's exact shape.
+  function aim(f, w, h, extra) {
+    var im = f.querySelector('img'); if (!im) return;
+    var r = (+im.getAttribute('width') || im.naturalWidth || 4) / (+im.getAttribute('height') || im.naturalHeight || 5);
+    var fx = parseFloat(im.getAttribute('data-fx')), fy = parseFloat(im.getAttribute('data-fy'));
+    if (isNaN(fx)) fx = 50; if (isNaN(fy)) fy = 35;
+    var bw = w - (extra === 'cg-pol' ? 16 : extra === 'cg-feat' ? 16 : 6), bh = h - (extra === 'cg-pol' ? 34 : extra === 'cg-feat' ? 16 : 6);
+    if (bw <= 0 || bh <= 0) return;
+    var dw, dh; if (bw / bh > r) { dw = bw; dh = bw / r; } else { dh = bh; dw = bh * r; }
+    var round = extra === 'cg-round', fyy = round ? 0.5 : 0.42; // round tiles: faces in the middle of the circle
+    var ox = dw > bw + 1 ? Math.min(0, Math.max(bw - dw, bw * 0.5 - dw * fx / 100)) : 0;
+    var oy = dh > bh + 1 ? Math.min(0, Math.max(bh - dh, bh * fyy - dh * fy / 100)) : 0;
+    var px = dw > bw + 1 ? ox / (bw - dw) * 100 : 50, py = dh > bh + 1 ? oy / (bh - dh) * 100 : 50;
+    im.style.setProperty('object-position', px.toFixed(1) + '% ' + py.toFixed(1) + '%', 'important');
   }
 
   // Evenly spaced points along a closed curve given by fn(t), t in [0, 2PI)
@@ -89,7 +105,7 @@
         for (var k = 0; k < a; k++) c1.pts.push(f1(Math.PI * (0.62 + 0.76 * (k + 0.5) / a)));
         for (k = 0; k < b; k++) c2.pts.push(f2(Math.PI * (-0.38 + 0.76 * (k + 0.5) / b)));
       }
-      var tl = Math.max(phone ? 38 : 56, Math.min(phone ? 72 : 120, (2 * Math.PI * R) / Math.max(a, 1) * (a < 5 ? 0.5 : 0.98)));
+      var tl = Math.max(phone ? 38 : 56, Math.min(phone ? 72 : 120, (2 * Math.PI * R) / Math.max(a, 1) * (a < 5 ? 0.5 : 0.86)));
       F.forEach(function (f, i) {
         var left = i < a, p = left ? c1.pts[i] : c2.pts[i - a];
         // interlock: where the rings cross, the left ring passes over at the top and under at the bottom
