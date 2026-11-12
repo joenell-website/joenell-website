@@ -13,3 +13,6 @@
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=86400
   X-Robots-Tag: noindex
+/guide/*
+  X-Robots-Tag: noindex
+  Cache-Control: public, max-age=86400

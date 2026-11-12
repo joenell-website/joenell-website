@@ -704,3 +704,59 @@
   window.addEventListener('resize', function () { all.forEach(place); });
   window.addEventListener('load', function () { all.forEach(place); });
 })();
+
+/* ---------- Free "Vancouver Wedding Photo Planner" sign-up (English pages, Nov 12 2026) ----------
+   Name + email go to the same "Website enquiries" Google Form (owner gets the usual email alert),
+   then the PDF download appears. GA4: generate_lead {form_id:'planner'}. */
+(function () {
+  'use strict';
+  if ((document.documentElement.lang || 'en').slice(0, 2) !== 'en') return;
+  var p = location.pathname.replace(/\.html$/, '');
+  if (!/^\/(index)?$|^\/(weddings|elopements|pricing|engagements|blog(\/.*)?|[a-z-]+-wedding-photographer)$/.test(p)) return;
+  if (/^\/blog\/(category|tag)\//.test(p)) return;
+  var foot = document.querySelector('footer'); if (!foot) return;
+  var PDF = '/guide/vancouver-wedding-photo-planner.pdf';
+  var css = document.createElement('style');
+  css.textContent = '.planner{background:#F3EEE7;border-top:1px solid #E3DCCF;padding:64px 0}' +
+    '.planner .pl-in{max-width:1040px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:220px 1fr;gap:44px;align-items:center}' +
+    '.planner .pl-cover{width:100%;aspect-ratio:510/660;object-fit:cover;border-radius:6px;box-shadow:0 22px 40px -22px rgba(40,25,5,.55);transform:rotate(-2deg)}' +
+    '.planner h2{margin:6px 0 10px;font-size:clamp(26px,3.4vw,38px);line-height:1.12}' +
+    '.planner ul{margin:0 0 18px;padding:0;list-style:none;color:var(--ink-2,#4A453F)}.planner li{padding:3px 0 3px 22px;position:relative}' +
+    '.planner li:before{content:"";position:absolute;left:2px;top:12px;width:7px;height:7px;border-radius:50%;background:#B08A4F}' +
+    '.planner form{display:flex;flex-wrap:wrap;gap:10px}.planner input{flex:1 1 180px;min-width:0;padding:13px 14px;border:1px solid #D9CFBF;border-radius:10px;background:#fff;font:inherit}' +
+    '.planner .btn{flex:0 0 auto}.planner .fine{font-size:12px;color:var(--muted,#6B645B);margin:10px 0 0}' +
+    '.planner .ok{display:none}.planner.done form,.planner.done .fine{display:none}.planner.done .ok{display:block}' +
+    '.planner .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}' +
+    '@media (max-width:720px){.planner .pl-in{grid-template-columns:1fr;gap:26px}.planner .pl-cover{max-width:170px;margin:0 auto;display:block}.planner .btn{width:100%}}';
+  document.head.appendChild(css);
+  var s = document.createElement('section');
+  s.className = 'planner'; s.id = 'planner'; s.setAttribute('aria-labelledby', 'pl-h');
+  s.innerHTML = '<div class="pl-in"><img class="pl-cover" src="/guide/planner-cover.jpg" width="510" height="660" alt="Cover of The Vancouver Wedding Photo Planner" loading="lazy">' +
+    '<div><p class="eyebrow">Free planning guide</p><h2 id="pl-h">The Vancouver Wedding Photo Planner</h2>' +
+    '<ul><li>Sample 2, 4 and 6-hour wedding-day timelines</li><li>The best light by season, plus a rain plan</li><li>Ten Vancouver photo locations and who they suit</li><li>A fill-in family photo list and week-before checklist</li></ul>' +
+    '<form novalidate><label class="sr-only" for="pl-n">First name</label><input id="pl-n" name="name" autocomplete="given-name" placeholder="First name" required>' +
+    '<label class="sr-only" for="pl-e">Email</label><input id="pl-e" name="email" type="email" autocomplete="email" placeholder="Email" required>' +
+    '<button class="btn btn-solid" type="submit">Get the free planner</button></form>' +
+    '<p class="fine">Free PDF, instant download. I may also email you the occasional planning tip; unsubscribe anytime.</p>' +
+    '<div class="ok" tabindex="-1"><p><strong>It\'s yours!</strong> Thanks — enjoy the planner, and reply anytime with questions about your day.</p>' +
+    '<a class="btn btn-solid" href="' + PDF + '" download>Download the planner (PDF)</a></div></div></div>';
+  foot.parentNode.insertBefore(s, foot);
+  var f = s.querySelector('form');
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    var b = f.querySelector('button'); b.disabled = true; b.textContent = 'Sending…';
+    var d = new URLSearchParams();
+    d.append('entry.554125004', f.name.value.trim());
+    d.append('entry.1027973329', f.email.value.trim());
+    d.append('entry.1799884964', 'Wedding');
+    d.append('entry.461589708', 'FREE PLANNER: requested The Vancouver Wedding Photo Planner (PDF) from the website.');
+    d.append('entry.2020717134', (p + ' | planner').slice(0, 480));
+    var ok = function () {
+      s.classList.add('done'); var o = s.querySelector('.ok'); o.focus();
+      try { window.open(PDF, '_blank'); } catch (err) {}
+      try { if (typeof window.gtag === 'function') window.gtag('event', 'generate_lead', { form_id: 'planner', session_type: 'Wedding planner' }); } catch (err) {}
+    };
+    fetch('https://docs.google.com/forms/d/e/1FAIpQLScDnPZKwu9lXSDtGiTnlC4ZxJ9fFU4kLeIOZdsALPj4ASg3Sw/formResponse', { method: 'POST', mode: 'no-cors', body: d }).then(ok, ok);
+  });
+})();
