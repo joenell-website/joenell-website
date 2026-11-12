@@ -1,0 +1,34 @@
+/* Portfolio frames: heart, two joined rings, polaroid collage (Nov 11 2026) */
+.cg-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;margin:2px 0 22px}
+.cg-lbl{font:500 11px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:#b08a4f}
+.cg-modes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cg-modes button{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(176,138,79,.45);background:#fffdf9;color:#6b5a3e;font:500 12px var(--sans);letter-spacing:.08em;cursor:pointer;transition:background .3s,color .3s,box-shadow .3s}
+.cg-modes button:hover{box-shadow:0 6px 14px -10px rgba(120,90,40,.6)}
+.cg-modes button[aria-pressed="true"]{background:#b08a4f;color:#fff;border-color:#b08a4f}
+.cg-modes button:focus-visible{outline:2px solid #b08a4f;outline-offset:3px}
+.cg-ic{display:inline-block;width:14px;height:14px;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.cg-heart{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z'/%3E%3C/svg%3E")}
+.cg-rings{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4'%3E%3Ccircle cx='8.5' cy='12' r='6'/%3E%3Ccircle cx='15.5' cy='12' r='6'/%3E%3C/svg%3E")}
+.cg-collage{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='4' width='11' height='12' rx='1' transform='rotate(-8 7 10)'/%3E%3Crect x='11' y='8' width='11' height='12' rx='1' transform='rotate(7 16 14)'/%3E%3C/svg%3E")}
+.cg-grid{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='8' height='8' rx='1'/%3E%3Crect x='13' y='3' width='8' height='8' rx='1'/%3E%3Crect x='3' y='13' width='8' height='8' rx='1'/%3E%3Crect x='13' y='13' width='8' height='8' rx='1'/%3E%3C/svg%3E")}
+.cg-tip{flex-basis:100%;text-align:center;font:400 13px var(--sans);color:var(--muted,#6B645B)}
+
+.gallery.cg-on{display:block!important;position:relative;columns:auto;transition:height .8s cubic-bezier(.2,.7,.2,1);
+  background:radial-gradient(ellipse at 50% 45%,#fffdf8 0%,#f6efe3 62%,rgba(246,239,227,0) 78%)}
+.gallery.cg-on>figure{position:absolute!important;left:0;top:0;margin:0!important;width:var(--w)!important;height:var(--h)!important;aspect-ratio:auto!important;
+  transform:translate(var(--x),var(--y)) rotate(var(--r));border-radius:10px;overflow:hidden;background:#fff;
+  border:3px solid #fff;box-shadow:0 14px 26px -16px rgba(60,40,15,.55),0 0 0 1px rgba(176,138,79,.28);
+  transition:transform 1.15s cubic-bezier(.2,.7,.2,1),width 1.15s cubic-bezier(.2,.7,.2,1),height 1.15s cubic-bezier(.2,.7,.2,1),border-radius .9s,padding .6s,box-shadow .4s}
+.gallery.cg-on>figure>button{width:100%;height:100%}
+.gallery.cg-on>figure img{width:100%;height:100%;object-fit:cover}
+.gallery.cg-on>figure:hover,.gallery.cg-on>figure:focus-within{z-index:60!important;transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.55);box-shadow:0 30px 50px -20px rgba(40,25,5,.7),0 0 0 2px #d9bd8a}
+.gallery.cg-on>figure.cg-round{border-radius:50%;border-color:#fff;box-shadow:0 12px 24px -14px rgba(60,40,15,.6),0 0 0 2px #d9bd8a,0 0 0 4px #fff}
+.gallery.cg-on>figure.cg-feat{border-width:8px;border-radius:6px;box-shadow:0 34px 60px -28px rgba(40,25,5,.75),0 0 0 1px #d9bd8a}
+.gallery.cg-on>figure.cg-feat:hover{transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.12)}
+.gallery.cg-on>figure.cg-pol{border-radius:3px;border:0;padding:8px 8px 26px;box-sizing:border-box}
+@media (max-width:700px){.gallery.cg-on>figure.cg-pol{padding:5px 5px 18px}.gallery.cg-on>figure:hover{transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.25)}}
+.gallery.cg-on .wmk{display:none}
+.gallery.cg-on>figure.cg-feat .wmk,.gallery.cg-on>figure:hover .wmk{display:block}
+.cg-amp{position:absolute;z-index:4;transform:translate(-50%,-56%);font-family:"Pinyon Script","Snell Roundhand",var(--serif);color:#b08a4f;opacity:0;transition:opacity .8s;pointer-events:none;line-height:1;text-shadow:0 2px 10px rgba(255,255,255,.9)}
+.gallery:not(.cg-on) .cg-amp{display:none}
+@media (prefers-reduced-motion:reduce){.gallery.cg-on>figure{transition:none}}
