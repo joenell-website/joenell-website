@@ -5,30 +5,19 @@
 .cg-tip{display:block;text-align:center;margin:14px 0 6px;font:400 13px var(--sans);color:var(--muted,#6B645B)}
 #pf-g .filters{justify-content:center}
 
-.gallery.cg-on{display:block!important;position:relative;columns:auto;transition:height .8s cubic-bezier(.2,.7,.2,1);
-  background:radial-gradient(ellipse at 50% 45%,#fffdf8 0%,#f6efe3 62%,rgba(246,239,227,0) 78%)}
+.gallery.cg-on{display:block!important;position:relative;columns:auto;transition:height .9s cubic-bezier(.2,.7,.2,1)}
 .gallery.cg-on>figure{position:absolute!important;left:0;top:0;margin:0!important;width:var(--w)!important;height:var(--h)!important;aspect-ratio:auto!important;
-  transform:translate(var(--x),var(--y)) rotate(var(--r));border-radius:10px;overflow:hidden;background:#fff;
-  border:3px solid #fff;box-shadow:0 14px 26px -16px rgba(60,40,15,.55),0 0 0 1px rgba(176,138,79,.28);
-  transition:transform 1.15s cubic-bezier(.2,.7,.2,1),width 1.15s cubic-bezier(.2,.7,.2,1),height 1.15s cubic-bezier(.2,.7,.2,1),border-radius .9s,padding .6s,box-shadow .4s}
-.gallery.cg-on>figure>button{width:100%;height:100%}
-.gallery.cg-on>figure img{width:100%;height:100%;object-fit:cover}
-.gallery.cg-on>figure:hover,.gallery.cg-on>figure:focus-within{z-index:60!important;transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.55);box-shadow:0 30px 50px -20px rgba(40,25,5,.7),0 0 0 2px #d9bd8a}
-.gallery.cg-on>figure.cg-round{border-radius:14px;border-color:#fff;box-shadow:0 12px 24px -14px rgba(60,40,15,.6),0 0 0 2px #d9bd8a,0 0 0 4px #fff}
-.gallery.cg-on>figure.cg-feat{border-width:8px;border-radius:6px;box-shadow:0 34px 60px -28px rgba(40,25,5,.75),0 0 0 1px #d9bd8a}
-.gallery.cg-on>figure.cg-feat:hover{transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.12)}
-.gallery.cg-on>figure.cg-pol{border-radius:3px;border:0;padding:8px 8px 26px;box-sizing:border-box}
-@media (max-width:700px){.gallery.cg-on>figure.cg-pol{padding:5px 5px 18px}.gallery.cg-on>figure:hover{transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.25)}}
+  transform:translate(var(--x),var(--y)) rotate(var(--r));border-radius:3px;overflow:hidden;background:#efe7da;border:0;
+  box-shadow:0 8px 18px -12px rgba(60,40,15,.55);opacity:1;
+  transition:transform 1.2s cubic-bezier(.2,.7,.2,1) var(--d,0s),width 1.2s cubic-bezier(.2,.7,.2,1) var(--d,0s),height 1.2s cubic-bezier(.2,.7,.2,1) var(--d,0s),opacity .8s var(--d,0s),box-shadow .4s}
+.gallery.cg-on>figure>button{width:100%;height:100%;display:block}
+.gallery.cg-on>figure img{width:100%;height:100%;object-fit:cover;transition:object-position 1.2s}
+.gallery.cg-on>figure.cg-off{opacity:0;pointer-events:none;transform:translate(var(--x),var(--y)) scale(.4)}
+.gallery.cg-on>figure:not(.cg-off):hover,.gallery.cg-on>figure:not(.cg-off):focus-within{z-index:60!important;transform:translate(var(--x),var(--y)) scale(var(--hs,1.5));transition-delay:0s;box-shadow:0 28px 50px -18px rgba(40,25,5,.7),0 0 0 2px #fff,0 0 0 3px #d9bd8a}
 .gallery.cg-on .wmk{display:none}
-.gallery.cg-on>figure.cg-feat .wmk,.gallery.cg-on>figure:hover .wmk{display:block}
-.cg-amp{position:absolute;z-index:4;transform:translate(-50%,-56%);font-family:"Pinyon Script","Snell Roundhand",var(--serif);color:#b08a4f;opacity:0;transition:opacity .8s;pointer-events:none;line-height:1;text-shadow:0 2px 10px rgba(255,255,255,.9)}
-.gallery:not(.cg-on) .cg-amp{display:none}
+.gallery.cg-on>figure:hover .wmk{display:block}
 @media (prefers-reduced-motion:reduce){.gallery.cg-on>figure{transition:none}}
 
-.cg-line{position:absolute;left:0;top:0;z-index:1;pointer-events:none;overflow:visible}
-.cg-line path{fill:none;stroke:#c9a76c;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(217,189,138,.55));opacity:0}
-.cg-line path:nth-child(2){stroke:#d9bd8a}
-.gallery:not(.cg-on) .cg-line{display:none}
 /* Portfolio light table: one big photo at a time, changing on its own (Nov 11 2026) */
 .lt.lt-solo .lt-loupe{display:none}
 .lt.lt-solo .lt-slide{left:6%!important;top:8.5%!important;width:88%!important;height:84%;display:flex;flex-direction:column;padding:2.6% 2.6% 2%;opacity:0;transform:scale(.965)!important;pointer-events:none;z-index:1!important;transition:opacity 1s ease,transform 1.4s cubic-bezier(.2,.7,.2,1)}
@@ -43,3 +32,11 @@
 .pf-close .wh-copy{max-width:720px;margin:0 auto;align-items:center;text-align:center}
 .pf-close .wh-actions{justify-content:center}
 .pf-close .wh-proof{justify-content:center;width:100%}
+/* mosaic outline + cut tiles (Nov 12 2026) */
+.gallery.cg-on .cg-line{position:absolute;left:0;top:0;z-index:20;pointer-events:none;overflow:visible}
+.gallery.cg-on .cg-line path{fill:none;stroke:#c9a76c;stroke-width:2.4;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(217,189,138,.6))}
+.gallery.cg-on>figure:not(.cg-off):hover,.gallery.cg-on>figure:not(.cg-off):focus-within{clip-path:none!important}
+.gallery.cg-on>figure{box-shadow:none}
+.gallery.cg-on .cg-back{position:absolute;left:0;top:0;z-index:0;pointer-events:none}
+.gallery.cg-on .cg-back path{fill:#efe5d4;transition:opacity .6s}
+.gallery.cg-on .cg-line path{transition:opacity .4s}

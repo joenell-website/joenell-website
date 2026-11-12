@@ -1,5 +1,5 @@
-/* Portfolio "frames": the photo gallery arranges itself into a heart, two joined rings and a polaroid collage,
-   then can be shown as a classic gallery. Tiles are the gallery's own buttons, so the lightbox and filters keep working. */
+/* Portfolio "Love stories": the photos merge into a photo mosaic that forms a heart, two joined rings and an
+   engagement ring, changing on its own. Tiles are the gallery's own buttons, so the lightbox keeps working (Nov 12 2026). */
 (function () {
   var g = document.querySelector('#pf-g .gallery'); if (!g) return;
   var lang = (document.documentElement.lang || 'en').slice(0, 2).toLowerCase();
@@ -10,154 +10,141 @@
     zh: ['爱的故事', '每一张照片，都是一段爱情故事的片段', '点击任意照片查看大图'],
     pa: ['ਪਿਆਰ ਦੀਆਂ ਕਹਾਣੀਆਂ', 'ਹਰ ਫ਼ੋਟੋ, ਕਿਸੇ ਜੋੜੇ ਦੀ ਕਹਾਣੀ ਦਾ ਇੱਕ ਹਿੱਸਾ', 'ਵੱਡਾ ਦੇਖਣ ਲਈ ਕਿਸੇ ਵੀ ਫ਼ੋਟੋ ’ਤੇ ਟੈਪ ਕਰੋ']
   }[lang] || ['Love stories', 'Every photo, a little piece of someone’s story', 'Tap any photo to see it larger'];
-  var MODES = ['heart', 'rings', 'collage'];
-  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var MODES = ['heart', 'rings', 'ring'];
 
-  // Title above the frames (no frame labels: the shapes change on their own)
+  // No category buttons here (the albums above already split the work by type): every photo takes part.
+  var fl = g.parentNode.querySelector('.filters'); if (fl) fl.remove();
+  var F = [].slice.call(g.querySelectorAll(':scope > figure'));
+  F.forEach(function (f) { f.hidden = false; });
+
   var bar = document.createElement('div'); bar.className = 'cg-bar';
-  bar.innerHTML = '<span class="cg-eb">' + L[0] + '</span><h2 class="cg-h">' + L[1] + '</h2><span class="cg-tip">' + L[2] + '</span>';
-  var fl = g.parentNode.querySelector('.filters'); g.parentNode.insertBefore(bar, fl || g);
-  var tip = bar.querySelector('.cg-tip'); g.parentNode.insertBefore(tip, g);
-  var amp = document.createElement('div'); amp.className = 'cg-amp'; amp.setAttribute('aria-hidden', 'true'); amp.textContent = '&';
-  g.appendChild(amp);
-  var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'cg-line'); svg.setAttribute('aria-hidden', 'true');
-  var pa = document.createElementNS(NS, 'path'), pb = document.createElementNS(NS, 'path'); svg.appendChild(pa); svg.appendChild(pb); g.appendChild(svg);
-  function draw(paths, W, H) {
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
-    [pa, pb].forEach(function (el, i) {
-      var d = paths[i]; el.style.transition = 'none';
-      if (!d) { el.setAttribute('d', ''); el.style.opacity = 0; return; }
-      el.setAttribute('d', d); var L = el.getTotalLength ? el.getTotalLength() : 3000;
-      el.style.strokeDasharray = L; el.style.strokeDashoffset = RM ? 0 : L; el.style.opacity = 1; el.getBoundingClientRect();
-      el.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1) ' + (0.15 + i * 0.25) + 's, opacity .6s'; el.style.strokeDashoffset = 0;
-    });
-  }
-  function pathOf(fn, k) { var d = ''; for (var i = 0; i <= k; i++) { var p = fn(i / k * Math.PI * 2); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); } return d + 'Z'; }
+  bar.innerHTML = '<span class="cg-eb">' + L[0] + '</span><h2 class="cg-h">' + L[1] + '</h2>';
+  g.parentNode.insertBefore(bar, g);
+  var tip = document.createElement('span'); tip.className = 'cg-tip'; tip.textContent = L[2];
+  g.parentNode.insertBefore(tip, g);
 
-  var mode = 'heart', auto = true, timer = null, seen = false, hover = false, turn = 0;
-  function figs() { return [].slice.call(g.querySelectorAll(':scope > figure')).filter(function (f) { return !f.hidden; }); }
-  function rnd(i, k) { var x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); }
+  // Shapes, tested in "shape units" (x right, y down), each with its bounding box.
+  function inPoly(x, y, P) { var c = false; for (var i = 0, j = P.length - 1; i < P.length; j = i++) { if (((P[i][1] > y) !== (P[j][1] > y)) && (x < (P[j][0] - P[i][0]) * (y - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0])) c = !c; } return c; }
+  var GEM = [[-0.36, -1.62], [0.36, -1.62], [0.62, -1.34], [0, -0.74], [-0.62, -1.34]];
+  function circ(cx, cy, r, rev) { var o = []; for (var i = 0; i < 120; i++) { var t = (rev ? -1 : 1) * i / 120 * Math.PI * 2; o.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); } return o; }
+  function heartPoly() { var o = []; for (var i = 0; i < 240; i++) { var t = i / 240 * Math.PI * 2, k = 1 / 16.6; o.push([16 * Math.pow(Math.sin(t), 3) * k * 1.06, -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * k * 1.06 - 0.05]); } return o; }
+  var HP = heartPoly();
+  var SH = {
+    heart: { box: [-1.03, -0.82, 1.03, 1.045], polys: [HP], line: [0], fn: function (x, y) { return inPoly(x, y, HP); } },
+    rings: { box: [-1.62, -1, 1.62, 1], fn: function (x, y) {
+      var d1 = Math.hypot(x + 0.62, y), d2 = Math.hypot(x - 0.62, y);
+      return (d1 <= 1 && d1 >= 0.56) || (d2 <= 1 && d2 >= 0.56); },
+      polys: [circ(-0.62, 0, 1), circ(-0.62, 0, 0.56, 1), circ(0.62, 0, 1), circ(0.62, 0, 0.56, 1)], line: [0, 1, 2, 3] },
+    ring: { box: [-1.02, -1.64, 1.02, 1.04], fn: function (x, y) {
+      var d = Math.hypot(x, y + 0.02); return (d <= 1 && d >= 0.6) || inPoly(x, y, GEM); },
+      polys: [circ(0, -0.02, 1), circ(0, -0.02, 0.6, 1), GEM], line: [0, 1, 2] }
+  };
 
-  function place(f, x, y, w, h, rot, z, extra) {
-    f.style.setProperty('--x', x.toFixed(1) + 'px'); f.style.setProperty('--y', y.toFixed(1) + 'px');
-    f.style.setProperty('--w', Math.round(w) + 'px'); f.style.setProperty('--h', Math.round(h) + 'px');
-    f.style.setProperty('--r', (rot || 0).toFixed(2) + 'deg'); f.style.zIndex = z || 1;
-    f.className = f.className.replace(/\s*cg-(round|feat|pol)/g, '') + (extra ? ' ' + extra : '');
-    aim(f, w, h, extra);
+  // Mosaic: a quadtree over the shape. Cells along the outline keep splitting (so the edge reads crisply),
+  // the middle keeps the big tiles, and the split stops when there is one tile per photo.
+  function mosaic(sh, W, H, n, minS) {
+    var b = sh.box, bw = b[2] - b[0], bh = b[3] - b[1];
+    var s = Math.min(W * 0.96 / bw, H * 0.96 / bh), ox = W / 2 - (b[0] + bw / 2) * s, oy = H / 2 - (b[1] + bh / 2) * s;
+    function cov(c) { var k = 0, N = 7; for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) { if (sh.fn((c.x + (i + 0.5) / N * c.s - ox) / s, (c.y + (j + 0.5) / N * c.s - oy) / s)) k++; } return k / (N * N); }
+    var S0 = Math.min(bw, bh) * s / 2.4, x0 = ox + b[0] * s, y0 = oy + b[1] * s;
+    var cols = Math.ceil(bw * s / S0), rows = Math.ceil(bh * s / S0);
+    x0 -= (cols * S0 - bw * s) / 2; y0 -= (rows * S0 - bh * s) / 2;
+    var cells = [];
+    for (var r = 0; r < rows; r++) for (var q = 0; q < cols; q++) { var c = { x: x0 + q * S0, y: y0 + r * S0, s: S0 }; c.c = cov(c); if (c.c > 0.04) cells.push(c); }
+    var TH = 0.22; function tiles() { return cells.filter(function (c) { return c.c >= TH; }).length; }
+    var cnt = tiles(), guard = 0;
+    // too many cells even before splitting: nothing to do but keep the best-covered ones
+    while (guard++ < 600) {
+      var cand = cells.filter(function (c) { return c.s / 2 >= minS; }).sort(function (a, b2) {
+        var pa = a.s * (a.c < 0.97 ? 1.7 : 1), pb = b2.s * (b2.c < 0.97 ? 1.7 : 1); return pb - pa; });
+      var done = false;
+      for (var k = 0; k < cand.length && !done; k++) {
+        var p = cand[k], h = p.s / 2, kids = [];
+        [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(function (o) { var ch = { x: p.x + o[0] * h, y: p.y + o[1] * h, s: h }; ch.c = p.c >= 0.999 ? 1 : cov(ch); if (ch.c > 0.04) kids.push(ch); });
+        var nc = cnt - (p.c >= TH ? 1 : 0) + kids.filter(function (ch) { return ch.c >= TH; }).length;
+        if (nc <= n) { cells.splice(cells.indexOf(p), 1); cells = cells.concat(kids); cnt = nc; done = true; }
+      }
+      if (!done) break;
+    }
+    var out = cells.filter(function (c) { return c.c >= TH; }).sort(function (a, b2) { return b2.s - a.s || a.y - b2.y || a.x - b2.x; });
+    out = out.slice(0, n); out.geo = { s: s, ox: ox, oy: oy }; return out;
   }
-  // Tile size that shows the WHOLE photo: long side = L, the other side follows the photo's own shape (+ frame border).
-  function dims(f, L, pad) {
-    var im = f.querySelector('img'), r = (+im.getAttribute('width') || 4) / (+im.getAttribute('height') || 5), b = pad || 6;
-    return r >= 1 ? [L, (L - b) / r + b] : [(L - b) * r + b, L];
+
+  var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg'), line = document.createElementNS(NS, 'path');
+  svg.setAttribute('class', 'cg-line'); svg.setAttribute('aria-hidden', 'true'); svg.appendChild(line); g.appendChild(svg);
+  var bsvg = document.createElementNS(NS, 'svg'), back = document.createElementNS(NS, 'path'); bsvg.setAttribute('class', 'cg-back'); bsvg.setAttribute('aria-hidden', 'true'); bsvg.appendChild(back); g.insertBefore(bsvg, g.firstChild);
+  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function pathStr(sh, geo, dx, dy, only) {
+    var d = ''; sh.polys.forEach(function (P, k) { if (only && only.indexOf(k) < 0) return;
+      P.forEach(function (q, i) { d += (i ? 'L' : 'M') + (q[0] * geo.s + geo.ox - dx).toFixed(1) + ' ' + (q[1] * geo.s + geo.oy - dy).toFixed(1); }); d += 'Z'; });
+    return d;
   }
-  // Keep the faces in every tile: crop around the photo's focus point (data-fx/fy) for the tile's exact shape.
-  function aim(f, w, h, extra) {
+  function outline(sh, geo, W, H) {
+    [svg, bsvg].forEach(function (e) { e.setAttribute('viewBox', '0 0 ' + W + ' ' + H); e.setAttribute('width', W); e.setAttribute('height', H); });
+    back.setAttribute('d', pathStr(sh, geo, 0, 0)); back.style.opacity = 1; line.style.opacity = 1;
+    line.style.transition = 'none'; line.setAttribute('d', pathStr(sh, geo, 0, 0, sh.line));
+    var len = line.getTotalLength ? line.getTotalLength() : 4000;
+    line.style.strokeDasharray = len; line.style.strokeDashoffset = RM ? 0 : len; line.getBoundingClientRect();
+    line.style.transition = 'stroke-dashoffset 2.2s cubic-bezier(.4,0,.2,1) ' + (laid2 ? '0s' : '.9s'); laid2 = true; line.style.strokeDashoffset = 0;
+  }
+
+  var laid2 = false, laid = false, lastMode = '', ct = null;
+  var mode = 'heart', timer = null, seen = false, hover = false, turn = 0;
+  function aim(f, w, h) {
     var im = f.querySelector('img'); if (!im) return;
     var r = (+im.getAttribute('width') || im.naturalWidth || 4) / (+im.getAttribute('height') || im.naturalHeight || 5);
     var fx = parseFloat(im.getAttribute('data-fx')), fy = parseFloat(im.getAttribute('data-fy'));
-    if (isNaN(fx)) fx = 50; if (isNaN(fy)) fy = 35;
-    var ph = window.innerWidth < 700, bw = w - (extra === 'cg-pol' ? (ph ? 10 : 16) : extra === 'cg-feat' ? 16 : 6), bh = h - (extra === 'cg-pol' ? (ph ? 23 : 34) : extra === 'cg-feat' ? 16 : 6);
-    if (bw <= 0 || bh <= 0) return;
-    var dw, dh; if (bw / bh > r) { dw = bw; dh = bw / r; } else { dh = bh; dw = bh * r; }
-    var round = extra === 'cg-round', fyy = round ? 0.5 : 0.42; // round tiles: faces in the middle of the circle
-    var ox = dw > bw + 1 ? Math.min(0, Math.max(bw - dw, bw * 0.5 - dw * fx / 100)) : 0;
-    var oy = dh > bh + 1 ? Math.min(0, Math.max(bh - dh, bh * fyy - dh * fy / 100)) : 0;
-    var px = dw > bw + 1 ? ox / (bw - dw) * 100 : 50, py = dh > bh + 1 ? oy / (bh - dh) * 100 : 50;
+    if (isNaN(fx)) fx = 50; if (isNaN(fy)) fy = 38;
+    var dw, dh; if (w / h > r) { dw = w; dh = w / r; } else { dh = h; dw = h * r; }
+    var ox = dw > w + 1 ? Math.min(0, Math.max(w - dw, w * 0.5 - dw * fx / 100)) : 0;
+    var oy = dh > h + 1 ? Math.min(0, Math.max(h - dh, h * 0.45 - dh * fy / 100)) : 0;
+    var px = dw > w + 1 ? ox / (w - dw) * 100 : 50, py = dh > h + 1 ? oy / (h - dh) * 100 : 50;
     im.style.setProperty('object-position', px.toFixed(1) + '% ' + py.toFixed(1) + '%', 'important');
-  }
-
-  // Evenly spaced points along a closed curve given by fn(t), t in [0, 2PI)
-  function along(fn, n, off) {
-    var S = 600, pts = [], len = [0], i;
-    for (i = 0; i <= S; i++) pts.push(fn(i / S * Math.PI * 2));
-    for (i = 1; i <= S; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-    var tot = len[S], out = [], j = 0;
-    for (var k = 0; k < n; k++) {
-      var d = ((k + (off || 0)) / n) * tot; while (j < S && len[j + 1] < d) j++;
-      var a = (d - len[j]) / ((len[j + 1] - len[j]) || 1);
-      out.push([pts[j][0] + (pts[j + 1][0] - pts[j][0]) * a, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * a]);
-    }
-    return { pts: out, len: tot };
   }
 
   function layout() {
     var W = g.clientWidth; if (!W) return;
-    var F = figs(), n = F.length, phone = W < 700;
-    g.classList.add('cg-on');
-    g.setAttribute('data-shape', mode);
-    var H = phone ? Math.round(mode === 'collage' ? Math.max(W * 0.9, Math.ceil(n / (n <= 4 ? 2 : 3)) * W / (n <= 4 ? 2 : 3) * 1.18 + 30) : W * 1.18) : Math.round(Math.min(Math.max(window.innerHeight * 0.84, 560), 820, W * 0.72));
+    var n = F.length, phone = W < 700, sh = SH[mode], b = sh.box, ar = (b[3] - b[1]) / (b[2] - b[0]);
+    g.classList.add('cg-on'); g.setAttribute('data-shape', mode);
+    var H = phone ? Math.round(Math.min(W * ar * 1.04, window.innerHeight * 0.86)) : Math.round(Math.min(Math.max(window.innerHeight * 0.86, 600), 860, W * 0.74));
     g.style.height = H + 'px';
-    var cx = W / 2, cy = H / 2;
-    if (mode === 'heart') {
-      // Heart frame: photos along the outline, one featured photo in the middle.
-      var feat = F[turn % n], ring = F.filter(function (f) { return f !== feat; }), m = ring.length;
-      var sc = Math.min(W * (phone ? 0.86 : 0.62) / 32, H * 0.84 / 29), oy = cy - 2.5 * sc;
-      var hf = function (t) { var s = Math.sin(t); return [cx + 16 * s * s * s * sc, oy - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * sc]; };
-      var hp = along(hf, Math.max(m, 1), 0.5); draw([pathOf(hf, 240)], W, H);
-      // Whole photos (each tile keeps its photo's own shape); fewer photos = bigger photos.
-      var cap = sc * (m <= 4 ? 9.5 : m <= 8 ? 7.4 : m <= 14 ? 6.2 : 5.6);
-      var L = Math.max(phone ? 46 : 64, Math.min(cap, hp.len / Math.max(m, 1) * 1.08));
-      ring.forEach(function (f, i) { var p = hp.pts[i], d = dims(f, L); place(f, p[0] - d[0] / 2, p[1] - d[1] / 2, d[0], d[1], (rnd(i, 1) - 0.5) * 10, 2 + (i % 3)); });
-      var FL = sc * (m <= 8 ? 13 : 11.5), fd = dims(feat, FL, 16);
-      place(feat, cx - fd[0] / 2, oy + 1.6 * sc - fd[1] / 2, fd[0], fd[1], (rnd(turn, 2) - 0.5) * 4, 6, 'cg-feat');
-      amp.style.opacity = 0;
-    } else if (mode === 'rings') {
-      // Two joined rings: round photos on two interlocking circles.
-      var R = Math.min(W * (phone ? 0.29 : 0.2), H * (phone ? 0.3 : 0.33)), dx = R * 0.62;
-      var a = Math.ceil(n / 2), b = n - a;
-      var f1 = function (t) { return [cx - dx + R * Math.cos(t), cy + R * Math.sin(t)]; }, f2 = function (t) { return [cx + dx + R * Math.cos(t), cy + R * Math.sin(t)]; };
-      var c1 = along(f1, a, 0.25), c2 = along(f2, Math.max(b, 1), 0.75); draw([pathOf(f1, 180), pathOf(f2, 180)], W, H);
-      if (a <= 4) { // few photos: keep them on the outer sides of each ring so they never pile up where the rings cross
-        c1.pts = []; c2.pts = [];
-        for (var k = 0; k < a; k++) c1.pts.push(f1(Math.PI * (0.45 + 1.1 * (k + 0.5) / a)));
-        for (k = 0; k < b; k++) c2.pts.push(f2(Math.PI * (-0.55 + 1.1 * (k + 0.5) / b)));
+    var moving = laid && lastMode !== mode, clips = []; laid = true; lastMode = mode; clearTimeout(ct);
+    var T = mosaic(sh, W, H, n, phone ? 22 : 34), gap = phone ? 1.5 : 2.5;
+    // rotate which photos get the big tiles each turn
+    var order = F.map(function (f, i) { return F[(i + turn * 5) % n]; });
+    order.forEach(function (f, i) {
+      var t = T[i], btn = f.querySelector('button');
+      if (!t) { // no room in this shape: tuck it away (it is still in the lightbox)
+        f.classList.add('cg-off'); f.style.zIndex = 0; if (btn) btn.tabIndex = -1;
+        f.style.setProperty('--x', (W / 2 - 20) + 'px'); f.style.setProperty('--y', (H / 2 - 20) + 'px');
+        f.style.setProperty('--w', '40px'); f.style.setProperty('--h', '40px'); f.style.setProperty('--r', '0deg');
+        return;
       }
-      var RL = Math.max(phone ? 46 : 62, Math.min(a <= 4 ? R * 0.92 : a <= 7 ? R * 0.7 : R * 0.58, a <= 4 ? R * Math.PI * 1.1 / a * 0.92 : (2 * Math.PI * R) / Math.max(a, 1) * 0.95));
-      F.forEach(function (f, i) {
-        var left = i < a, p = left ? c1.pts[i] : c2.pts[i - a], d = dims(f, RL);
-        // interlock: where the rings cross, the left ring passes over at the top and under at the bottom
-        var z = 3; if (Math.abs(p[0] - cx) < R * 0.55) z = left ? (p[1] < cy ? 5 : 2) : (p[1] < cy ? 2 : 5);
-        place(f, Math.max(4, Math.min(W - d[0] - 4, p[0] - d[0] / 2)), Math.max(4, Math.min(H - d[1] - 4, p[1] - d[1] / 2)), d[0], d[1], 0, z, 'cg-round');
-      });
-      amp.style.opacity = 0;
-    } else {
-      // Polaroid collage: a loose, overlapping pile, every photo whole.
-      draw([], W, H);
-      var cols = phone ? (n <= 4 ? 2 : 3) : (n <= 4 ? n : n <= 8 ? Math.ceil(n / 2) : Math.max(4, Math.round(Math.sqrt(n * W / H)))), rows = Math.ceil(n / cols);
-      var cw = W / cols, rh = H / rows;
-      F.forEach(function (f, i) {
-        var im = f.querySelector('img'), r = (+im.getAttribute('width') || 4) / (+im.getAttribute('height') || 5);
-        var c = i % cols, rI = Math.floor(i / cols), base = phone ? Math.min(cw * 1.2, rh * 1.25) : Math.min(cw * 1.08, rh * 1.18);
-        var PX = phone ? 10 : 16, PY = phone ? 23 : 34; // polaroid border: sides / top+bottom
-        var w = r >= 1 ? base * 1.08 : base * 0.84, h = (w - PX) / r + PY;
-        if (h > rh * 1.45) { h = rh * 1.45; w = (h - PY) * r + PX; }
-        var x = c * cw + cw / 2 - w / 2 + (rnd(i, 3) - 0.5) * cw * 0.35, y = rI * rh + rh / 2 - h / 2 + (rnd(i, 4) - 0.5) * rh * 0.3;
-        x = Math.max(14, Math.min(W - w - 14, x)); y = Math.max(16, Math.min(H - h - 16, y));
-        place(f, x, y, w, h, (rnd(i, 5) - 0.5) * 16, 2 + Math.floor(rnd(i, 6) * 6), 'cg-pol');
-      });
-      amp.style.opacity = 0;
-    }
+      f.classList.remove('cg-off'); if (btn) btn.removeAttribute('tabindex');
+      var w = t.s - gap * 2;
+      f.style.setProperty('--x', (t.x + gap).toFixed(1) + 'px'); f.style.setProperty('--y', (t.y + gap).toFixed(1) + 'px');
+      f.style.setProperty('--w', w.toFixed(1) + 'px'); f.style.setProperty('--h', w.toFixed(1) + 'px'); f.style.setProperty('--r', '0deg');
+      f.style.setProperty('--hs', w > 220 ? 1.1 : w > 120 ? 1.3 : phone ? 1.6 : 1.9);
+      f.style.setProperty('--d', (i * 0.025).toFixed(3) + 's');
+      f.style.zIndex = 2;
+      // cut the tile along the shape so together the photos form a clean heart / ring outline
+      // (tiles fly in as whole squares and are cut once they land, so nothing looks broken mid-move)
+      var cp = t.c < 0.995 ? "path('" + pathStr(sh, T.geo, t.x + gap, t.y + gap) + "')" : '';
+      if (moving) { f.style.clipPath = ''; clips.push([f, cp]); } else f.style.clipPath = cp;
+      aim(f, w, w);
+    });
+    if (moving) { line.style.opacity = 0; back.style.opacity = 0; ct = setTimeout(function () { clips.forEach(function (c) { c[0].style.clipPath = c[1]; }); outline(sh, T.geo, W, H); }, RM ? 0 : 1900); }
+    else outline(sh, T.geo, W, H);
   }
 
-  function setMode(m) { mode = m; layout(); }
-  // Every 7 s: next shape AND next category (All -> Weddings -> Engagements -> Couples), so the buttons change on their own too.
-  var FB = [].slice.call(document.querySelectorAll('#pf-g [data-filter]')), auto2 = true;
-  function step() {
-    if (!seen || hover) return; turn++;
-    var i = MODES.indexOf(mode); mode = MODES[(i + 1) % 3];
-    var cur = FB.findIndex(function (b) { return b.getAttribute('aria-pressed') === 'true'; });
-    if (FB.length) { auto2 = true; FB[(cur + 1) % FB.length].click(); auto2 = false; } else layout();
-  }
+  function step() { if (!seen || hover) return; turn++; mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length]; layout(); }
   function play() { clearInterval(timer); timer = setInterval(step, 7000); }
-  FB.forEach(function (b) { b.addEventListener('click', function () { if (!auto2) play(); }); });
-
   g.addEventListener('pointerover', function (e) { hover = !!e.target.closest('figure'); });
   g.addEventListener('pointerleave', function () { hover = false; });
   function vis() { var r = g.getBoundingClientRect(), vh = window.innerHeight; seen = r.top < vh * 0.75 && r.bottom > vh * 0.25; }
   window.addEventListener('scroll', vis, { passive: true });
   var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(layout, 140); });
-  document.querySelectorAll('[data-filter]').forEach(function (b) { b.addEventListener('click', function () { setTimeout(layout, 30); }); });
   window.addEventListener('load', layout);
-  g.classList.add('cg');
-  setMode('heart'); vis(); play();
+  g.classList.add('cg', 'cg-mos');
+  layout(); vis(); play();
 })();
