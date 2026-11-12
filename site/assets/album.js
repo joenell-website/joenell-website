@@ -44,10 +44,11 @@ var ALB=[
  {names:'Chris & Lorena',eb:t.eng,kind:t.a2k,d:t.a2d,cover:'cl-engagement-beach',pages:[['full','cl-engagement-embrace'],['mat','cl-engagement-walk',t.a2c1],['full','cl-engagement-hands'],['mat','cl-engagement-cover',t.a2c2],['mat','cl-engagement-silhouette',t.a2c3],['duo',['cl-engagement-shore','cl-engagement-seawall'],t.a2c4]]}
 ];
 var url=function(n){return '/images/alb-'+n+'.jpg?v='+V};
+var CLOSE=({en:'Close album',fr:'Fermer l’album',es:'Cerrar el álbum',zh:'关闭相册',pa:'ਐਲਬਮ ਬੰਦ ਕਰੋ'})[lang]||'Close album';
 var OPEN=({en:['Open this album','Previous album','Next album'],fr:['Ouvrir cet album','Album précédent','Album suivant'],es:['Abrir este álbum','Álbum anterior','Álbum siguiente'],zh:['打开这本相册','上一本相册','下一本相册'],pa:['ਇਹ ਐਲਬਮ ਖੋਲ੍ਹੋ','ਪਿਛਲੀ ਐਲਬਮ','ਅਗਲੀ ਐਲਬਮ']})[lang]||['Open this album','Previous album','Next album'];
 if(!document.querySelector('link[data-alb-font]')){var lf=document.createElement('link');lf.rel='stylesheet';lf.setAttribute('data-alb-font','');lf.href='https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap';document.head.appendChild(lf);}
 root.className='alb'+(lang==='zh'||lang==='pa'?' plain':'');root.tabIndex=0;root.style.setProperty('--script',lang==='zh'||lang==='pa'?'var(--serif)':'"Pinyon Script","Snell Roundhand",var(--serif)');
-root.innerHTML='<div class="alb-show" role="region" aria-roledescription="carousel" aria-label="'+t.eb+'"><div class="as-bg"><img alt="" data-nowm><img alt="" data-nowm></div><div class="as-head"><span class="eb">'+t.eb+'</span><h2>'+t.h+'</h2></div><div class="as-track">'+ALB.map(function(a,i){return '<button type="button" class="as-card" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"><span class="as-ph"><img src="'+url(a.cover)+'" alt="" loading="'+(i<3?'eager':'lazy')+'" decoding="async" data-nowm></span><span class="nm">'+a.names+'</span><span class="kd">'+a.eb+'</span><span class="as-open">'+OPEN[0]+' <i aria-hidden="true">&rarr;</i></span><span class="as-prog"><i></i></span></button>'}).join('')+'</div><button type="button" class="as-nav as-pv" aria-label="'+OPEN[1]+'">&#8249;</button><button type="button" class="as-nav as-nx" aria-label="'+OPEN[2]+'">&#8250;</button><div class="as-dots">'+ALB.map(function(a,i){return '<button type="button" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"></button>'}).join('')+'</div></div><div class="alb-stage"><div class="alb-book"></div></div><div class="alb-ctrl"><button type="button" class="pv" aria-label="'+t.prev+'">&#8249;</button><span class="count" aria-live="polite"></span><button type="button" class="nx" aria-label="'+t.next+'">&#8250;</button></div><p class="alb-hint">'+t.hint+'</p>';
+root.innerHTML='<div class="alb-show" role="region" aria-roledescription="carousel" aria-label="'+t.eb+'"><div class="as-bg"><img alt="" data-nowm><img alt="" data-nowm></div><div class="as-head"><span class="eb">'+t.eb+'</span><h2>'+t.h+'</h2></div><div class="as-track">'+ALB.map(function(a,i){return '<button type="button" class="as-card" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"><span class="as-ph"><img src="'+url(a.cover)+'" alt="" loading="'+(i<3?'eager':'lazy')+'" decoding="async" data-nowm></span><span class="nm">'+a.names+'</span><span class="kd">'+a.eb+'</span><span class="as-open">'+OPEN[0]+' <i aria-hidden="true">&rarr;</i></span><span class="as-prog"><i></i></span></button>'}).join('')+'</div><button type="button" class="as-nav as-pv" aria-label="'+OPEN[1]+'">&#8249;</button><button type="button" class="as-nav as-nx" aria-label="'+OPEN[2]+'">&#8250;</button><div class="as-dots">'+ALB.map(function(a,i){return '<button type="button" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"></button>'}).join('')+'</div></div><div class="alb-view" role="dialog" aria-modal="true" aria-label="'+t.album+'" hidden><div class="av-top"><span class="av-t"></span><button type="button" class="av-x" aria-label="'+CLOSE+'">&times;</button></div><div class="alb-stage"><div class="alb-book"></div></div><div class="alb-ctrl"><button type="button" class="pv" aria-label="'+t.prev+'">&#8249;</button><span class="count" aria-live="polite"></span><button type="button" class="nx" aria-label="'+t.next+'">&#8250;</button></div><p class="alb-hint">'+t.hint+'</p></div>';
 var book=root.querySelector('.alb-book'),stage=root.querySelector('.alb-stage'),cnt=root.querySelector('.count'),bPrev=root.querySelector('.pv'),bNext=root.querySelector('.nx');
 var P=[],N=0,W=0,H=0,mode='',pos=0,busy=false,turn=null,cur=0;
 function setAlbum(i){cur=i;var a=ALB[i];P=[{t:'cover',a:a},{t:'chap',a:a}];a.pages.forEach(function(p){P.push({t:p[0],img:p[1],cap:p[2]})});P.push({t:'cta'});P.push({t:'backc',a:a});N=P.length;pos=0;
@@ -68,10 +69,11 @@ function pageHTML(i,side){
 }
 function maxPos(){return mode==='spread'?N/2:N-1}
 function build(){
+  if(!stage.clientWidth)return;
   var vw=stage.clientWidth,vh=window.innerHeight,m=vw>=760?'spread':'single';
   if(mode&&m!==mode){pos=m==='spread'?Math.ceil(pos/2):Math.max(0,pos*2-1)}
-  mode=m;var maxH=Math.max(380,vh-190);
-  W=Math.floor(m==='spread'?Math.min(500,(vw-20)/2,maxH*0.8):Math.min(480,vw,maxH*0.8));H=Math.round(W*1.25);
+  mode=m;var maxH=Math.max(340,vh-(vw<760?170:190));
+  W=Math.floor(m==='spread'?Math.min(760,(vw-60)/2,maxH*0.8):Math.min(620,vw-24,maxH*0.8));H=Math.round(W*1.25);
   pos=Math.min(pos,maxPos());
   stage.className='alb-stage '+m;book.className='alb-book '+m;book.style.cssText='width:'+(m==='spread'?2*W:W)+'px;height:'+H+'px;--u:'+(W/100)+'px';
   book.innerHTML='<div class="bookshadow"></div><div class="slot l"></div><div class="slot r"></div>'+(m==='spread'?'<div class="spine"></div>':'')+'<div class="corner l"></div><div class="corner r"></div>';
@@ -165,12 +167,16 @@ function go(i){act=(i+n)%n;lay();}
 function next(){if(RM){go(act+1);return}sh.classList.add('fading');setTimeout(function(){sh.classList.remove('fading');go(act+1)},520)}
 function play(){clearInterval(tm);if(RM||hold||!seen||opened)return;tm=setInterval(next,DUR);sh.classList.add('run')}
 function stop(){clearInterval(tm);sh.classList.remove('run')}
-function open(i){opened=true;stop();if(busy||turn)return;setAlbum(i);var top=stage.getBoundingClientRect().top+window.pageYOffset-96;window.scrollTo({top:top,behavior:RM?'auto':'smooth'});}
+var view=root.querySelector('.alb-view'),vx=view.querySelector('.av-x'),vt=view.querySelector('.av-t'),lastF=null,pushed=false;
+function open(i){if(busy||turn)return;opened=true;stop();lastF=document.activeElement;view.hidden=false;root.classList.add('is-open');document.documentElement.classList.add('alb-lock');vt.innerHTML=ALB[i].names+' <small>'+ALB[i].eb+'</small>';setAlbum(i);requestAnimationFrame(function(){view.classList.add('on');build();});vx.focus({preventScroll:true});try{history.pushState({alb:1},'');pushed=true}catch(e){}}
+function close(fromPop){if(view.hidden)return;view.classList.remove('on');root.classList.remove('is-open');document.documentElement.classList.remove('alb-lock');setTimeout(function(){view.hidden=true},RM?0:350);opened=false;if(lastF&&lastF.focus)lastF.focus({preventScroll:true});if(pushed&&!fromPop){pushed=false;try{history.back()}catch(e){}}pushed=false;play();}
+vx.addEventListener('click',function(){close(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!view.hidden){e.preventDefault();close(false)}});
+window.addEventListener('popstate',function(){if(!view.hidden)close(true)});
+view.addEventListener('keydown',function(e){if(e.key!=='Tab')return;var f=[].slice.call(view.querySelectorAll('button:not([disabled])'));if(!f.length)return;var a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){z.focus();e.preventDefault()}else if(!e.shiftKey&&document.activeElement===z){a.focus();e.preventDefault()}});
 cards.forEach(function(c,i){c.addEventListener('click',function(){if(i===act)open(i);else{go(i);play();}})});
 dots.forEach(function(d,i){d.addEventListener('click',function(){go(i);play()})});
 sh.querySelector('.as-pv').addEventListener('click',function(){go(act-1);play()});sh.querySelector('.as-nx').addEventListener('click',function(){go(act+1);play()});
-sh.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse'){hold=true;stop()}});sh.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse'){hold=false;play()}});
-sh.addEventListener('focusin',function(){hold=true;stop()});sh.addEventListener('focusout',function(){hold=false;play()});
 var sx=null;sh.addEventListener('pointerdown',function(e){sx=e.clientX});sh.addEventListener('pointerup',function(e){if(sx===null)return;var dx=e.clientX-sx;sx=null;if(Math.abs(dx)>45){go(act+(dx<0?1:-1));play();}});
 sh.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){go(act+1);e.preventDefault();e.stopPropagation()}if(e.key==='ArrowLeft'){go(act-1);e.preventDefault();e.stopPropagation()}});
 if('IntersectionObserver' in window){new IntersectionObserver(function(es){es.forEach(function(en){seen=en.isIntersecting&&en.intersectionRatio>0.35;if(seen)play();else stop();})},{threshold:[0,0.35,0.6]}).observe(sh);}else{seen=true}

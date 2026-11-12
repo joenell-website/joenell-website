@@ -121,3 +121,17 @@
 .as-bg{position:absolute!important;inset:0;z-index:0}
 .as-bg .wmk{display:none!important}
 @media (max-width:760px){.as-nav{display:none}}
+/* ---------- Album opens full screen (Nov 11 2026) ---------- */
+html.alb-lock,html.alb-lock body{overflow:hidden}
+.alb-view{position:fixed;inset:0;z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:64px 12px 18px;background:radial-gradient(ellipse at 50% 45%,#fffdf8 0%,#f3ece0 70%,#e9dfcf 100%);opacity:0;transform:scale(.98);transition:opacity .35s ease,transform .35s ease;overscroll-behavior:contain}
+.alb-view[hidden]{display:none}
+.alb-view.on{opacity:1;transform:none}
+.av-top{position:absolute;left:0;right:0;top:0;height:60px;display:flex;align-items:center;justify-content:center;padding:0 70px;border-bottom:1px solid rgba(176,138,79,.25)}
+.av-t{font-family:var(--script,var(--serif));font-size:clamp(24px,2.6vw,32px);color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-t small{font:500 10px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted,#6B645B);margin-left:10px;vertical-align:middle}
+.av-x{all:unset;position:absolute;right:14px;top:8px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:30px;line-height:1;color:var(--ainK);background:#fff;border:1px solid rgba(176,138,79,.5);cursor:pointer;box-shadow:0 6px 16px -10px rgba(0,0,0,.4)}
+.av-x:hover{background:var(--gold);color:#fff}.av-x:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.alb-view .alb-stage{padding:0;flex:none}
+.alb-view .alb-ctrl,.alb-view .alb-hint{flex:none}
+@media (max-width:760px){.alb-view{padding:62px 0 12px;gap:8px}.av-top{padding:0 60px}.alb-view .alb-hint{font-size:12.5px;padding:0 14px}}
+@media (max-width:760px){.av-t small{display:none}}
