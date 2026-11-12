@@ -38,3 +38,8 @@
 .lt.lt-solo .lt-slide.on .win img{transform:scale(1.03)}
 .lt.lt-solo .lt-slide .lab{margin-top:2.2%;font-size:10px}
 .lt.lt-solo .lt-set.enter .lt-slide{animation:none}
+/* Portfolio closing band (text from the old light-table section) */
+.pf-close{padding:72px 0 88px;background:linear-gradient(180deg,var(--page,#FAF8F4),#f3ece0);border-top:1px solid rgba(176,138,79,.22)}
+.pf-close .wh-copy{max-width:720px;margin:0 auto;align-items:center;text-align:center}
+.pf-close .wh-actions{justify-content:center}
+.pf-close .wh-proof{justify-content:center;width:100%}
