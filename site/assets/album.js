@@ -1,7 +1,7 @@
 /* Portfolio albums — one album per event; drag a bottom corner to turn the page (page curl, no library). */
 (function(){
 var root=document.querySelector('[data-albums]');if(!root)return;
-var V='20261111a',lang=(document.documentElement.lang||'en').slice(0,2).toLowerCase();
+var V='20261111a',VJ='20261111r',lang=(document.documentElement.lang||'en').slice(0,2).toLowerCase();
 var SZ={"cl-engagement-beach":[1600,1280],"cl-engagement-cover":[1600,1280],"cl-engagement-embrace":[1280,1600],"cl-engagement-hands":[1280,1600],"cl-engagement-seawall":[1600,1067],"cl-engagement-shore":[1600,1067],"cl-engagement-silhouette":[1600,1280],"cl-engagement-walk":[1600,1280],"cl-wedding-bench":[1600,1066],"cl-wedding-bride":[1280,1600],"cl-wedding-cake":[1600,1067],"cl-wedding-cover":[1600,1280],"cl-wedding-dance":[1488,1600],"cl-wedding-dip":[1600,1066],"cl-wedding-kiss":[1066,1600],"cl-wedding-path":[1600,1067],"cl-wedding-portrait":[1296,1600],"cl-wedding-rings":[1600,1066],"cl-wedding-veil":[1280,1600],"cl-wedding-vows":[1265,1600],"cl-wedding-walk":[1067,1600],"je-1":[900,1600],"je-2":[1600,1066],"je-3":[1600,1066],"je-7":[1600,1066],"je-cover":[1600,1280],"je-s4":[1600,1280],"jh-cover":[1600,1280],"jh-engaged":[1600,1280],"jh-gaze":[1280,1600],"jh-kiss":[1280,1600],"jh-lookout":[1600,1280],"st-01":[1600,1280],"st-02":[1280,1600],"st-03":[1280,1600],"st-04":[1600,1280],"st-07":[1067,1600],"st-08":[1600,1280],"st-10":[1600,1280],"st-bench":[1600,1280],"st-cover":[1600,1067]};
 var T={
 en:{eb:'Albums',h:'Open an album and turn the pages',hint:'<b>Drag a bottom corner</b> to turn the page, like a real album',cover:'Cover',back:'Back cover',page:'Page {a} of {b}',pages:'Pages {a}–{b}',prev:'Previous page',next:'Next page',album:'The album',how:'Drag the bottom corner to turn the page',ceb:'Your album',ch:"Let's start your story.",cp:'Tell me your date and what you are planning. A 20% deposit holds your date.',cb:'Book your date',thanks:'Thank you',wed:'Wedding',eng:'Engagement',prop:'Surprise proposal',
@@ -38,19 +38,20 @@ pa:{eb:'ਐਲਬਮ',h:'ਐਲਬਮ ਖੋਲ੍ਹੋ ਅਤੇ ਪੰਨੇ 
 var t=T[lang]||T.en,pre=lang==='en'?'':'/'+lang;
 var ALB=[
  {names:'Chris & Lorena',eb:t.wed,kind:t.a1k,d:t.a1d,cover:'cl-wedding-cover',pages:[['full','cl-wedding-veil'],['full','cl-wedding-bride'],['mat','cl-wedding-walk',t.a1c1],['full','cl-wedding-vows'],['duo',['cl-wedding-rings','cl-wedding-path'],t.a1c2],['full','cl-wedding-portrait'],['mat','cl-wedding-kiss',t.a1c3],['duo',['cl-wedding-dip','cl-wedding-bench'],t.a1c4],['mat','cl-wedding-cake',t.a1c5],['mat','cl-wedding-dance',t.a1c6]]},
- {names:'Chris & Lorena',eb:t.eng,kind:t.a2k,d:t.a2d,cover:'cl-engagement-beach',pages:[['full','cl-engagement-embrace'],['mat','cl-engagement-walk',t.a2c1],['full','cl-engagement-hands'],['mat','cl-engagement-cover',t.a2c2],['mat','cl-engagement-silhouette',t.a2c3],['duo',['cl-engagement-shore','cl-engagement-seawall'],t.a2c4]]},
- {names:'Shaun & Tina',eb:t.eng,kind:t.a3k,d:t.a3d,cover:'st-cover',pages:[['full','st-03'],['mat','st-08'],['full','st-02'],['mat','st-07',t.a3c1],['mat','st-01'],['mat','st-04'],['mat','st-10',t.a3c2],['mat','st-bench']]},
  {names:'Jake & Hannah',eb:t.prop,kind:t.a4k,d:t.a4d,cover:'jh-cover',pages:[['full','jh-kiss'],['mat','jh-lookout',t.a4c1],['full','jh-gaze'],['mat','jh-engaged',t.a4c2]]},
- {names:'Jenn & Erin',eb:t.eng,kind:t.a5k,d:t.a5d,cover:'je-cover',pages:[['mat','je-1',t.a5c1],['mat','je-s4'],['duo',['je-2','je-3']],['mat','je-7',t.a5c2]]}
+ {names:'Shaun & Tina',eb:t.eng,kind:t.a3k,d:t.a3d,cover:'st-cover',pages:[['full','st-03'],['mat','st-08'],['full','st-02'],['mat','st-07',t.a3c1],['mat','st-01'],['mat','st-04'],['mat','st-10',t.a3c2],['mat','st-bench']]},
+ {names:'Jenn & Erin',eb:t.eng,kind:t.a5k,d:t.a5d,cover:'je-cover',pages:[['mat','je-1',t.a5c1],['mat','je-s4'],['duo',['je-2','je-3']],['mat','je-7',t.a5c2]]},
+ {names:'Chris & Lorena',eb:t.eng,kind:t.a2k,d:t.a2d,cover:'cl-engagement-beach',pages:[['full','cl-engagement-embrace'],['mat','cl-engagement-walk',t.a2c1],['full','cl-engagement-hands'],['mat','cl-engagement-cover',t.a2c2],['mat','cl-engagement-silhouette',t.a2c3],['duo',['cl-engagement-shore','cl-engagement-seawall'],t.a2c4]]}
 ];
 var url=function(n){return '/images/alb-'+n+'.jpg?v='+V};
+var OPEN=({en:['Open this album','Previous album','Next album'],fr:['Ouvrir cet album','Album précédent','Album suivant'],es:['Abrir este álbum','Álbum anterior','Álbum siguiente'],zh:['打开这本相册','上一本相册','下一本相册'],pa:['ਇਹ ਐਲਬਮ ਖੋਲ੍ਹੋ','ਪਿਛਲੀ ਐਲਬਮ','ਅਗਲੀ ਐਲਬਮ']})[lang]||['Open this album','Previous album','Next album'];
 if(!document.querySelector('link[data-alb-font]')){var lf=document.createElement('link');lf.rel='stylesheet';lf.setAttribute('data-alb-font','');lf.href='https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap';document.head.appendChild(lf);}
 root.className='alb'+(lang==='zh'||lang==='pa'?' plain':'');root.tabIndex=0;root.style.setProperty('--script',lang==='zh'||lang==='pa'?'var(--serif)':'"Pinyon Script","Snell Roundhand",var(--serif)');
-root.innerHTML='<div class="alb-head"><span class="eb">'+t.eb+'</span><h2>'+t.h+'</h2></div><div class="alb-shelf" role="group" aria-label="'+t.eb+'">'+ALB.map(function(a,i){return '<button type="button" data-i="'+i+'" aria-pressed="'+(i===0)+'"><span class="th"><img src="/images/alb-'+a.cover+'-t.jpg?v='+V+'" alt="" loading="lazy" decoding="async" data-nowm></span><span class="nm">'+a.names+'</span><span class="kd">'+a.eb+'</span></button>'}).join('')+'</div><div class="alb-stage"><div class="alb-book"></div></div><div class="alb-ctrl"><button type="button" class="pv" aria-label="'+t.prev+'">&#8249;</button><span class="count" aria-live="polite"></span><button type="button" class="nx" aria-label="'+t.next+'">&#8250;</button></div><p class="alb-hint">'+t.hint+'</p>';
+root.innerHTML='<div class="alb-show" role="region" aria-roledescription="carousel" aria-label="'+t.eb+'"><div class="as-bg"><img alt="" data-nowm><img alt="" data-nowm></div><div class="as-head"><span class="eb">'+t.eb+'</span><h2>'+t.h+'</h2></div><div class="as-track">'+ALB.map(function(a,i){return '<button type="button" class="as-card" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"><span class="as-ph"><img src="'+url(a.cover)+'" alt="" loading="'+(i<3?'eager':'lazy')+'" decoding="async" data-nowm></span><span class="nm">'+a.names+'</span><span class="kd">'+a.eb+'</span><span class="as-open">'+OPEN[0]+' <i aria-hidden="true">&rarr;</i></span><span class="as-prog"><i></i></span></button>'}).join('')+'</div><button type="button" class="as-nav as-pv" aria-label="'+OPEN[1]+'">&#8249;</button><button type="button" class="as-nav as-nx" aria-label="'+OPEN[2]+'">&#8250;</button><div class="as-dots">'+ALB.map(function(a,i){return '<button type="button" data-i="'+i+'" aria-label="'+a.names+' – '+a.eb+'"></button>'}).join('')+'</div></div><div class="alb-stage"><div class="alb-book"></div></div><div class="alb-ctrl"><button type="button" class="pv" aria-label="'+t.prev+'">&#8249;</button><span class="count" aria-live="polite"></span><button type="button" class="nx" aria-label="'+t.next+'">&#8250;</button></div><p class="alb-hint">'+t.hint+'</p>';
 var book=root.querySelector('.alb-book'),stage=root.querySelector('.alb-stage'),cnt=root.querySelector('.count'),bPrev=root.querySelector('.pv'),bNext=root.querySelector('.nx');
 var P=[],N=0,W=0,H=0,mode='',pos=0,busy=false,turn=null,cur=0;
 function setAlbum(i){cur=i;var a=ALB[i];P=[{t:'cover',a:a},{t:'chap',a:a}];a.pages.forEach(function(p){P.push({t:p[0],img:p[1],cap:p[2]})});P.push({t:'cta'});P.push({t:'backc',a:a});N=P.length;pos=0;
-  [].forEach.call(root.querySelectorAll('.alb-shelf button'),function(b){b.setAttribute('aria-pressed',String(+b.getAttribute('data-i')===i))});mode='';build();}
+  mode='';build();}
 function ph(n,w,h){var s=(w&&h)?' style="width:'+w+'px;height:'+h+'px"':'';return '<span class="ph"'+s+'><img src="'+url(n)+'" alt="" draggable="false" decoding="sync"><span class="wmk" aria-hidden="true"></span></span>'}
 function fit(n,bw,bh){var r=SZ[n][0]/SZ[n][1],w=bw,h=w/r;if(h>bh){h=bh;w=h*r}return [Math.round(w),Math.round(h)]}
 function pageHTML(i,side){
@@ -152,7 +153,29 @@ book.addEventListener('touchmove',function(e){if(drag)e.preventDefault()},{passi
 book.addEventListener('contextmenu',function(e){e.preventDefault()});
 bPrev.addEventListener('click',function(){go(-1)});bNext.addEventListener('click',function(){go(1)});
 root.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){go(1);e.preventDefault()}if(e.key==='ArrowLeft'){go(-1);e.preventDefault()}});
-root.querySelector('.alb-shelf').addEventListener('click',function(e){var b=e.target.closest('button');if(!b||busy||turn)return;setAlbum(+b.getAttribute('data-i'));});
+(function(){
+var sh=root.querySelector('.alb-show'),cards=[].slice.call(sh.querySelectorAll('.as-card')),dots=[].slice.call(sh.querySelectorAll('.as-dots button')),bg=[].slice.call(sh.querySelectorAll('.as-bg img')),n=cards.length,act=0,tm=null,hold=false,seen=false,opened=false,bgi=0,DUR=4600;
+var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function sbw(){sh.style.setProperty('--sbw',(window.innerWidth-document.documentElement.clientWidth)+'px')}
+function lay(){cards.forEach(function(c,i){var o=((i-act)%n+n)%n;if(o>n/2)o-=n;var a=Math.abs(o);c.style.setProperty('--off',o);c.style.setProperty('--s',a===0?1:a===1?.74:.56);c.style.setProperty('--o',a===0?1:a===1?.62:.22);c.style.zIndex=10-a;c.classList.toggle('on',a===0);c.setAttribute('aria-current',a===0?'true':'false');c.tabIndex=a===0?0:-1});
+  dots.forEach(function(d,i){d.setAttribute('aria-current',i===act?'true':'false')});
+  var nb=bg[bgi^1],ob=bg[bgi],done=false;nb.onload=function(){if(done)return;done=true;nb.onload=null;nb.classList.add('on');ob.classList.remove('on');bgi=bg.indexOf(nb)};nb.src=url(ALB[act].cover);if(nb.complete&&nb.naturalWidth)nb.onload();
+  sh.classList.remove('run');void sh.offsetWidth;if(!RM&&!hold&&seen&&!opened)sh.classList.add('run');}
+function go(i){act=(i+n)%n;lay();}
+function next(){if(RM){go(act+1);return}sh.classList.add('fading');setTimeout(function(){sh.classList.remove('fading');go(act+1)},520)}
+function play(){clearInterval(tm);if(RM||hold||!seen||opened)return;tm=setInterval(next,DUR);sh.classList.add('run')}
+function stop(){clearInterval(tm);sh.classList.remove('run')}
+function open(i){opened=true;stop();if(busy||turn)return;setAlbum(i);var top=stage.getBoundingClientRect().top+window.pageYOffset-96;window.scrollTo({top:top,behavior:RM?'auto':'smooth'});}
+cards.forEach(function(c,i){c.addEventListener('click',function(){if(i===act)open(i);else{go(i);play();}})});
+dots.forEach(function(d,i){d.addEventListener('click',function(){go(i);play()})});
+sh.querySelector('.as-pv').addEventListener('click',function(){go(act-1);play()});sh.querySelector('.as-nx').addEventListener('click',function(){go(act+1);play()});
+sh.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse'){hold=true;stop()}});sh.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse'){hold=false;play()}});
+sh.addEventListener('focusin',function(){hold=true;stop()});sh.addEventListener('focusout',function(){hold=false;play()});
+var sx=null;sh.addEventListener('pointerdown',function(e){sx=e.clientX});sh.addEventListener('pointerup',function(e){if(sx===null)return;var dx=e.clientX-sx;sx=null;if(Math.abs(dx)>45){go(act+(dx<0?1:-1));play();}});
+sh.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){go(act+1);e.preventDefault();e.stopPropagation()}if(e.key==='ArrowLeft'){go(act-1);e.preventDefault();e.stopPropagation()}});
+if('IntersectionObserver' in window){new IntersectionObserver(function(es){es.forEach(function(en){seen=en.isIntersecting&&en.intersectionRatio>0.35;if(seen)play();else stop();})},{threshold:[0,0.35,0.6]}).observe(sh);}else{seen=true}
+sbw();window.addEventListener('resize',sbw);lay();play();
+})();
 var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(!turn&&!busy)build()},160);});
 setAlbum(0);
 var peeled=false;function peel(){if(peeled||busy||turn||pos!==0||(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches))return;peeled=true;var o=startTurn(1);if(!o)return;busy=true;var t0=performance.now();
