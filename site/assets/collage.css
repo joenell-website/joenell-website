@@ -14,7 +14,7 @@
 .gallery.cg-on>figure>button{width:100%;height:100%}
 .gallery.cg-on>figure img{width:100%;height:100%;object-fit:cover}
 .gallery.cg-on>figure:hover,.gallery.cg-on>figure:focus-within{z-index:60!important;transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.55);box-shadow:0 30px 50px -20px rgba(40,25,5,.7),0 0 0 2px #d9bd8a}
-.gallery.cg-on>figure.cg-round{border-radius:50%;border-color:#fff;box-shadow:0 12px 24px -14px rgba(60,40,15,.6),0 0 0 2px #d9bd8a,0 0 0 4px #fff}
+.gallery.cg-on>figure.cg-round{border-radius:14px;border-color:#fff;box-shadow:0 12px 24px -14px rgba(60,40,15,.6),0 0 0 2px #d9bd8a,0 0 0 4px #fff}
 .gallery.cg-on>figure.cg-feat{border-width:8px;border-radius:6px;box-shadow:0 34px 60px -28px rgba(40,25,5,.75),0 0 0 1px #d9bd8a}
 .gallery.cg-on>figure.cg-feat:hover{transform:translate(var(--x),var(--y)) rotate(0deg) scale(1.12)}
 .gallery.cg-on>figure.cg-pol{border-radius:3px;border:0;padding:8px 8px 26px;box-sizing:border-box}
