@@ -715,7 +715,7 @@
   if (!/^\/(index)?$|^\/(weddings|elopements|pricing|engagements|blog(\/.*)?|[a-z-]+-wedding-photographer)$/.test(p)) return;
   if (/^\/blog\/(category|tag)\//.test(p)) return;
   var foot = document.querySelector('footer'); if (!foot) return;
-  var PDF = '/guide/vancouver-wedding-photo-planner.pdf';
+  var PDF = '/guide/vancouver-wedding-photo-planner.pdf?v=2';
   var css = document.createElement('style');
   css.textContent = '.planner{background:#F3EEE7;border-top:1px solid #E3DCCF;padding:64px 0}' +
     '.planner .pl-in{max-width:1040px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:220px 1fr;gap:44px;align-items:center}' +
@@ -731,7 +731,7 @@
   document.head.appendChild(css);
   var s = document.createElement('section');
   s.className = 'planner'; s.id = 'planner'; s.setAttribute('aria-labelledby', 'pl-h');
-  s.innerHTML = '<div class="pl-in"><img class="pl-cover" src="/guide/planner-cover.jpg" width="510" height="660" alt="Cover of The Vancouver Wedding Photo Planner" loading="lazy">' +
+  s.innerHTML = '<div class="pl-in"><img class="pl-cover" src="/guide/planner-cover.jpg?v=2" width="510" height="660" alt="Cover of The Vancouver Wedding Photo Planner" loading="lazy">' +
     '<div><p class="eyebrow">Free planning guide</p><h2 id="pl-h">The Vancouver Wedding Photo Planner</h2>' +
     '<ul><li>Sample 2, 4 and 6-hour wedding-day timelines</li><li>The best light by season, plus a rain plan</li><li>Ten Vancouver photo locations and who they suit</li><li>A fill-in family photo list and week-before checklist</li></ul>' +
     '<form novalidate><label class="sr-only" for="pl-n">First name</label><input id="pl-n" name="name" autocomplete="given-name" placeholder="First name" required>' +
