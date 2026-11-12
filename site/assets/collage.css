@@ -24,3 +24,8 @@
 .cg-amp{position:absolute;z-index:4;transform:translate(-50%,-56%);font-family:"Pinyon Script","Snell Roundhand",var(--serif);color:#b08a4f;opacity:0;transition:opacity .8s;pointer-events:none;line-height:1;text-shadow:0 2px 10px rgba(255,255,255,.9)}
 .gallery:not(.cg-on) .cg-amp{display:none}
 @media (prefers-reduced-motion:reduce){.gallery.cg-on>figure{transition:none}}
+
+.cg-line{position:absolute;left:0;top:0;z-index:1;pointer-events:none;overflow:visible}
+.cg-line path{fill:none;stroke:#c9a76c;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(217,189,138,.55));opacity:0}
+.cg-line path:nth-child(2){stroke:#d9bd8a}
+.gallery:not(.cg-on) .cg-line{display:none}
