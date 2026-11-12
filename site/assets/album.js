@@ -165,7 +165,7 @@ function lay(){cards.forEach(function(c,i){var o=((i-act)%n+n)%n;if(o>n/2)o-=n;v
   sh.classList.remove('run');void sh.offsetWidth;if(!RM&&!hold&&seen&&!opened)sh.classList.add('run');}
 function go(i){act=(i+n)%n;lay();}
 function next(){if(RM){go(act+1);return}sh.classList.add('fading');setTimeout(function(){sh.classList.remove('fading');go(act+1)},520)}
-function play(){clearInterval(tm);if(RM||hold||!seen||opened)return;tm=setInterval(next,DUR);sh.classList.add('run')}
+function play(){clearInterval(tm);if(hold||!seen||opened)return;tm=setInterval(next,DUR);sh.classList.add('run')}
 function stop(){clearInterval(tm);sh.classList.remove('run')}
 var view=root.querySelector('.alb-view'),vx=view.querySelector('.av-x'),vt=view.querySelector('.av-t'),lastF=null,pushed=false;
 function open(i){if(busy||turn)return;opened=true;stop();lastF=document.activeElement;view.hidden=false;root.classList.add('is-open');document.documentElement.classList.add('alb-lock');vt.innerHTML=ALB[i].names+' <small>'+ALB[i].eb+'</small>';setAlbum(i);requestAnimationFrame(function(){view.classList.add('on');build();});vx.focus({preventScroll:true});try{history.pushState({alb:1},'');pushed=true}catch(e){}}

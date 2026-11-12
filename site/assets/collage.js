@@ -34,7 +34,7 @@
   }
   function pathOf(fn, k) { var d = ''; for (var i = 0; i <= k; i++) { var p = fn(i / k * Math.PI * 2); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); } return d + 'Z'; }
 
-  var mode = 'heart', auto = !RM, timer = null, seen = false, hover = false, turn = 0;
+  var mode = 'heart', auto = true, timer = null, seen = false, hover = false, turn = 0;
   function figs() { return [].slice.call(g.querySelectorAll(':scope > figure')).filter(function (f) { return !f.hidden; }); }
   function rnd(i, k) { var x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); }
 
@@ -116,8 +116,16 @@
   }
 
   function setMode(m) { mode = m; layout(); }
-  function step() { if (!seen || hover) return; turn++; var i = MODES.indexOf(mode); setMode(MODES[(i + 1) % 3]); }
-  function play() { clearInterval(timer); if (auto && !RM) timer = setInterval(step, 7000); }
+  // Every 7 s: next shape AND next category (All -> Weddings -> Engagements -> Couples), so the buttons change on their own too.
+  var FB = [].slice.call(document.querySelectorAll('#pf-g [data-filter]')), auto2 = true;
+  function step() {
+    if (!seen || hover) return; turn++;
+    var i = MODES.indexOf(mode); mode = MODES[(i + 1) % 3];
+    var cur = FB.findIndex(function (b) { return b.getAttribute('aria-pressed') === 'true'; });
+    if (FB.length) { auto2 = true; FB[(cur + 1) % FB.length].click(); auto2 = false; } else layout();
+  }
+  function play() { clearInterval(timer); timer = setInterval(step, 7000); }
+  FB.forEach(function (b) { b.addEventListener('click', function () { if (!auto2) play(); }); });
 
   g.addEventListener('pointerover', function (e) { hover = !!e.target.closest('figure'); });
   g.addEventListener('pointerleave', function () { hover = false; });
