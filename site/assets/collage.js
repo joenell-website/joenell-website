@@ -4,22 +4,20 @@
   var g = document.querySelector('#pf-g .gallery'); if (!g) return;
   var lang = (document.documentElement.lang || 'en').slice(0, 2).toLowerCase();
   var L = {
-    en: ['Heart', 'Two rings', 'Collage', 'Gallery', 'Frame', 'Tap any photo to see it larger'],
-    fr: ['Cœur', 'Deux alliances', 'Collage', 'Galerie', 'Cadre', 'Touchez une photo pour l’agrandir'],
-    es: ['Corazón', 'Dos anillos', 'Collage', 'Galería', 'Marco', 'Toca una foto para verla en grande'],
-    zh: ['爱心', '双环', '拼贴', '画廊', '相框', '点击任意照片查看大图'],
-    pa: ['ਦਿਲ', 'ਦੋ ਮੁੰਦਰੀਆਂ', 'ਕੋਲਾਜ', 'ਗੈਲਰੀ', 'ਫ੍ਰੇਮ', 'ਵੱਡਾ ਦੇਖਣ ਲਈ ਕਿਸੇ ਵੀ ਫ਼ੋਟੋ ’ਤੇ ਟੈਪ ਕਰੋ']
-  }[lang] || null;
-  if (!L) L = ['Heart', 'Two rings', 'Collage', 'Gallery', 'Frame', 'Tap any photo to see it larger'];
-  var MODES = ['heart', 'rings', 'collage', 'grid'];
+    en: ['Love stories', 'Every photo, a little piece of someone’s story', 'Tap any photo to see it larger'],
+    fr: ['Histoires d’amour', 'Chaque photo, un petit morceau de l’histoire d’un couple', 'Touchez une photo pour l’agrandir'],
+    es: ['Historias de amor', 'Cada foto, un pedacito de la historia de una pareja', 'Toca una foto para verla en grande'],
+    zh: ['爱的故事', '每一张照片，都是一段爱情故事的片段', '点击任意照片查看大图'],
+    pa: ['ਪਿਆਰ ਦੀਆਂ ਕਹਾਣੀਆਂ', 'ਹਰ ਫ਼ੋਟੋ, ਕਿਸੇ ਜੋੜੇ ਦੀ ਕਹਾਣੀ ਦਾ ਇੱਕ ਹਿੱਸਾ', 'ਵੱਡਾ ਦੇਖਣ ਲਈ ਕਿਸੇ ਵੀ ਫ਼ੋਟੋ ’ਤੇ ਟੈਪ ਕਰੋ']
+  }[lang] || ['Love stories', 'Every photo, a little piece of someone’s story', 'Tap any photo to see it larger'];
+  var MODES = ['heart', 'rings', 'collage'];
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  // Controls under the category filters
+  // Title above the frames (no frame labels: the shapes change on their own)
   var bar = document.createElement('div'); bar.className = 'cg-bar';
-  bar.innerHTML = '<span class="cg-lbl">' + L[4] + '</span><div class="cg-modes" role="group" aria-label="' + L[4] + '">' +
-    MODES.map(function (m, i) { return '<button type="button" data-mode="' + m + '" aria-pressed="false"><i class="cg-ic cg-' + m + '" aria-hidden="true"></i>' + L[i] + '</button>'; }).join('') +
-    '</div><span class="cg-tip">' + L[5] + '</span>';
-  g.parentNode.insertBefore(bar, g);
+  bar.innerHTML = '<span class="cg-eb">' + L[0] + '</span><h2 class="cg-h">' + L[1] + '</h2><span class="cg-tip">' + L[2] + '</span>';
+  var fl = g.parentNode.querySelector('.filters'); g.parentNode.insertBefore(bar, fl || g);
+  var tip = bar.querySelector('.cg-tip'); g.parentNode.insertBefore(tip, g);
   var amp = document.createElement('div'); amp.className = 'cg-amp'; amp.setAttribute('aria-hidden', 'true'); amp.textContent = '&';
   g.appendChild(amp);
 
@@ -51,9 +49,8 @@
   function layout() {
     var W = g.clientWidth; if (!W) return;
     var F = figs(), n = F.length, phone = W < 700;
-    g.classList.toggle('cg-on', mode !== 'grid');
+    g.classList.add('cg-on');
     g.setAttribute('data-shape', mode);
-    if (mode === 'grid') { g.style.height = ''; window.dispatchEvent(new Event('resize')); return; }
     var H = phone ? Math.round(W * (mode === 'collage' ? 2.3 : 1.18)) : Math.round(Math.min(Math.max(window.innerHeight * 0.84, 560), 820, W * 0.72));
     g.style.height = H + 'px';
     var cx = W / 2, cy = H / 2;
@@ -98,20 +95,15 @@
     }
   }
 
-  function setMode(m, byUser) {
-    mode = m; if (byUser) auto = false;
-    [].forEach.call(bar.querySelectorAll('[data-mode]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode') === m ? 'true' : 'false'); });
-    layout(); if (!auto) clearInterval(timer);
-  }
+  function setMode(m) { mode = m; layout(); }
   function step() { if (!seen || hover) return; turn++; var i = MODES.indexOf(mode); setMode(MODES[(i + 1) % 3]); }
   function play() { clearInterval(timer); if (auto && !RM) timer = setInterval(step, 7000); }
 
-  bar.addEventListener('click', function (e) { var b = e.target.closest('[data-mode]'); if (b) setMode(b.getAttribute('data-mode'), true); });
   g.addEventListener('pointerover', function (e) { hover = !!e.target.closest('figure'); });
   g.addEventListener('pointerleave', function () { hover = false; });
   function vis() { var r = g.getBoundingClientRect(), vh = window.innerHeight; seen = r.top < vh * 0.75 && r.bottom > vh * 0.25; }
   window.addEventListener('scroll', vis, { passive: true });
-  var rt; window.addEventListener('resize', function () { clearTimeout(rt); if (mode !== 'grid') rt = setTimeout(layout, 140); });
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(layout, 140); });
   document.querySelectorAll('[data-filter]').forEach(function (b) { b.addEventListener('click', function () { setTimeout(layout, 30); }); });
   window.addEventListener('load', layout);
   g.classList.add('cg');
