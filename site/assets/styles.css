@@ -602,3 +602,31 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 .post-hero img,.post-hero.tall img{width:auto;max-width:100%;height:auto;max-height:min(82vh,780px);aspect-ratio:auto;margin:0 auto;display:block;border-radius:var(--card)}
 .post-hero.tall{max-width:none}
 .jp-whole>:not(img){z-index:3}
+/* Lens: whole photo inside the round glass, soft blurred copy behind (Nov 25 2026) */
+.glass::before{content:"";position:absolute;inset:-25%;background:var(--jp-bg) center/cover no-repeat;filter:blur(16px) saturate(1.1) brightness(.92);opacity:.85;transition:background-image .3s}
+.glass img.shot{box-shadow:0 2px 10px rgba(0,0,0,.35)}
+/* Instant camera prints (Nov 25 2026) */
+.cam{position:relative}
+.print-slot{position:absolute;left:24%;right:24%;bottom:3.5%;height:7px;border-radius:4px;background:#0d0c0b;box-shadow:inset 0 2px 3px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.08);z-index:5}
+.prints{position:relative;height:270px;margin-top:-34px;z-index:1;pointer-events:none}
+.print{--n:0;--tilt:0deg;position:absolute;left:50%;top:0;width:150px;margin-left:-75px;padding:7px 7px 0;background:#fbfaf6;border:0;border-radius:3px;
+  box-shadow:0 10px 22px -10px rgba(40,28,12,.55),0 1px 2px rgba(0,0,0,.12);cursor:zoom-in;pointer-events:auto;font:inherit;color:#3d3326;
+  z-index:calc(20 - var(--n));opacity:0;transform:translate(0,-70px) rotate(0deg) scale(.92);
+  transition:transform 1.1s cubic-bezier(.2,.75,.2,1),opacity .5s ease,filter .4s}
+.print.out{opacity:1;transform:translate(calc((var(--n) * 58px) - (var(--n) > 0) * 0px),calc(var(--n) * 6px)) rotate(var(--tilt))}
+.print.out{transform:translate(var(--x,0px),calc(var(--n) * 7px)) rotate(var(--tilt))}
+.print.gone{opacity:0;transform:translate(-260px,30px) rotate(-14deg)}
+.print:hover{filter:brightness(1.03)}
+.print .pic{display:block;width:100%;aspect-ratio:1;overflow:hidden;background:transparent}
+.print .pic img{display:block;width:100%;height:100%;object-fit:contain;transition:filter 1.6s ease}
+.print.developing .pic img{filter:brightness(1.55) saturate(.15) contrast(.7) sepia(.2)}
+.print .note{display:block;min-height:34px;padding:5px 2px 6px;font-family:Caveat,'Segoe Print','Bradley Hand',cursive;font-size:18px;line-height:1.05;text-align:center;color:#4a3d2c}
+.print-view{border:0;padding:0;background:transparent;max-width:min(92vw,1100px);max-height:92vh;overflow:visible}
+.print-view::backdrop{background:rgba(18,16,14,.86)}
+.print-view figure{margin:0;background:#fbfaf6;padding:14px 14px 0;border-radius:4px;box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
+.print-view img{display:block;max-width:calc(92vw - 28px);max-height:calc(92vh - 80px);width:auto;height:auto}
+.print-view figcaption{font-family:Caveat,'Segoe Print',cursive;font-size:24px;text-align:center;padding:8px 0 12px;color:#4a3d2c}
+.print-view .x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fbfaf6;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+@media (max-width:900px){.prints{height:230px;margin-top:-20px}.print{width:122px;margin-left:-61px;padding:6px 6px 0}.print .note{font-size:15px;min-height:28px}
+}
+@media (prefers-reduced-motion:reduce){.print{transition:none}.print .pic img{transition:none}}

@@ -140,3 +140,6 @@ html.alb-lock,html.alb-lock body{overflow:hidden}
 .alb-book .ph.jp-whole>img,.as-ph.jp-whole>img{object-fit:contain;position:relative}
 .alb-book .cover .title{white-space:normal;font-size:calc(var(--u)*9);line-height:1.05;text-wrap:balance;padding:0 calc(var(--u)*4)}
 .alb-book .cover .title{text-align:center;width:100%;box-sizing:border-box;padding:0 9%;align-self:stretch}
+
+/* Handwritten album notes (owner, Nov 25 2026) */
+.alb-book .cap{font-family:Caveat,'Segoe Print','Bradley Hand',cursive;font-size:calc(var(--u)*5.2);font-style:normal;letter-spacing:0;color:#5a4a36;line-height:1.15}
