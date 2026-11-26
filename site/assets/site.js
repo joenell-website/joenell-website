@@ -68,14 +68,32 @@
       img.style.width = (zw / bw * 100) + '%'; img.style.height = (zh / bh * 100) + '%'; img.style.left = (lx / bw * 100) + '%'; img.style.top = (ly / bh * 100) + '%';
       return;
     }
-    var cs = getComputedStyle(img); if (cs.objectFit !== 'cover') return;
+    var cs = getComputedStyle(img); if (cs.objectFit !== 'cover' && !img.__whole) return;
     var cw = img.clientWidth, ch = img.clientHeight; if (!cw || !ch) return;
+    // Owner rule (Nov 25 2026): never cut into the composition. If filling this box would trim more than a
+    // sliver of the photo, show the whole photo on a soft blurred mount of itself instead of cropping it.
+    var nr = img.naturalWidth / img.naturalHeight, br = cw / ch, loss = 1 - Math.min(br / nr, nr / br);
+    if (!img.closest(NOWHOLE)) {
+      if (loss > 0.04) { whole(img, true); return; }
+      if (img.__whole) whole(img, false);
+    }
     var s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight), dw = img.naturalWidth * s, dh = img.naturalHeight * s;
     var ox = dw > cw + 1 ? Math.min(0, Math.max(cw - dw, cw * 0.5 - dw * fx / 100)) : 0;
     var ft = parseFloat(img.getAttribute('data-ft')) || 0.42; // where the faces should sit (share of the box height)
     var oy = dh > ch + 1 ? Math.min(0, Math.max(ch - dh, ch * ft - dh * fy / 100)) : 0;
     var px = dw > cw + 1 ? (ox / (cw - dw) * 100) : 50, py = dh > ch + 1 ? (oy / (ch - dh) * 100) : 50;
     img.style.objectPosition = px.toFixed(1) + '% ' + py.toFixed(1) + '%';
+  }
+  var NOWHOLE = '.glass,.vf,.lt-loupe,#pf-g,[data-crop-ok]';
+  function whole(img, on) {
+    var p = img.parentElement; if (!p) return;
+    img.__whole = on;
+    if (on) {
+      img.style.objectFit = 'contain'; img.style.objectPosition = '50% 50%';
+      if (getComputedStyle(img).position === 'static') img.style.position = 'relative';
+      p.classList.add('jp-whole'); p.style.setProperty('--jp-bg', 'url("' + (img.currentSrc || img.src) + '")');
+    } else { img.style.objectFit = ''; p.classList.remove('jp-whole'); }
+    if (img.__wm && window.__wmPlace) window.__wmPlace(img);
   }
   window.__fit = fit;
   function fitAll() { document.querySelectorAll('img[data-fx]').forEach(fit); }
@@ -685,10 +703,16 @@
     var w = img.offsetWidth, h = img.offsetHeight;
     if (w < 110 || h < 90 || !(img.currentSrc || img.getAttribute('src'))) { s.hidden = true; return; }
     s.hidden = false;
+    var ox = 0, oy = 0;
+    if (getComputedStyle(img).objectFit === 'contain' && img.naturalWidth) { // whole photo shown: mark its corner, not the box's
+      var k = Math.min(w / img.naturalWidth, h / img.naturalHeight), dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+      ox = (w - dw) / 2; oy = (h - dh) / 2; w = dw; h = dh;
+    }
     var ww = Math.max(46, Math.min(150, w * 0.21)), wh = ww * 66 / 172, m = Math.max(6, w * 0.035);
     s.style.width = ww + 'px'; s.style.height = wh + 'px';
-    s.style.left = (img.offsetLeft + w - ww - m) + 'px'; s.style.top = (img.offsetTop + h - wh - m) + 'px';
+    s.style.left = (img.offsetLeft + ox + w - ww - m) + 'px'; s.style.top = (img.offsetTop + oy + h - wh - m) + 'px';
   }
+  window.__wmPlace = place;
   function add(img) {
     if (img.__wm || img.closest(SKIP)) return;
     var src = img.getAttribute('src') || '';
