@@ -631,8 +631,8 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 }
 @media (prefers-reduced-motion:reduce){.print{transition:none}.print .pic img{transition:none}}
 /* Lens: the photo melts into the glass — soft edges and a gentle dark rim (owner, Nov 25 2026) */
-.glass img.shot{box-shadow:none;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 72%,transparent 100%)}
-.glass{box-shadow:0 0 0 1.5px var(--brass),inset 0 0 22px 6px rgba(0,0,0,.55)}
+.glass img.shot{box-shadow:none;-webkit-mask-image:none;mask-image:none}
+.glass{box-shadow:0 0 0 1.5px var(--brass)}
 .glass .coat{z-index:3}
 /* Hero: three simple links instead of the lens buttons */
 .svc-links{display:flex;flex-direction:column;margin-top:26px;border-top:1px solid var(--line);max-width:480px}

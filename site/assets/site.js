@@ -53,11 +53,12 @@
     var zoom = parseFloat(img.getAttribute('data-zoom'));
     if (zoom) { // lens glass: zoom in and centre the subject inside the round frame
       var box = img.parentElement, bw = box.clientWidth, bh = box.clientHeight; if (!bw) return;
-      // Owner rule (Nov 25 2026): the whole photo, never cut. Its diagonal fits inside the round glass;
-      // a soft blurred copy of the same photo fills the rest of the glass (.glass::before, --jp-bg).
-      var dk = Math.min(bw, bh) * 0.97 / Math.sqrt(img.naturalWidth * img.naturalWidth + img.naturalHeight * img.naturalHeight);
-      var zw = img.naturalWidth * dk, zh = img.naturalHeight * dk, lx = (bw - zw) / 2, ly = (bh - zh) / 2;
-      if (img.classList.contains('on') || !box.style.getPropertyValue('--jp-bg')) box.style.setProperty('--jp-bg', 'url("' + (img.currentSrc || img.src) + '")');
+      // Owner (Nov 25 2026, late): the photo fills the round glass, zoomed out as far as the circle allows,
+      // with the couple centred left-right and their faces a little above the middle. Only edges/background are lost.
+      var cz = Math.max(bw / img.naturalWidth, bh / img.naturalHeight) * 1.01;
+      var zw = img.naturalWidth * cz, zh = img.naturalHeight * cz;
+      var lx = Math.min(0, Math.max(bw - zw, bw * 0.5 - zw * fx / 100));
+      var ly = Math.min(0, Math.max(bh - zh, bh * 0.42 - zh * fy / 100));
       img.style.width = (zw / bw * 100) + '%'; img.style.height = (zh / bh * 100) + '%'; img.style.left = (lx / bw * 100) + '%'; img.style.top = (ly / bh * 100) + '%';
       return;
     }
