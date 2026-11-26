@@ -1,8 +1,8 @@
 import re, json, html as H
 T=json.load(open('tools/burnaby_i18n.json'))
 slug='burnaby-wedding-photographer'
-G=[("engagement-shaun-tina-01",800,640,1150,55,20),("couple-jenn-erin-garden",450,800,720,45,22),("engagement-shaun-tina-tulips",800,533,1280,44,24),("engagement-jenn-erin-6",800,640,1200,42,22),("engagement-shaun-tina-03",640,800,960,50,16),("proposal-jake-hannah-yes",800,640,1280,45,26),("engagement-jenn-erin-4",800,640,1280,54,38),("whistler-snow-couple-kiss",800,533,1200,55,36)]
-M={'hero-willow-kiss':('engagement-shaun-tina-07',49,15),'ceremony-walk':('engagement-shaun-tina-02',47,18),'ceremony-rings':('engagement-shaun-tina-04',50,22),'reception-first-dance':('engagement-shaun-tina-08',47,16),'sunset-beach-walk':('engagement-jenn-erin-7',38,40),'sunset-holding-hands':('engagement-shaun-tina-10',48,22),'sunset-seawall-couple':('engagement-jenn-erin-4',54,38)}
+G=[("engagement-spring-garden-portrait",800,640,1150,55,20),("couple-willow-pond-portrait",450,800,720,45,22),("engagement-tulip-garden-bench",800,533,1280,44,24),("engagement-lakeside-kiss",800,640,1200,42,22),("engagement-spring-embrace",640,800,960,50,16),("proposal-lookout-she-said-yes",800,640,1280,45,26),("engagement-lakeside-hands",800,640,1280,54,38),("whistler-snow-couple-kiss",800,533,1200,55,36)]
+M={'hero-willow-kiss':('engagement-willow-path',49,15),'ceremony-walk':('engagement-garden-stairs',47,18),'ceremony-rings':('engagement-cedar-tree-kiss',50,22),'reception-first-dance':('engagement-lawn-jump-hug',47,16),'sunset-beach-walk':('engagement-garden-waterfall',38,40),'sunset-holding-hands':('engagement-azalea-garden',48,22),'sunset-seawall-couple':('engagement-lakeside-hands',54,38)}
 def sub1(pat,rep,s,flags=re.S):
     n=re.subn(pat,rep,s,count=1,flags=flags)
     assert n[1]==1, pat[:60]
@@ -16,9 +16,9 @@ for L,t in T.items():
     s=re.sub(r'(<meta[^>]*property="og:title"[^>]*content=")[^"]*(")',lambda m:m.group(1)+e(t['title'])+m.group(2),s)
     s=re.sub(r'(<meta[^>]*content=")[^"]*("[^>]*property="og:title"[^>]*>)',lambda m:m.group(1)+e(t['title'])+m.group(2),s)
     s=s.replace('whistler-wedding-photographer"', slug+'"').replace('whistler-wedding-photographer<',slug+'<')
-    s=s.replace('proposal-mountain-lookout.jpg"','engagement-shaun-tina-01.jpg"')
-    s=re.sub(r'(<meta[^>]*property="og:image:alt"[^>]*content=")[^"]*(")',lambda m:m.group(1)+e(t['alts']['engagement-shaun-tina-01'])+m.group(2),s)
-    s=re.sub(r'(<meta[^>]*content=")[^"]*("[^>]*property="og:image:alt"[^>]*>)',lambda m:m.group(1)+e(t['alts']['engagement-shaun-tina-01'])+m.group(2),s)
+    s=s.replace('proposal-mountain-lookout.jpg"','engagement-spring-garden-portrait.jpg"')
+    s=re.sub(r'(<meta[^>]*property="og:image:alt"[^>]*content=")[^"]*(")',lambda m:m.group(1)+e(t['alts']['engagement-spring-garden-portrait'])+m.group(2),s)
+    s=re.sub(r'(<meta[^>]*content=")[^"]*("[^>]*property="og:image:alt"[^>]*>)',lambda m:m.group(1)+e(t['alts']['engagement-spring-garden-portrait'])+m.group(2),s)
     # hero
     s=sub1(r'(<section[^>]*class="wed-hero".*?)<p class="eyebrow">[^<]*</p>\s*<h1 id="hero-h">.*?</h1>\s*<p class="lead">.*?</p>',lambda m:m.group(1)+f'<p class="eyebrow">{e(t["eyebrow"])}</p>\n<h1 id="hero-h">{t["h1"]}</h1>\n<p class="lead">{e(t["lead"])}</p>',s)
     s=sub1(r'<div class="reveal"><p class="eyebrow">[^<]*</p><h2>[^<]*</h2><p class="lead">.*?</p><p>.*?</p>',lambda m:f'<div class="reveal"><p class="eyebrow">{e(t["s_eyebrow"])}</p><h2>{e(t["s_h2"])}</h2><p class="lead">{e(t["s_lead"])}</p><p>{e(t["s_p"])}</p>',s)
@@ -58,7 +58,7 @@ for L,t in T.items():
     s=re.sub(r'(<button[^>]*role="tab"[^>]*>)[^<]*</button>',tab,s)
     s=re.sub(r'(<span class="lt-cap"[^>]*>)[^<]*(</span>)',lambda m:m.group(1)+e(t['caps'][0])+m.group(2),s)
     # split photo
-    s=sub1(r'<div class="ph reveal"><img [^>]*vancouver-garden-arbour-kiss[^>]*>',lambda m:f'<div class="ph reveal"><img src="/images/engagement-shaun-tina-03-sm.jpg?v=20261028z" srcset="/images/engagement-shaun-tina-03-sm.jpg?v=20261028z 640w, /images/engagement-shaun-tina-03.jpg?v=20261028z 960w" sizes="(max-width:860px) 100vw, 50vw" width="640" height="800" alt="{e(t["alts"]["engagement-shaun-tina-03"])}" data-fx="50" data-fy="16" style="object-position:50% 10%" loading="lazy" decoding="async">',s)
+    s=sub1(r'<div class="ph reveal"><img [^>]*vancouver-garden-arbour-kiss[^>]*>',lambda m:f'<div class="ph reveal"><img src="/images/engagement-spring-embrace-sm.jpg?v=20261028z" srcset="/images/engagement-spring-embrace-sm.jpg?v=20261028z 640w, /images/engagement-spring-embrace.jpg?v=20261028z 960w" sizes="(max-width:860px) 100vw, 50vw" width="640" height="800" alt="{e(t["alts"]["engagement-spring-embrace"])}" data-fx="50" data-fy="16" style="object-position:50% 10%" loading="lazy" decoding="async">',s)
     open(f'site/{L}/{slug}.html','w').write(s)
     bad=[x for x in ['hero-willow-kiss','ceremony-walk','reception-first-dance','chris-lorena','garden-arbour'] if x in s.split('<footer')[0]]
     print(L,'ok', 'leftover:',bad, 'whistler mentions in main:', len(re.findall('(?i)whistler|惠斯勒|ਵਿਸਲਰ',s[s.find('<main'):s.find('</main>')])))

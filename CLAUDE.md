@@ -23,4 +23,9 @@ Read this before changing anything. The fuller project history lives in the owne
 - Secrets: Claude never types or pastes keys; the owner pastes. Generate random secrets in the owner's browser (pane) so Claude never sees them.
 - WATERMARK (owner decision, Nov 10 2026): image files in site/images are CLEAN (no baked watermark). The watermark is drawn by site.js (last block: `.wmk` span over every /images/ photo, bottom-right, always whole; skipped inside the camera lens and light-table slides). Never bake a watermark into site images again; new photos go in clean. Pins (site/pins) keep their own baked marks.
 - No push access from a Claude session? Edit a fresh clone, then in the owner's Chrome (signed in to GitHub as joenell-website) open /upload/main/<folder>, upload the changed files (same names overwrite) and commit — one commit per folder.
-- PRIVACY (owner, Nov 25 2026): Chris & Lorena do not want their guests shown. Never use a C&L photo where any guest/bridesmaid is visible (aisle walk with dad and first dance were removed site-wide; owner will choose replacements).
+- OWNER RULES (Nov 25, 2026):
+  1. NO couple names anywhere: page text, headings, captions, album covers, alt text, page titles, meta descriptions, JSON-LD, image file names, URLs. Describe the moment instead ("an autumn garden wedding"). (Google reviewer credits like "Jake G." stay — owner decision.)
+  2. Chris & Lorena's wedding: no guest faces visible. Guests or the officiant seen from behind or out of focus are fine (the vows photo stays). Never the first dance with guests watching, never the father–daughter dance; the aisle walk with dad was removed on the owner's request.
+  3. Faces must always be fully in frame. No crop that cuts off heads or shows couples from the waist down.
+  (The Whistler snow couple rule above still applies.)
+- Named image files were renamed to descriptive names on Nov 25, 2026; the old named copies stay online only because Pinterest pins / Google posts may point at them. Never reference them from pages.

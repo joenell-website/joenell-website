@@ -459,8 +459,8 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 .panels.auto-focus .panel.on .ph img{filter:none;transform:scale(1.025)}
 @media (max-width:900px){.panels.auto-focus .panel:not(.on) .ph img{filter:blur(1.6px) saturate(.88)}}
 /* Developing photos */
-img.dev{filter:blur(10px) saturate(.35) brightness(1.06);transform:scale(1.03);transition:filter 1.4s var(--ease),transform 1.6s var(--ease),opacity .6s}
-img.dev.dev-in{filter:none;transform:none}
+img.dev{opacity:0;transition:opacity .45s ease}
+img.dev.dev-in{opacity:1}
 .card:hover .ph img.dev.dev-in{transform:scale(1.04)}
 /* Viewfinder cursor */
 .vf-cursor{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:9999}
@@ -578,3 +578,16 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 .card .ph.fitwhole{position:relative;display:flex;justify-content:center;background:var(--panel)}
 .card .ph.fitwhole::before{content:"";position:absolute;inset:-24px;background:var(--bg) center/cover no-repeat;filter:blur(22px) saturate(1.05) brightness(1.04);opacity:.9}
 .card .ph.fitwhole img{position:relative;z-index:1;width:auto;max-width:100%;height:100%;object-fit:contain;box-shadow:0 0 28px rgba(0,0,0,.12)}
+
+/* Lens iris open from the first paint (Nov 25) */
+.glass .blade:nth-of-type(2){transform:rotate(0deg) translateY(-58%)}.glass .blade:nth-of-type(3){transform:rotate(45deg) translateY(-58%)}.glass .blade:nth-of-type(4){transform:rotate(90deg) translateY(-58%)}.glass .blade:nth-of-type(5){transform:rotate(135deg) translateY(-58%)}.glass .blade:nth-of-type(6){transform:rotate(180deg) translateY(-58%)}.glass .blade:nth-of-type(7){transform:rotate(225deg) translateY(-58%)}.glass .blade:nth-of-type(8){transform:rotate(270deg) translateY(-58%)}.glass .blade:nth-of-type(9){transform:rotate(315deg) translateY(-58%)}
+
+/* Upright photos keep their own shape in Journal heroes (Nov 25) */
+.post-hero.tall{max-width:560px;margin-left:auto;margin-right:auto}
+.post-hero.tall img{aspect-ratio:4/5}
+/* A photo on every pricing card (Nov 25) */
+.tier-ph{margin:-28px -24px 8px;aspect-ratio:3/2;overflow:hidden;border-radius:var(--card) var(--card) 0 0;position:relative}
+.tier-ph img{display:block;width:100%;height:100%;object-fit:cover}
+.g-sub{margin:6px 0 0;color:var(--muted);font-size:16px}
+.site-footer .studio a{text-decoration:underline;text-underline-offset:2px}
+.prose table.sun{width:100%;border-collapse:collapse;margin:8px 0 6px;font-size:15px}.prose table.sun th,.prose table.sun td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}.prose table.sun th{font-weight:600;color:var(--ink)}

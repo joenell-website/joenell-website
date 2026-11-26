@@ -7,7 +7,7 @@ area, jf, served = sys.argv[1], sys.argv[2], sys.argv[3]
 T = json.load(open(jf))
 base = 'burnaby-wedding-photographer'
 slug = f'{area}-wedding-photographer'
-OG = 'couple-jenn-erin-garden'
+OG = 'couple-willow-pond-portrait'
 e = lambda x: H.escape(x, quote=True)
 
 def sub1(pat, rep, s, flags=re.S):
@@ -31,7 +31,7 @@ for L, t in T.items():
     s = meta(s, 'property="og:title"', t['title'])
     s = s.replace(base, slug)  # canonical, hreflang, og:url, language switcher, breadcrumb
     alt = re.search(r'/images/' + OG + r'-sm\.jpg[^>]*alt="([^"]*)"', s).group(1)
-    s = s.replace('/images/engagement-shaun-tina-01.jpg"', f'/images/{OG}.jpg"')
+    s = s.replace('/images/engagement-spring-garden-portrait.jpg"', f'/images/{OG}.jpg"')
     s = meta(s, 'property="og:image:alt"', H.unescape(alt))
     s = sub1(r'(<section[^>]*class="wed-hero".*?)<p class="eyebrow">[^<]*</p>\s*<h1 id="hero-h">.*?</h1>\s*<p class="lead">.*?</p>',
              lambda m: m.group(1) + f'<p class="eyebrow">{e(t["eyebrow"])}</p>\n<h1 id="hero-h">{t["h1"]}</h1>\n<p class="lead">{e(t["lead"])}</p>', s)
