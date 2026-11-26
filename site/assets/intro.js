@@ -70,59 +70,72 @@
   };
   var t = T[lang] || T.en;
 
-  /* ---------- page builders (one grid: margin = 7% of page width everywhere) ---------- */
+  /* ---------- page builders (one grid: margin = 7% of page width; photos keep their real shape) ---------- */
+  var SZ = {'cl-wedding-path': [1600, 1067], 'cl-wedding-bench': [1600, 1066], 'cl-wedding-dip': [1600, 1066], 'cl-wedding-portrait-w': [1600, 1173],
+    'jh-lookout': [1600, 1280], 'jh-engaged': [1600, 1280], 'cl-engagement-beach': [1600, 1280], 'cl-engagement-cover': [1600, 1280],
+    'st-cover': [1600, 1067], 'st-arbor-kiss': [1600, 1066]};
   function src(n) { return '/images/alb-' + n + '.jpg?v=' + V; }
   function im(n, fx, fy, alt) { return '<img data-src="' + src(n) + '" alt="' + (alt || '') + '" draggable="false" decoding="async" style="object-position:' + fx + '% ' + fy + '%">'; }
   function fol(i) { return '<span class="jm-fol">' + (i < 10 ? '0' : '') + i + '<em>Joenell</em></span>'; }
-  function fig(x) { return '<figure><span class="jm-im">' + im(x[0], x[1], x[2], x[3]) + '</span>' + (x[4] ? '<figcaption>' + x[4] + '</figcaption>' : '') + '</figure>'; }
+  function fig(x) {
+    var z = SZ[x[0]] || [4, 3];
+    return '<figure><span class="jm-im" style="aspect-ratio:' + z[0] + '/' + z[1] + ';max-height:calc(var(--u) * ' + (86 * z[1] / z[0] * 1.32).toFixed(1) + ')">' + im(x[0], x[1], x[2], x[3]) + '</span>' + (x[4] ? '<figcaption>' + x[4] + '</figcaption>' : '') + '</figure>';
+  }
   function photo(n, fx, fy, alt, cap) {
     return function (i) { return '<div class="jm-pg jm-photo">' + im(n, fx, fy, alt) + (cap ? '<span class="jm-cap">' + cap + '</span>' : '') + '</div>'; };
   }
   function opener(n, fx, fy, k, h) {
     return function (i) { return '<div class="jm-pg jm-photo jm-open">' + im(n, fx, fy, h) + '<div class="jm-ot"><span class="jm-k lt">' + k + '</span><h2>' + h + '</h2></div></div>'; };
   }
-  function story(k, h, sub, p, pics) {
+  function story(k, h, sub, p, figs) {
     return function (i) {
       return '<div class="jm-pg jm-story"><span class="jm-k">' + k + '</span><h2>' + h + '</h2>' + (sub ? '<span class="jm-sub">' + sub + '</span>' : '') +
-        '<p class="jm-drop">' + p + '</p><div class="jm-pics">' + pics.map(fig).join('') + '</div>' + fol(i) + '</div>';
+        '<p class="jm-drop">' + p + '</p><div class="jm-figs">' + figs.map(fig).join('') + '</div>' + fol(i) + '</div>';
     };
   }
-  function pics(list, cap) {
-    return function (i) { return '<div class="jm-pg jm-story jm-only"><div class="jm-pics">' + list.map(fig).join('') + '</div>' + (cap ? '<span class="jm-fc">' + cap + '</span>' : '') + fol(i) + '</div>'; };
+  function stagger(a, b) {
+    return function (i) { return '<div class="jm-pg jm-story jm-stg"><div class="jm-figs">' + fig(a) + fig(b) + '</div>' + fol(i) + '</div>'; };
   }
-  var TOC = [2, 7, 9, 11];
-  var P = [
-    function () {
-      return '<div class="jm-pg jm-cover"><div class="jm-mast"><span class="jm-iss">' + t.issue + '</span><span class="jm-logo">JOENELL</span><span class="jm-ph">Photography</span></div>' +
-        '<div class="jm-cimg">' + im('cl-wedding-kiss', 55, 28, t.w[1]) + '</div>' +
-        '<div class="jm-cl"><h1>' + t.coverH + '</h1><ul>' + t.cl.map(function (c) { return '<li>' + c + '</li>'; }).join('') + '</ul></div></div>';
-    },
-    function (i) {
-      return '<div class="jm-pg jm-toc"><span class="jm-k">' + t.contents + '</span><ol>' +
-        t.cl.map(function (c, j) { return '<li><b>' + (TOC[j] < 10 ? '0' : '') + TOC[j] + '</b><span>' + c + '</span></li>'; }).join('') +
-        '</ol><div class="jm-letter"><span class="jm-k">' + t.noteK + '</span><p class="jm-note">' + t.note + '</p><span class="jm-sig">Joenell</span></div>' + fol(i) + '</div>';
-    },
-    opener('cl-wedding-veil', 55, 26, t.w[0], t.w[1]),
-    story(t.w[0], t.w[1], '', t.w[2], [['cl-wedding-bride', 50, 22, t.wc[0], t.wc[0]]]),
-    pics([['cl-wedding-rings', 55, 50, t.wc[1]], ['cl-wedding-path', 42, 45, t.wc[1]]], t.wc[1]),
-    photo('cl-wedding-kiss-w', 50, 35, t.w[1]),
-    pics([['cl-wedding-dip', 50, 40, t.wc[3]], ['cl-wedding-portrait-w', 50, 30, t.wc[2]]], t.wc[2]),
-    story(t.p[0], t.p[1], t.p[2], t.p[3], [['jh-lookout', 58, 62, t.p[1]]]),
-    photo('jh-kiss', 50, 28, t.p[1]),
-    photo('cl-engagement-blossom-gaze', 50, 26, t.e[1]),
-    story(t.e[0], t.e[1], '', t.e[2], [['cl-engagement-beach', 45, 40, t.e[3], t.e[3]]]),
-    story(t.t[0], t.t[1], '', t.t[2], [['st-cover', 50, 55, t.t[1]]]),
-    photo('st-03', 50, 28, t.t[1]),
-    photo('je-1', 50, 28, t.end[0], t.end[0]),
-    function (i) {
-      return '<div class="jm-pg jm-end"><span class="jm-k">' + t.end[1] + '</span><h2>' + t.end[2] + '</h2><p>' + t.end[3] + '</p>' +
-        '<a class="jm-btn" href="' + base + '/contact" data-jm="book">' + t.end[4] + '</a><button type="button" class="jm-enter" data-jm="enter">' + t.end[5] + ' <i aria-hidden="true">&rarr;</i></button>' + fol(i) + '</div>';
-    },
-    function () {
-      return '<div class="jm-pg jm-back"><span class="jm-logo">JOENELL</span><span class="jm-ph">Photography</span><span class="jm-url">joenellphotography.ca</span></div>';
-    }
-  ];
-  var NP = P.length;
+  var TH = ['cl-wedding-cover-t', 'jh-cover-t', 'cl-engagement-beach-t', 'st-cover-t'], TOC = [];
+  function toc(i) {
+    return '<div class="jm-pg jm-toc"><span class="jm-k">' + t.contents + '</span><ol>' +
+      t.cl.map(function (c, j) { return '<li><span class="jm-th">' + im(TH[j], 50, 40, '') + '</span><b>' + (TOC[j] < 10 ? '0' : '') + TOC[j] + '</b><span>' + c + '</span></li>'; }).join('') +
+      '</ol><div class="jm-letter"><span class="jm-k">' + t.noteK + '</span><p class="jm-note">' + t.note + '</p><span class="jm-sig">Joenell</span></div>' + fol(i) + '</div>';
+  }
+  function cover() {
+    return '<div class="jm-pg jm-cover"><div class="jm-mast"><span class="jm-iss">' + t.issue + '</span><span class="jm-logo">JOENELL</span><span class="jm-ph">Photography</span></div>' +
+      '<div class="jm-cimg">' + im('cl-wedding-kiss', 55, 28, t.w[1]) + '</div>' +
+      '<div class="jm-cl"><h1>' + t.coverH + '</h1><ul>' + t.cl.map(function (c) { return '<li>' + c + '</li>'; }).join('') + '</ul></div></div>';
+  }
+  function endp(i) {
+    return '<div class="jm-pg jm-end"><span class="jm-k">' + t.end[1] + '</span><h2>' + t.end[2] + '</h2><p>' + t.end[3] + '</p>' +
+      '<a class="jm-btn" href="' + base + '/contact" data-jm="book">' + t.end[4] + '</a><button type="button" class="jm-enter" data-jm="enter">' + t.end[5] + ' <i aria-hidden="true">&rarr;</i></button>' + fol(i) + '</div>';
+  }
+  function back() { return '<div class="jm-pg jm-back"><span class="jm-logo">JOENELL</span><span class="jm-ph">Photography</span><span class="jm-url">joenellphotography.ca</span></div>'; }
+  var F = {
+    path: ['cl-wedding-path', 42, 45, t.wc[1], t.wc[1]], bench: ['cl-wedding-bench', 50, 45, t.wc[3]],
+    dip: ['cl-wedding-dip', 50, 40, t.wc[3], t.wc[3]], portw: ['cl-wedding-portrait-w', 50, 30, t.wc[2], t.wc[2]],
+    look: ['jh-lookout', 58, 60, t.p[1]], engd: ['jh-engaged', 50, 40, t.p[1]],
+    beach: ['cl-engagement-beach', 45, 40, t.e[3], t.e[3]], sun: ['cl-engagement-cover', 50, 50, t.e[1]],
+    stc: ['st-cover', 50, 55, t.t[1]], arb: ['st-arbor-kiss', 50, 45, t.t[1]]
+  };
+  /* Two-page spreads (computer) */
+  var DESK = [cover, toc,
+    opener('cl-wedding-veil', 55, 26, t.w[0], t.w[1]), story(t.w[0], t.w[1], '', t.w[2], [F.path, F.bench]),
+    photo('cl-wedding-bride', 46, 30, t.wc[0], t.wc[0]), photo('cl-wedding-kiss-w', 50, 35, t.w[1]),
+    stagger(F.dip, F.portw), story(t.p[0], t.p[1], t.p[2], t.p[3], [F.look]),
+    photo('jh-kiss', 50, 28, t.p[1]), photo('cl-engagement-blossom-gaze', 50, 26, t.e[1]),
+    story(t.e[0], t.e[1], '', t.e[2], [F.beach]), story(t.t[0], t.t[1], '', t.t[2], [F.stc, F.arb]),
+    photo('st-03', 50, 28, t.t[1]), photo('je-1', 50, 40, t.end[0], t.end[0]), endp, back];
+  /* One page at a time (phone): tall pages, so wide photos sit in pairs instead of being cut down */
+  var PHONE = [cover, toc,
+    opener('cl-wedding-veil', 55, 26, t.w[0], t.w[1]), story(t.w[0], t.w[1], '', t.w[2], [F.path, F.bench]),
+    photo('cl-wedding-bride', 46, 30, t.wc[0], t.wc[0]), stagger(F.dip, F.portw),
+    story(t.p[0], t.p[1], t.p[2], t.p[3], [F.look, F.engd]), photo('jh-kiss', 50, 28, t.p[1]),
+    photo('cl-engagement-blossom-gaze', 50, 26, t.e[1]), story(t.e[0], t.e[1], '', t.e[2], [F.beach, F.sun]),
+    story(t.t[0], t.t[1], '', t.t[2], [F.stc, F.arb]), photo('st-03', 50, 28, t.t[1]),
+    photo('je-1', 50, 34, t.end[0], t.end[0]), endp, back];
+  var P = DESK, NP = P.length;
 
   /* ---------- styles ---------- */
   var css = 'html.jm-on body{overflow:hidden}' +
@@ -166,10 +179,14 @@
     '.jm-story h2,.jm-end h2{font:400 2.05em/1.08 "Bodoni Moda",Didot,Georgia,serif;margin:.45em 0 .2em;color:#2B2926}' +
     '.jm-sub{display:block;font:italic 400 .95em "Bodoni Moda",Georgia,serif;color:#6B645B}.jm-story p{margin:.8em 0 1.1em;color:#4A453F}' +
     '.jm-drop:first-letter{float:left;font:400 3.4em/.8 "Bodoni Moda",Georgia,serif;margin:.07em .1em 0 0;color:#2B2926}' +
-    '.jm-pics{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:calc(var(--m)*.5)}.jm-pics figure{margin:0;flex:1 1 0;min-height:0;display:flex;flex-direction:column}' +
-    '.jm-im{position:relative;display:block;flex:1 1 auto;min-height:0;overflow:hidden}' +
-    '.jm-pics figcaption,.jm-fc{font:italic 400 .9em "Bodoni Moda",Georgia,serif;color:#6B645B;padding-top:.45em}' +
-    '.jm-only .jm-pics figcaption{display:none}' +
+    '.jm-figs{margin-top:auto;padding-top:calc(var(--m)*.45);display:flex;flex-direction:column;justify-content:flex-end;gap:calc(var(--m)*.45);min-height:0;flex:1 1 auto}' +
+    '.jm-figs figure{margin:0;display:flex;flex-direction:column;min-height:0;flex:1 1 auto;width:100%;justify-content:flex-end}' +
+    '.jm-im{position:relative;display:block;flex:1 1 auto;min-height:0;overflow:hidden;width:100%}.jm-stg .jm-figs,.jm-stg figure,.jm-stg .jm-im{flex:0 1 auto}' +
+    '.jm-figs figcaption{flex:0 0 auto;font:italic 400 .88em "Bodoni Moda",Georgia,serif;color:#6B645B;padding-top:.4em}' +
+    '.jm-stg .jm-figs{margin:auto 0;justify-content:center;gap:calc(var(--m)*.7)}.jm-stg figure{width:78%}.jm-stg figure:nth-child(2){align-self:flex-end}.jm-stg figure:nth-child(2) figcaption{text-align:right}' +
+    '.jm.port .jm-stg figure{width:100%}' +
+    '.jm-th{position:relative;flex:0 0 auto;width:4.2em;height:3.2em;overflow:hidden;align-self:center}.jm-toc li{align-items:center!important}' +
+    '.jm .wmk{opacity:.5!important;transform:scale(.68);transform-origin:right bottom}.jm .jm-th .wmk{display:none}' +
     '.jm-end{justify-content:center}.jm-end p{color:#4A453F;margin:.5em 0 1.8em;max-width:22em}' +
     '.jm-btn{display:inline-block;align-self:flex-start;background:#3E4A3D;color:#fff;text-decoration:none;padding:.95em 1.7em;border-radius:99px;font-weight:500;letter-spacing:.03em}.jm-btn:hover{background:#2F392E}' +
     '.jm-enter{align-self:flex-start;margin-top:1.1em;background:none;border:0;border-bottom:1px solid #2B2926;padding:.2em 0;font:500 1em Jost,sans-serif;color:#2B2926;cursor:pointer}' +
@@ -239,6 +256,8 @@
     host = document.createElement('div'); host.className = 'jm-host';
     var gx = kind === 'land' ? 76 : 0, gy = kind === 'land' ? 22 : 0;
     host.style.cssText = 'left:' + gx + 'px;right:' + gx + 'px;top:' + gy + 'px;bottom:' + gy + 'px';
+    P = kind === 'land' ? DESK : PHONE; NP = P.length; TOC = kind === 'land' ? [2, 7, 9, 11] : [2, 6, 8, 10];
+    if (start) start = Math.min(start, NP - 1);
     host.innerHTML = P.map(function (f, i) { return '<div class="jm-item"' + (i === 0 || i === NP - 1 ? ' data-density="hard"' : '') + '>' + f(i) + '</div>'; }).join('');
     el.insertBefore(host, el.firstChild);
     var W = kind === 'land' ? 850 : Math.max(300, vw), Hh = kind === 'land' ? 1100 : Math.max(400, vh);
