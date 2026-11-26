@@ -642,3 +642,7 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 .svc-link .arr{color:var(--brass);transition:transform .3s var(--ease)}
 .svc-link:hover{padding-left:8px;color:var(--cedar)}.svc-link:hover .arr{transform:translateX(4px)}
 @media (max-width:900px){.svc-link .nm{font-size:21px}}
+/* Three service cards: owner-approved soft crop (Nov 26 2026). Taller boxes close to the photos' own shape,
+   photo fills edge to edge, couple centred, faces fully in frame. */
+.panel .ph{aspect-ratio:2/3}
+@media (max-width:900px){.panel .ph{aspect-ratio:3/4}}
