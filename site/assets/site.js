@@ -57,10 +57,13 @@
       var base = Math.max(bw / img.naturalWidth, bh / img.naturalHeight), fw = img.naturalWidth * base / bw, fh = img.naturalHeight * base / bh;
       // Whole couple, no extra zoom: centre them left-right; top-to-bottom keep as much of the bodies (feet included)
       // as possible while the faces stay clear of the top of the round glass.
-      var z = base * 1.02, zw = img.naturalWidth * z, zh = img.naturalHeight * z;
+      // Faces sit a little above the centre of the round glass (about 36% down), never squeezed against its top edge:
+      // if the photo's faces are too close to its own top, zoom in (up to zmax, max 1.9x) until they can.
+      var zmax = Math.min(1.9, parseFloat(img.getAttribute('data-zmax')) || 1.9), z0 = base * 1.02;
+      var k = Math.max(1, Math.min(zmax, (0.34 * bh) / Math.max(1, img.naturalHeight * z0 * fy / 100)));
+      var z = z0 * k, zw = img.naturalWidth * z, zh = img.naturalHeight * z;
       var lx = Math.min(0, Math.max(bw - zw, bw * 0.5 - zw * fx / 100));
-      var ly = bh - zh, faceY = (zh * fy / 100 + ly) / bh;
-      if (faceY < 0.24) ly = Math.min(0, bh * 0.24 - zh * fy / 100);
+      var ly = Math.min(0, Math.max(bh - zh, bh * 0.36 - zh * fy / 100));
       // percentages, so the photo still fills the glass when the lens (and glass) changes size
       img.style.width = (zw / bw * 100) + '%'; img.style.height = (zh / bh * 100) + '%'; img.style.left = (lx / bw * 100) + '%'; img.style.top = (ly / bh * 100) + '%';
       return;
@@ -69,7 +72,8 @@
     var cw = img.clientWidth, ch = img.clientHeight; if (!cw || !ch) return;
     var s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight), dw = img.naturalWidth * s, dh = img.naturalHeight * s;
     var ox = dw > cw + 1 ? Math.min(0, Math.max(cw - dw, cw * 0.5 - dw * fx / 100)) : 0;
-    var oy = dh > ch + 1 ? Math.min(0, Math.max(ch - dh, ch * 0.42 - dh * fy / 100)) : 0;
+    var ft = parseFloat(img.getAttribute('data-ft')) || 0.42; // where the faces should sit (share of the box height)
+    var oy = dh > ch + 1 ? Math.min(0, Math.max(ch - dh, ch * ft - dh * fy / 100)) : 0;
     var px = dw > cw + 1 ? (ox / (cw - dw) * 100) : 50, py = dh > ch + 1 ? (oy / (ch - dh) * 100) : 50;
     img.style.objectPosition = px.toFixed(1) + '% ' + py.toFixed(1) + '%';
   }
@@ -177,8 +181,8 @@
       new IntersectionObserver(function (es) { visible = es[0].isIntersecting; schedule(); }).observe(cam);
     }
     fit(layers[0]); layers[0].addEventListener('load', function () { fit(layers[0]); });
-    iris(false); paintLens(); label(); setPlaying(playing); preload(1);
-    setTimeout(function () { iris(true); shoot(); }, reduce ? 0 : 650);
+    iris(true); paintLens(); label(); setPlaying(playing); preload(1);
+    setTimeout(function () { shoot(); }, reduce ? 0 : 200);
   }
 
   // Portfolio filters

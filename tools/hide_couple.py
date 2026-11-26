@@ -9,11 +9,11 @@ from PIL import Image
 OLD = ['laugh', 'kiss', 'close']
 OLDN = {k: f'whistler-pinky-shika-{k}' for k in OLD}
 NEWN = {k: f'whistler-snow-couple-{k}' for k in OLD}          # renamed files (no names)
-POOL = ['proposal-mountain-lookout', 'engagement-shaun-tina-01', 'proposal-bowen-kiss', 'engagement-jenn-erin-6',
-        'engagement-shaun-tina-bench', 'engagement-jenn-erin-4', 'proposal-jake-hannah-yes', 'engagement-shaun-tina-04',
-        'engagement-shaun-tina-10', 'engagement-shaun-tina-08',
-        'engagement-shaun-tina-tulips', 'engagement-jenn-erin-7', 'couple-bench-laugh', 'vancouver-autumn-wedding-kiss', 'vancouver-garden-arbour-kiss',
-        'couple-dip-kiss', 'engagement-shaun-tina-03', 'engagement-shaun-tina-02', 'proposal-jake-hannah-gaze', 'bride-bouquet', 'bride-portrait']
+POOL = ['proposal-mountain-lookout', 'engagement-spring-garden-portrait', 'proposal-bowen-kiss', 'engagement-lakeside-kiss',
+        'engagement-garden-bench-laugh', 'engagement-lakeside-hands', 'proposal-lookout-she-said-yes', 'engagement-cedar-tree-kiss',
+        'engagement-azalea-garden', 'engagement-lawn-jump-hug',
+        'engagement-tulip-garden-bench', 'engagement-garden-waterfall', 'couple-bench-laugh', 'vancouver-autumn-wedding-kiss', 'vancouver-garden-arbour-kiss',
+        'couple-dip-kiss', 'engagement-spring-embrace', 'engagement-garden-stairs', 'proposal-lookout-gaze', 'bride-bouquet', 'bride-portrait']
 LANGS = {'en': '', 'fr': 'fr/', 'es': 'es/', 'zh': 'zh/', 'pa': 'pa/'}
 V = '20261028z'
 
