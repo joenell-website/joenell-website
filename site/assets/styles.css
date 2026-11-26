@@ -591,3 +591,14 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 .g-sub{margin:6px 0 0;color:var(--muted);font-size:16px}
 .site-footer .studio a{text-decoration:underline;text-underline-offset:2px}
 .prose table.sun{width:100%;border-collapse:collapse;margin:8px 0 6px;font-size:15px}.prose table.sun th,.prose table.sun td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}.prose table.sun th{font-weight:600;color:var(--ink)}
+
+/* Owner rule (Nov 25 2026): photos are never cut to fit a box. Whole photo on a soft blurred mount of itself. */
+.jp-whole{position:relative;overflow:hidden;background:#EAE3D8}
+.jp-whole::before{content:"";position:absolute;inset:-40px;background:var(--jp-bg) center/cover no-repeat;filter:blur(28px) saturate(1.08) brightness(1.03);opacity:.7;pointer-events:none}
+.jp-whole>img{z-index:1;filter:drop-shadow(0 8px 22px rgba(30,22,10,.22))}
+.jp-whole>.wmk{z-index:2}
+/* Journal headers take the photo's own shape */
+.post-hero{border-radius:0;overflow:visible;text-align:center}
+.post-hero img,.post-hero.tall img{width:auto;max-width:100%;height:auto;max-height:min(82vh,780px);aspect-ratio:auto;margin:0 auto;display:block;border-radius:var(--card)}
+.post-hero.tall{max-width:none}
+.jp-whole>:not(img){z-index:3}

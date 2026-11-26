@@ -135,3 +135,8 @@ html.alb-lock,html.alb-lock body{overflow:hidden}
 .alb-view .alb-ctrl,.alb-view .alb-hint{flex:none}
 @media (max-width:760px){.alb-view{padding:62px 0 12px;gap:8px}.av-top{padding:0 60px}.alb-view .alb-hint{font-size:12.5px;padding:0 14px}}
 @media (max-width:760px){.av-t small{display:none}}
+
+/* Owner rule Nov 25 2026: album photos are never cut; whole photo on a soft blurred mount */
+.alb-book .ph.jp-whole>img,.as-ph.jp-whole>img{object-fit:contain;position:relative}
+.alb-book .cover .title{white-space:normal;font-size:calc(var(--u)*9);line-height:1.05;text-wrap:balance;padding:0 calc(var(--u)*4)}
+.alb-book .cover .title{text-align:center;width:100%;box-sizing:border-box;padding:0 9%;align-self:stretch}
