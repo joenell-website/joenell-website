@@ -1,6 +1,6 @@
 """Set an area page's 'Book your date' photo and its Chris & Lorena gallery photo (all languages).
 Usage: python3 tools/area_photos.py <area> <split-image> <fx> <fy> <gallery-image> <gfx> <gfy>
-Gallery image replaces the engagement-shaun-tina-03 figure inherited from the Burnaby base."""
+Gallery image replaces the engagement-spring-embrace figure inherited from the Burnaby base."""
 import re,glob,sys
 from PIL import Image
 a,sp,sfx,sfy,g,gfx,gfy=sys.argv[1:8]
@@ -23,6 +23,6 @@ for L in ['','fr/','es/','zh/','pa/']:
     s,k=re.subn(r'<div class="ph reveal"><img [^>]*>',lambda m:new,s,count=1); assert k==1
     w,h,W=dims(g)
     fig=f'<figure><img src="/images/{g}-sm.jpg?v=20261028z" srcset="/images/{g}-sm.jpg?v=20261028z {w}w, /images/{g}.jpg?v=20261028z {W}w" sizes="(max-width:900px) 50vw, 33vw" width="{w}" height="{h}" alt="{alt_for(L,g)}" data-fx="{gfx}" data-fy="{gfy}" style="object-position:{gfx}% {gfy}%" loading="lazy" decoding="async"></figure>'
-    s,k=re.subn(r'<figure><img src="/images/(?:engagement-shaun-tina-03|wedding-chris-lorena-vows)-sm\.jpg[^>]*></figure>',lambda m:fig,s); assert k==1
+    s,k=re.subn(r'<figure><img src="/images/(?:engagement-spring-embrace|wedding-garden-vows)-sm\.jpg[^>]*></figure>',lambda m:fig,s); assert k==1
     open(f,'w').write(s)
 print('photos ok')
