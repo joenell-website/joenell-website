@@ -630,3 +630,15 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 @media (max-width:900px){.prints{height:230px;margin-top:-20px}.print{width:122px;margin-left:-61px;padding:6px 6px 0}.print .note{font-size:15px;min-height:28px}
 }
 @media (prefers-reduced-motion:reduce){.print{transition:none}.print .pic img{transition:none}}
+/* Lens: the photo melts into the glass — soft edges and a gentle dark rim (owner, Nov 25 2026) */
+.glass img.shot{box-shadow:none;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 72%,transparent 100%)}
+.glass{box-shadow:0 0 0 1.5px var(--brass),inset 0 0 22px 6px rgba(0,0,0,.55)}
+.glass .coat{z-index:3}
+/* Hero: three simple links instead of the lens buttons */
+.svc-links{display:flex;flex-direction:column;margin-top:26px;border-top:1px solid var(--line);max-width:480px}
+.svc-link{display:flex;align-items:baseline;gap:14px;padding:15px 2px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;transition:padding .3s var(--ease),color .3s}
+.svc-link .nm{font-family:var(--serif);font-size:24px;flex:1}
+.svc-link .pr{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.svc-link .arr{color:var(--brass);transition:transform .3s var(--ease)}
+.svc-link:hover{padding-left:8px;color:var(--cedar)}.svc-link:hover .arr{transform:translateX(4px)}
+@media (max-width:900px){.svc-link .nm{font-size:21px}}

@@ -59,7 +59,7 @@ function pageHTML(i,side){
   if(i<0||i>=N)return '';
   var p=P[i],cls=side||((i%2===0)?'R':'L'),fol=(i>0&&i<N-1)?'<span class="folio">'+('0'+i).slice(-2)+'</span>':'',inner='',f,a,b;
   if(p.t==='cover'){f=fit(p.a.cover,W*0.76,H*0.5);inner='<div class="gframe"></div>'+ph(p.a.cover,f[0],f[1])+'<div class="our">'+p.a.eb+'</div><div class="title">'+p.a.names+'</div><div class="kd">'+p.a.kind+'</div><div class="meta">Joenell Photography</div>'}
-  else if(p.t==='backc')inner='<div class="gframe"></div><div class="title">'+t.thanks+'</div><div class="meta">joenellphotography.ca</div>';
+  else if(p.t==='backc')inner='<div class="gframe"></div><div class="ring"><div class="title">'+t.thanks+'</div><div class="meta">Joenell Photography</div></div><div class="meta url">joenellphotography.ca</div>';
   else if(p.t==='full')inner=ph(p.img)+(p.cap?'<div class="cap">'+p.cap+'</div>':'');
   else if(p.t==='mat'){f=fit(p.img,W*0.84,H*(p.cap?0.72:0.8));inner=ph(p.img,f[0],f[1])+(p.cap?'<div class="cap">'+p.cap+'</div>':'')+fol}
   else if(p.t==='duo'){a=fit(p.img[0],W*0.8,H*0.37);b=fit(p.img[1],W*0.8,H*0.37);inner=ph(p.img[0],a[0],a[1])+ph(p.img[1],b[0],b[1])+(p.cap?'<div class="cap">'+p.cap+'</div>':'')+fol}
