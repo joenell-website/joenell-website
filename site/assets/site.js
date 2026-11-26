@@ -53,18 +53,12 @@
     var zoom = parseFloat(img.getAttribute('data-zoom'));
     if (zoom) { // lens glass: zoom in and centre the subject inside the round frame
       var box = img.parentElement, bw = box.clientWidth, bh = box.clientHeight; if (!bw) return;
-      // Subject first: zoom just enough (up to 2.6x) that the faces can sit near the centre of the round glass.
-      var base = Math.max(bw / img.naturalWidth, bh / img.naturalHeight), fw = img.naturalWidth * base / bw, fh = img.naturalHeight * base / bh;
-      // Whole couple, no extra zoom: centre them left-right; top-to-bottom keep as much of the bodies (feet included)
-      // as possible while the faces stay clear of the top of the round glass.
-      // Faces sit a little above the centre of the round glass (about 36% down), never squeezed against its top edge:
-      // if the photo's faces are too close to its own top, zoom in (up to zmax, max 1.9x) until they can.
-      var zmax = Math.min(1.9, parseFloat(img.getAttribute('data-zmax')) || 1.9), z0 = base * 1.02;
-      var k = Math.max(1, Math.min(zmax, (0.34 * bh) / Math.max(1, img.naturalHeight * z0 * fy / 100)));
-      var z = z0 * k, zw = img.naturalWidth * z, zh = img.naturalHeight * z;
+      // Owner (Nov 25 2026, late): the photo fills the round glass, zoomed out as far as the circle allows,
+      // with the couple centred left-right and their faces a little above the middle. Only edges/background are lost.
+      var cz = Math.max(bw / img.naturalWidth, bh / img.naturalHeight) * 1.01;
+      var zw = img.naturalWidth * cz, zh = img.naturalHeight * cz;
       var lx = Math.min(0, Math.max(bw - zw, bw * 0.5 - zw * fx / 100));
-      var ly = Math.min(0, Math.max(bh - zh, bh * 0.36 - zh * fy / 100));
-      // percentages, so the photo still fills the glass when the lens (and glass) changes size
+      var ly = Math.min(0, Math.max(bh - zh, bh * 0.42 - zh * fy / 100));
       img.style.width = (zw / bw * 100) + '%'; img.style.height = (zh / bh * 100) + '%'; img.style.left = (lx / bw * 100) + '%'; img.style.top = (ly / bh * 100) + '%';
       return;
     }
@@ -84,7 +78,7 @@
     var px = dw > cw + 1 ? (ox / (cw - dw) * 100) : 50, py = dh > ch + 1 ? (oy / (ch - dh) * 100) : 50;
     img.style.objectPosition = px.toFixed(1) + '% ' + py.toFixed(1) + '%';
   }
-  var NOWHOLE = '.glass,.vf,.lt-loupe,#pf-g,[data-crop-ok]';
+  var NOWHOLE = '.lt-loupe,[data-crop-ok]';
   function whole(img, on) {
     var p = img.parentElement; if (!p) return;
     img.__whole = on;
@@ -154,6 +148,69 @@
       back.onload = done; back.onerror = done; back.src = it.src;
     }
     function preload(i) { var p = new Image(); p.src = list[i % list.length].src; }
+    // Instant camera (owner idea, Nov 25 2026): each shot prints the whole photo, with a handwritten note on the white strip.
+    var LANG = (document.documentElement.lang || 'en').slice(0, 2);
+    var NOTE = {
+      abk: { en: 'Abkhazi Garden, autumn', fr: 'Jardin Abkhazi, automne', es: 'Jardín Abkhazi, otoño', zh: 'Abkhazi 花园 · 秋', pa: 'Abkhazi Garden, ਪਤਝੜ' },
+      morn: { en: 'The wedding morning', fr: 'Le matin du mariage', es: 'La mañana de la boda', zh: '婚礼当天的早晨', pa: 'ਵਿਆਹ ਵਾਲੀ ਸਵੇਰ' },
+      rings: { en: 'The rings', fr: 'Les alliances', es: 'Los anillos', zh: '戒指', pa: 'ਮੁੰਦਰੀਆਂ' },
+      vows: { en: 'The vows', fr: 'Les vœux', es: 'Los votos', zh: '誓言', pa: 'ਵਚਨ' },
+      mrs: { en: 'Mr & Mrs', fr: 'M. et Mme', es: 'Recién casados', zh: '新婚快乐', pa: 'ਨਵ-ਵਿਆਹੇ' },
+      sp: { en: 'Stanley Park, spring', fr: 'Stanley Park, printemps', es: 'Stanley Park, primavera', zh: '斯坦利公园 · 春', pa: 'Stanley Park, ਬਸੰਤ' },
+      eb: { en: 'English Bay, golden hour', fr: 'English Bay, heure dorée', es: 'English Bay, hora dorada', zh: '英吉利湾 · 黄金时刻', pa: 'English Bay, ਸੁਨਹਿਰੀ ਘੜੀ' },
+      yes: { en: 'She said yes · Bowen Lookout', fr: 'Elle a dit oui · Bowen Lookout', es: 'Dijo que sí · Bowen Lookout', zh: '她说“我愿意” · Bowen Lookout', pa: 'ਉਸ ਨੇ ਹਾਂ ਕਹੀ · Bowen Lookout' },
+      eng: { en: 'Just engaged · Bowen Lookout', fr: 'Tout juste fiancés · Bowen Lookout', es: 'Recién comprometidos · Bowen Lookout', zh: '刚刚订婚 · Bowen Lookout', pa: 'ਹੁਣੇ ਮੰਗਣੀ · Bowen Lookout' },
+      sen: { en: 'Sendall Gardens, spring', fr: 'Sendall Gardens, printemps', es: 'Sendall Gardens, primavera', zh: 'Sendall 花园 · 春', pa: 'Sendall Gardens, ਬਸੰਤ' },
+      walk: { en: 'A quiet walk for two', fr: 'Une balade à deux', es: 'Un paseo para dos', zh: '两个人的安静漫步', pa: 'ਦੋਵਾਂ ਦੀ ਸ਼ਾਂਤ ਸੈਰ' }
+    };
+    var NOTE_OF = { 'getting-ready-veil': 'morn', 'bride-portrait': 'morn', 'bride-bouquet': 'abk', 'ceremony-rings': 'rings', 'wedding-garden-vows': 'vows', 'reception-cake-laugh': 'mrs',
+      'engagement-blossom-gaze-full': 'sp', 'engagement-blossom-park-walk': 'sp', 'engagement-beach-golden-hour': 'eb', 'engagement-sunset-embrace-full': 'eb', 'sunset-holding-hands': 'eb',
+      'sunset-seawall-silhouette': 'eb', 'engagement-english-bay-sunset': 'eb', 'engagement-sunset-silhouette-embrace': 'eb',
+      'proposal-lookout-she-said-yes': 'yes', 'proposal-mountain-lookout': 'yes', 'proposal-lookout-gaze': 'eng', 'proposal-lookout-embrace-kiss': 'eng', 'proposal-bowen-kiss': 'eng',
+      'couple-willow-pond-portrait': 'walk', 'engagement-lakeside-hands': 'walk', 'engagement-lakeside-kiss': 'walk', 'engagement-garden-waterfall': 'walk' };
+    function noteFor(src) {
+      var n = src.split('/').pop().split('.jpg')[0], k = NOTE_OF[n];
+      if (!k) k = /^engagement-|^couple-garden/.test(n) ? 'sen' : 'abk'; // remaining: the spring garden session / the garden wedding
+      return NOTE[k][LANG] || NOTE[k].en;
+    }
+    var TX = { en: ['Recent prints', 'View photo', 'Close'], fr: ['Derniers tirages', 'Voir la photo', 'Fermer'], es: ['Últimas copias', 'Ver la foto', 'Cerrar'], zh: ['最近的照片', '查看照片', '关闭'], pa: ['ਤਾਜ਼ਾ ਪ੍ਰਿੰਟ', 'ਫੋਟੋ ਵੇਖੋ', 'ਬੰਦ ਕਰੋ'] }[LANG] || ['Recent prints', 'View photo', 'Close'];
+    var tray = document.createElement('div'); tray.className = 'prints'; tray.setAttribute('aria-label', TX[0]);
+    var camCol = cam.closest('.cam-col') || cam.parentElement; camCol.insertBefore(tray, cam.nextSibling);
+    var slot = document.createElement('span'); slot.className = 'print-slot'; slot.setAttribute('aria-hidden', 'true'); cam.appendChild(slot);
+    var printN = 0;
+    function printPhoto(it) {
+      var src = it.src.replace(/\.jpg(\?|$)/, '-sm.jpg$1'), pr = document.createElement('button');
+      pr.type = 'button'; pr.className = 'print developing';
+      pr.setAttribute('aria-label', TX[1] + ': ' + it.alt);
+      pr.innerHTML = '<span class="pic"><img alt="" decoding="async"></span><span class="note"></span>';
+      pr.querySelector('.note').textContent = noteFor(it.src);
+      var im = pr.querySelector('img');
+      im.onload = function () {
+        var r = im.naturalWidth / im.naturalHeight, pic = pr.querySelector('.pic');
+        pic.style.aspectRatio = Math.max(0.5, Math.min(1.8, r)); // the print takes the photo's own shape
+        requestAnimationFrame(function () { pr.classList.add('out'); setTimeout(function () { pr.classList.remove('developing'); }, 1400); });
+      };
+      im.src = src;
+      var tilt = [-7, 5, -3, 8, -5, 3][printN % 6]; printN++;
+      pr.style.setProperty('--tilt', tilt + 'deg');
+      pr.addEventListener('click', function () { openPrint(it); });
+      tray.insertBefore(pr, tray.firstChild);
+      var all = tray.querySelectorAll('.print');
+      var FAN = window.innerWidth < 900 ? [0, -70, 70, -118, 118] : [0, -120, 120, -215, 215];
+      for (var k = 0; k < all.length; k++) { all[k].style.setProperty('--n', k); all[k].style.setProperty('--x', (FAN[k] || 0) + 'px'); if (k >= 5) { (function (o) { o.classList.add('gone'); setTimeout(function () { o.remove(); }, 700); })(all[k]); } }
+    }
+    var viewer = null;
+    function openPrint(it) {
+      if (!viewer) {
+        viewer = document.createElement('dialog'); viewer.className = 'print-view';
+        viewer.innerHTML = '<figure><img alt=""><figcaption></figcaption></figure><button type="button" class="x" aria-label="' + TX[2] + '">&times;</button>';
+        document.body.appendChild(viewer);
+        viewer.addEventListener('click', function (e) { if (e.target === viewer || e.target.classList.contains('x')) viewer.close(); });
+      }
+      viewer.querySelector('img').src = it.src; viewer.querySelector('img').alt = it.alt;
+      viewer.querySelector('figcaption').textContent = noteFor(it.src);
+      if (viewer.showModal) viewer.showModal(); else window.open(it.src, '_blank');
+    }
     function show(i) {
       if (busy) return; busy = true;
       i = (i + list.length) % list.length;
@@ -162,10 +219,11 @@
         if (!reduce) { iris(false); turn += 1; knurl.style.transform = 'rotate(' + (turn * (lensChange ? 120 : 40)) + 'deg)'; }
         setTimeout(function () {
           layers[front].classList.remove('on'); front = 1 - front; layers[front].classList.add('on');
+          layers[front].parentElement.style.setProperty('--jp-bg', 'url("' + (layers[front].currentSrc || layers[front].src) + '")');
           var vf = cam.querySelector('[data-vf]'); if (vf) { vf.style.opacity = 0; setTimeout(function () { vf.src = list[i].src.replace(/\.jpg(\?|$)/, '-sm.jpg$1'); vf.style.objectPosition = list[i].fx + '% ' + list[i].fy + '%'; vf.style.opacity = 1; }, 200); }
           at = i; sel = list[i].lens; if (lensChange) paintLens(); label();
         }, reduce ? 0 : 360);
-        setTimeout(function () { iris(true); shoot(); busy = false; preload(i + 1); schedule(); }, reduce ? 0 : 560);
+        setTimeout(function () { iris(true); shoot(); printPhoto(list[i]); busy = false; preload(i + 1); schedule(); }, reduce ? 0 : 560);
       });
     }
     function schedule() {
@@ -200,7 +258,7 @@
     }
     fit(layers[0]); layers[0].addEventListener('load', function () { fit(layers[0]); });
     iris(true); paintLens(); label(); setPlaying(playing); preload(1);
-    setTimeout(function () { shoot(); }, reduce ? 0 : 200);
+    setTimeout(function () { shoot(); printPhoto(list[0]); }, reduce ? 0 : 200);
   }
 
   // Portfolio filters
