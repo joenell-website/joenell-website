@@ -1,4 +1,4 @@
-"""Set an area page's 'Book your date' photo and its Chris & Lorena gallery photo (all languages).
+"""Set an area page's 'Book your date' photo and its the couple gallery photo (all languages).
 Usage: python3 tools/area_photos.py <area> <split-image> <fx> <fy> <gallery-image> <gfx> <gfy>
 Gallery image replaces the engagement-spring-embrace figure inherited from the Burnaby base."""
 import re,glob,sys

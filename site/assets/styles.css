@@ -590,3 +590,4 @@ body:has(.lang-offer.show) .msg-fab{bottom:96px}
 .tier-ph img{display:block;width:100%;height:100%;object-fit:cover}
 .g-sub{margin:6px 0 0;color:var(--muted);font-size:16px}
 .site-footer .studio a{text-decoration:underline;text-underline-offset:2px}
+.prose table.sun{width:100%;border-collapse:collapse;margin:8px 0 6px;font-size:15px}.prose table.sun th,.prose table.sun td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}.prose table.sun th{font-weight:600;color:var(--ink)}
