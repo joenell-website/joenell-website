@@ -148,8 +148,12 @@ html.alb-lock,html.alb-lock body{overflow:hidden}
 .alb-book{--paper:#F8F2E8}
 .alb-book .pg.mat,.alb-book .pg.duo,.alb-book .pg.chap,.alb-book .pg.end,.alb-book .pg.cover{background:linear-gradient(160deg,#FBF6EE,#F4ECDF)}
 .alb-book .pg.mat::before,.alb-book .pg.duo::before{content:"";position:absolute;inset:calc(var(--u)*3.4);border:1px solid rgba(176,138,79,.42);pointer-events:none;z-index:0}
-.alb-book .pg.mat>*,.alb-book .pg.duo>*{position:relative;z-index:1}
+.alb-book .pg.mat>:not(.folio),.alb-book .pg.duo>:not(.folio){position:relative;z-index:1}
+.alb-book .pg .folio{position:absolute;z-index:2}
 .alb-book .backc{background:linear-gradient(160deg,#FBF6EE,#F3EADC)}
 .alb-book .backc .ring{width:calc(var(--u)*62);aspect-ratio:1;border-radius:50%;border:1px solid rgba(176,138,79,.6);outline:1px solid rgba(176,138,79,.22);outline-offset:calc(var(--u)*1.4);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .alb-book .backc .ring .meta{margin-top:calc(var(--u)*1.5)}
 .alb-book .backc .meta.url{position:absolute;bottom:calc(var(--u)*9);margin:0;letter-spacing:.22em;text-transform:none;font-size:calc(var(--u)*2.3)}
+.alb-book .pg .folio{bottom:calc(var(--u)*5)}
+.alb-book .pg.L .folio{left:calc(var(--u)*6)}
+.alb-book .pg.R .folio{right:calc(var(--u)*6)}
